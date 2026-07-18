@@ -1,0 +1,9 @@
+{
+  "model_name": "gemma3",
+  "quantization": "Q4_K_M",
+  "gguf_path": "Inference/models/gemma3.gguf",
+  "context_length": 8192,
+  "gpu_enabled": false,
+  "backend": "CPU",
+  "notes": "Built without CUDA - CPU inference only"
+}

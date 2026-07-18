@@ -1,0 +1,1 @@
+-- Creates the processing_status table.

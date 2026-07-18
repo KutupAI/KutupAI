@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Inference\\client",
+    "\\Inference\\llama_server",
+    "\\RAG",
+    "\\RAG\\documents"
+  ],
+  "SelectedNode": "\\.gitignore",
+  "PreviewInSolutionExplorer": false
+}
