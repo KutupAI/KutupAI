@@ -1,8 +1,4 @@
-"""
-retrieval_request.py
------------------------
-شكل موحّد لطلب الاسترجاع القادم من أي Agent (rag_agent, writer_agent).
-"""
+"""Retrieval request shape used by Agents."""
 
 from dataclasses import dataclass
 from typing import Optional
@@ -10,5 +6,10 @@ from typing import Optional
 
 @dataclass(frozen=True)
 class RetrievalRequest:
-    query: str                       # سؤال المستخدم أو استعلام الوكيل
-    top_k: Optional[int] = None      # عدد النتائج - إن لم يُحدَّد يُستخدم الافتراضي
+    query: str
+    top_k: Optional[int] = None
+    mode: Optional[str] = None  # hybrid | vector | bm25
+    use_prf: Optional[bool] = None
+    use_reranker: Optional[bool] = None
+    expansion_strategy: Optional[str] = None
+    source_type: Optional[str] = None

@@ -1,0 +1,38 @@
+{
+  "winner": "prf",
+  "results": [
+    {
+      "strategy": "prf",
+      "metrics": {
+        "MRR": 1.0,
+        "n_queries": 4,
+        "Hit@1": 1.0,
+        "Hit@2": 1.0,
+        "Hit@3": 1.0
+      },
+      "score": 6.0
+    },
+    {
+      "strategy": "none",
+      "metrics": {
+        "MRR": 0.875,
+        "n_queries": 4,
+        "Hit@1": 0.75,
+        "Hit@2": 1.0,
+        "Hit@3": 1.0
+      },
+      "score": 5.0
+    },
+    {
+      "strategy": "synonym",
+      "metrics": {
+        "MRR": 0.875,
+        "n_queries": 4,
+        "Hit@1": 0.75,
+        "Hit@2": 1.0,
+        "Hit@3": 1.0
+      },
+      "score": 5.0
+    }
+  ]
+}

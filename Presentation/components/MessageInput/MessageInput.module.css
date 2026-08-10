@@ -1,0 +1,91 @@
+.inputBar {
+  background: var(--kutup-bg-elevated);
+  border: 1px solid var(--kutup-border-strong);
+  border-radius: var(--radius-lg);
+  padding: 10px 10px 10px 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--kutup-white);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  max-height: 140px;
+  padding: 8px 4px;
+}
+
+.textarea::placeholder {
+  color: var(--kutup-gray-dim);
+}
+
+.textarea:disabled {
+  opacity: 0.6;
+}
+
+.sendBtn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--kutup-red);
+  color: var(--kutup-white);
+  border: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease;
+}
+
+.sendBtn:hover:not(:disabled),
+.sendBtn:focus-visible:not(:disabled) {
+  background: var(--kutup-red-hover);
+  box-shadow: var(--shadow-glow-red);
+}
+
+.sendBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.sendBtn:focus-visible {
+  outline: 2px solid var(--kutup-white);
+  outline-offset: 2px;
+}
+
+.sendBtn:disabled {
+  background: var(--kutup-surface);
+  color: var(--kutup-gray-dim);
+  cursor: not-allowed;
+}
+
+.fileErrorBanner {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-white);
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 480px) {
+  .inputBar {
+    border-radius: var(--radius-md);
+    padding: 8px 8px 8px 12px;
+  }
+
+  .textarea {
+    font-size: 0.9rem;
+  }
+}

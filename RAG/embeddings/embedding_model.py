@@ -1,77 +1,52 @@
 """
 embedding_model.py
 --------------------
-تحويل النصوص إلى متجهات (vectors) باستخدام BGE-M3.
+LangChain HuggingFaceEmbeddings wrapper around BAAI/bge-m3.
 
-هذا هو المكان الوحيد الذي يُحمَّل فيه نموذج الـ Embeddings في كامل
-طبقة RAG. أي ملف آخر يحتاج تحويل نص لمتجه يستدعي الدوال هنا فقط
-ولا يتعامل مع sentence-transformers مباشرة.
+This is the only place the embedding model is constructed.
 """
+
+from __future__ import annotations
 
 from functools import lru_cache
 from typing import List
 
-from sentence_transformers import SentenceTransformer
+from langchain_core.embeddings import Embeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
-from RAG.configuration.embedding_config import embedding_config
+from RAG.embeddings.embedding_config import embedding_config
 
 
 @lru_cache(maxsize=1)
-def _load_model() -> SentenceTransformer:
+def get_embeddings() -> Embeddings:
     """
-    تحميل النموذج مرة واحدة فقط (Singleton) وإعادة استخدامه.
-    lru_cache يضمن عدم إعادة تحميل النموذج من الذاكرة/القرص مع كل استدعاء.
+    Singleton HuggingFaceEmbeddings (BGE-M3).
+
+    Uses LangChain's HuggingFace integration so the same object
+    plugs into LangChain Chroma / retrievers.
     """
-    model = SentenceTransformer(
-        embedding_config.model_name,
-        device=embedding_config.device,
+    return HuggingFaceEmbeddings(
+        model_name=embedding_config.model_name,
+        model_kwargs={"device": embedding_config.device},
+        encode_kwargs={
+            "normalize_embeddings": embedding_config.normalize_embeddings,
+            "batch_size": embedding_config.batch_size,
+        },
+        show_progress=embedding_config.show_progress,
     )
-    return model
 
 
 def embed_text(text: str) -> List[float]:
-    """
-    تحويل نص واحد إلى متجه.
-
-    Args:
-        text: النص المراد تحويله (chunk قانوني أو query المستخدم).
-
-    Returns:
-        قائمة أرقام عشرية (المتجه)، بطول embedding_config.embedding_dim.
-    """
-    model = _load_model()
-    vector = model.encode(
-        text,
-        normalize_embeddings=embedding_config.normalize_embeddings,
-        convert_to_numpy=True,
-    )
-    return vector.tolist()
+    """Embed a single query/document string."""
+    return get_embeddings().embed_query(text)
 
 
 def embed_batch(texts: List[str]) -> List[List[float]]:
-    """
-    تحويل عدة نصوص دفعة واحدة (أسرع من استدعاء embed_text بحلقة).
-
-    Args:
-        texts: قائمة نصوص (chunks).
-
-    Returns:
-        قائمة متجهات بنفس ترتيب الإدخال.
-    """
+    """Embed multiple documents."""
     if not texts:
         return []
-
-    model = _load_model()
-    vectors = model.encode(
-        texts,
-        batch_size=embedding_config.batch_size,
-        normalize_embeddings=embedding_config.normalize_embeddings,
-        convert_to_numpy=True,
-        show_progress_bar=False,
-    )
-    return vectors.tolist()
+    return get_embeddings().embed_documents(texts)
 
 
 def get_embedding_dim() -> int:
-    """إرجاع أبعاد المتجه المُعرَّفة في الإعدادات (مرجع سريع بدون تحميل النموذج)."""
     return embedding_config.embedding_dim

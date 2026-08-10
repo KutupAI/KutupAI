@@ -388,6 +388,11 @@ RAG/
 │   ├── retriever.py               # البحث الدلالي (Top-K)
 │   └── reranker.py                # إعادة ترتيب النتائج (اختياري)
 │
+├── client/
+│   ├── rag_client.py              # الواجهة الوحيدة التي تستخدمها Agents (مثل Inference/client)
+│   ├── retrieval_request.py
+│   └── retrieval_response.py
+│
 ├── documents/
 │   ├── laws/                      # Turkish Laws (Mevzuat)
 │   ├── regulations/
@@ -397,6 +402,10 @@ RAG/
 │   ├── indexer.py                 # تقطيع + Embedding + إدخال للفهرس
 │   └── update_index.py            # تحديث الفهرس دوريًا
 │
+├── configuration/
+│   ├── rag_config.yaml            # إعدادات التشغيل (chunking / retrieval)
+│   └── rag_config_loader.py
+│
 └── README.md
 ```
 
@@ -405,7 +414,8 @@ RAG/
 | `embeddings/embedding_model.py` | تحويل النص إلى متجهات باستخدام BGE-M3 |
 | `vector_store/vector_store_interface.py` | العقد الذي يعتمد عليه باقي RAG Layer — **لا** ChromaDB مباشرة |
 | `vector_store/chroma_store.py` | التطبيق الفعلي الحالي؛ يُستبدل لاحقًا دون المساس بـ `retriever.py` |
-| `retriever/retriever.py` | الواجهة التي يستدعيها `rag_agent` و `writer_agent` |
+| `client/rag_client.py` | **الواجهة الوحيدة** التي تستخدمها `rag_agent` و `writer_agent` (نفس نمط `Inference/client`) |
+| `retriever/retriever.py` | محرك البحث الدلالي الداخلي الذي يستدعيه `rag_client` |
 | `documents/laws` | نصوص Mevzuat (القوانين التركية) المصدر |
 | `indexing/indexer.py` | خط أنابيب الفهرسة: تقطيع → Embedding → حفظ في Vector Store |
 
@@ -524,7 +534,7 @@ Storage/
 | Orchestration | Agents | استدعاء دالة داخل نفس العملية (In-Process) | Supervisor يختار وينفّذ الـ Agent المناسب ديناميكيًا |
 | Orchestration | Storage | Repositories (اتصال مباشر) | حفظ حالة الـ Workflow ونتائج كل Agent |
 | Agents | AI Inference Layer | عميل داخلي مشترك (`llama_client`) | توليد نص/استنتاج لعدة Agents (Classification, Extraction, Validation, RAG, Summary, Writer, Routing) |
-| Agents | RAG Layer | عميل داخلي (`retriever`) | استرجاع نصوص قانونية — يُستخدم أساسًا من `rag_agent` و `writer_agent` |
+| Agents | RAG Layer | عميل داخلي (`RAG/client`) | استرجاع نصوص قانونية — يُستخدم أساسًا من `rag_agent` و `writer_agent` |
 | Agents | Optimization Layer | عميل داخلي (`fast_classification_service`) | تصنيف/فلترة سريعة قبل اللجوء إلى LLM كامل — أساسًا `classification_agent` |
 | Agents | Orchestration | إرجاع قيمة (تحديث `state`) | Agents لا تكتب لأي مكان مباشرة؛ فقط تُعيد النتيجة |
 

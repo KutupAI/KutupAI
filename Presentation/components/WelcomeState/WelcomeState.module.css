@@ -1,0 +1,80 @@
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 20px;
+  margin: auto;
+  max-width: 560px;
+}
+
+.starWrap {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, var(--kutup-red-dim) 0%, transparent 70%);
+  margin-bottom: 20px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.7rem;
+  color: var(--kutup-white);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  color: var(--kutup-gray);
+  font-size: 1rem;
+  margin-bottom: 28px;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.suggestionChip {
+  background: var(--kutup-surface);
+  border: 1px solid var(--kutup-border);
+  color: var(--kutup-white);
+  border-radius: var(--radius-full);
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+}
+
+.suggestionChip:hover,
+.suggestionChip:focus-visible {
+  border-color: var(--kutup-red);
+  background: var(--kutup-surface-hover);
+}
+
+.suggestionChip:focus-visible {
+  outline: 2px solid var(--kutup-red);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    font-size: 0.92rem;
+  }
+
+  .welcome {
+    padding: 32px 14px;
+  }
+}

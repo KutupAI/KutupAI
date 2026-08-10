@@ -1,59 +1,73 @@
 # =====================================================================
-# rag_config.yaml
-# الإعدادات العامة لطبقة RAG - المرحلة الأولى (MVP)
+# rag_config.yaml — Knowledge / RAG Layer
 # =====================================================================
 
-# ---------------------------------------------------------------------
-# مسارات المستندات المصدر (النصوص القانونية)
-# ---------------------------------------------------------------------
 documents:
   laws_path: "RAG/documents/laws"
   regulations_path: "RAG/documents/regulations"
   internal_docs_path: "RAG/documents/internal_docs"
+  uploads_path: "RAG/documents/uploads"
+  text_globs:
+    - "**/*.txt"
+    - "**/*.md"
+  pdf_globs:
+    - "**/*.pdf"
 
-  # الامتدادات المسموح فهرستها
-  allowed_extensions:
-    - ".txt"
-    - ".md"
-    - ".json"
-
-# ---------------------------------------------------------------------
-# إعدادات التقطيع (Chunking)
-# ---------------------------------------------------------------------
 chunking:
-  # الوحدة الأساسية للتقطيع: يحترم بنية المادة/الفقرة (madde/fıkra)
-  unit: "madde"                # القيم الممكنة لاحقًا: madde | fikra
+  chunk_size: 1000
+  chunk_overlap: 150
+  separators:
+    - "\nMADDE "
+    - "\nMadde "
+    - "\n\n"
+    - "\n"
+    - " "
+    - ""
 
-  # الحد الأقصى لعدد الأحرف داخل الـ chunk الواحد
-  # (إذا كانت المادة أطول من هذا الحد، يتم تقسيمها داخليًا)
-  max_chunk_size_chars: 1500
-
-  # التداخل بين الأجزاء عند تقسيم مادة طويلة (لتفادي فقدان السياق عند القطع)
-  chunk_overlap_chars: 150
-
-# ---------------------------------------------------------------------
-# إعدادات الفهرسة (Indexing)
-# ---------------------------------------------------------------------
 indexing:
-  batch_size: 32                # عدد الـ chunks التي تُرسل دفعة واحدة للـ embedding
-  reindex_on_update: true       # إعادة فهرسة الملف بالكامل عند أي تعديل عليه
+  batch_size: 16
+  reindex_on_update: true
 
-# ---------------------------------------------------------------------
-# إعدادات الاسترجاع (Retrieval) - المرحلة الأولى: Top-K بسيط فقط
-# ---------------------------------------------------------------------
 retrieval:
   default_top_k: 5
   max_top_k: 20
+  candidate_k: 20
+  # hybrid | vector | bm25
+  mode: "hybrid"
+  rrf_k: 60
+  vector_weight: 0.55
+  bm25_weight: 0.45
 
-# ---------------------------------------------------------------------
-# مسارات ملفات الإعداد الفرعية (مرجع فقط - تُقرأ من ملفاتها الخاصة)
-# ---------------------------------------------------------------------
-sub_configs:
-  embedding_config: "RAG/configuration/embedding_config.py"
-  chroma_config: "RAG/configuration/chroma_config.py"
+prf:
+  enabled: true
+  top_n_docs: 3
+  max_expand_terms: 5
+  min_term_len: 4
 
-# ---------------------------------------------------------------------
-# ملاحظة: لا CUDA في هذه المرحلة - كل شيء يعمل على CPU
-# ---------------------------------------------------------------------
+reranker:
+  enabled: true
+  model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  # candidates sent to CrossEncoder before cutting to top_k
+  top_n: 15
+
+query_expansion:
+  enabled: true
+  # Strategies tried by the QE experiment; winner is written to selected_strategy
+  strategies:
+    - "none"
+    - "prf"
+    - "synonym"
+  selected_strategy: "prf"
+  max_extra_terms: 4
+
+evaluation:
+  datasets_dir: "RAG/evaluation/datasets"
+  default_dataset: "RAG/evaluation/datasets/eval_set.json"
+  hit_ks: [1, 2, 3]
+  llm_dataset:
+    max_questions_per_chunk: 2
+    temperature: 0.3
+    max_tokens: 512
+
 runtime:
   device: "cpu"

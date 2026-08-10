@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "generator": "manual",
+  "examples": [
+    {
+      "query": "İş sözleşmesinin feshinde ihbar süreleri nelerdir?",
+      "relevant_chunk_ids": ["is_kanunu_4857.txt#17"],
+      "relevant_source_files": ["is_kanunu_4857.txt"],
+      "notes": "Madde 17 bildirim / ihbar süreleri"
+    },
+    {
+      "query": "Bildirim süreleri kaç haftadır?",
+      "relevant_chunk_ids": ["is_kanunu_4857.txt#17"],
+      "relevant_source_files": ["is_kanunu_4857.txt"],
+      "notes": "Madde 17"
+    },
+    {
+      "query": "Geçerli fesih sebebi ne zaman aranır?",
+      "relevant_chunk_ids": ["is_kanunu_4857.txt#18"],
+      "relevant_source_files": ["is_kanunu_4857.txt"],
+      "notes": "Madde 18"
+    },
+    {
+      "query": "Resmi yazışmada hangi alanlar zorunludur?",
+      "relevant_chunk_ids": [],
+      "relevant_source_files": ["yazisma_usulleri.txt"],
+      "notes": "internal docs"
+    }
+  ]
+}

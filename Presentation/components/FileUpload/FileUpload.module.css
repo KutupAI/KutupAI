@@ -1,0 +1,103 @@
+.pickBtn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: 1px solid var(--kutup-border);
+  color: var(--kutup-gray);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+
+.pickBtn:hover,
+.pickBtn:focus-visible {
+  border-color: var(--kutup-red);
+  color: var(--kutup-white);
+  background: var(--kutup-surface-hover);
+}
+
+.pickBtn:focus-visible {
+  outline: 2px solid var(--kutup-red);
+  outline-offset: 2px;
+}
+
+.pickBtn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.previewChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--kutup-surface);
+  border: 1px solid var(--kutup-border-strong);
+  border-radius: var(--radius-md);
+  padding: 6px 8px 6px 10px;
+  margin-bottom: 8px;
+  max-width: 100%;
+}
+
+.thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.fileIcon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.fileMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.fileName {
+  font-size: 0.83rem;
+  color: var(--kutup-white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  font-size: 0.72rem;
+  color: var(--kutup-gray);
+}
+
+.removeBtn {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  color: var(--kutup-gray);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.removeBtn:hover,
+.removeBtn:focus-visible {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-white);
+}
+
+.removeBtn:focus-visible {
+  outline: 2px solid var(--kutup-red);
+  outline-offset: 1px;
+}

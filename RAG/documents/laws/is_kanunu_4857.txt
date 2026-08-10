@@ -1,0 +1,27 @@
+4857 Sayılı İş Kanunu — Örnek Madde Metni (RAG smoke corpus)
+
+MADDE 1- Bu Kanunun amacı, işverenler ile bir iş sözleşmesine dayanarak
+çalıştırılan işçilerin çalışma şartları ve çalışma ortamına ilişkin
+hak ve sorumluluklarını düzenlemektir.
+
+MADDE 2- İşçi, bir iş sözleşmesine dayanarak çalışan gerçek kişidir.
+İşveren, işçi çalıştıran gerçek veya tüzel kişi yahut tüzel kişiliği
+olmayan kurum ve kuruluşlardır.
+
+MADDE 17- Belirsiz süreli iş sözleşmelerinin feshinden önce durumun
+diğer tarafa bildirilmesi gerekir. Bildirim süreleri aşağıda
+gösterilmiştir:
+a) İşi altı aydan az sürmüş olan işçi için, bildirimin diğer tarafa
+yapılmasından başlayarak iki hafta sonra,
+b) İşi altı aydan bir buçuk yıla kadar sürmüş olan işçi için, bildirimin
+diğer tarafa yapılmasından başlayarak dört hafta sonra,
+c) İşi bir buçuk yıldan üç yıla kadar sürmüş olan işçi için, bildirimin
+diğer tarafa yapılmasından başlayarak altı hafta sonra,
+d) İşi üç yıldan fazla sürmüş olan işçi için, bildirimin diğer tarafa
+yapılmasından başlayarak sekiz hafta sonra.
+
+MADDE 18- Otuz veya daha fazla işçi çalıştıran işyerlerinde en az altı
+aylık kıdemi olan işçinin belirsiz süreli iş sözleşmesinin feshinde
+işveren, işçinin yeterliliğinden veya davranışlarından ya da işletmenin,
+işyerinin veya işin gereklerinden kaynaklanan geçerli bir sebebe
+dayanmak zorundadır.

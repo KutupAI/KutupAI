@@ -1,3 +1,12 @@
 # Worker Agents Layer
 
-Hard rule: no Agent connects to Storage directly. Every Agent returns its result to graph_state; state_manager.py in Orchestration is what persists it.
+Independent Python modules (not a fixed pipeline). Each agent follows the same template:
+
+- `agent.py` — subclass of `BaseAgent`, implements `run(state)`
+- `prompts.py` — LLM prompt templates (when needed)
+- `tools.py` — shared-service integrations (Inference / RAG / Optimization)
+- `config.py` — agent-local thresholds and paths
+
+**Hard rule:** Agents never call Storage repositories. They only update `graph_state`.
+
+See `Documentation/architecture.md` §4 and `Documentation/agent_catalog.md`.

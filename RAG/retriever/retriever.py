@@ -1,36 +1,50 @@
-"""
-retriever.py
---------------
-نقطة الدخول للبحث: تحويل query لمتجه، ثم البحث في مخزن المتجهات وإرجاع
-أفضل top_k نتائج. المرحلة الأولى: Top-K بسيط بدون BM25 أو Reranking.
-"""
+"""Retrieval pipeline: expand → hybrid → PRF → CrossEncoder."""
 
-from typing import Optional
+from __future__ import annotations
 
-from RAG.configuration.rag_config_loader import retrieval_config
-from RAG.embeddings.embedding_model import embed_text
-from RAG.vector_store.chroma_store import get_vector_store
+from typing import List, Optional
+
+from RAG.configuration.rag_config_loader import (
+    prf_config,
+    query_expansion_config,
+    retrieval_config,
+)
+from RAG.retriever.hybrid import hybrid_search
+from RAG.retriever.prf import expand_query_with_prf
+from RAG.retriever.query_expansion import apply_strategy
+from RAG.retriever.reranker import rerank
 from RAG.vector_store.vector_store_interface import SearchResult
 
 
-def retrieve(query: str, top_k: Optional[int] = None) -> list[SearchResult]:
-    """
-    استرجاع أقرب top_k مقاطع قانونية لسؤال المستخدم.
+def retrieve(
+    query: str,
+    top_k: Optional[int] = None,
+    *,
+    mode: Optional[str] = None,
+    use_prf: Optional[bool] = None,
+    use_reranker: Optional[bool] = None,
+    expansion_strategy: Optional[str] = None,
+    where: Optional[dict] = None,
+) -> List[SearchResult]:
+    if not query or not str(query).strip():
+        return []
 
-    Args:
-        query: سؤال المستخدم (بالتركية عادةً).
-        top_k: عدد النتائج المطلوبة. إذا لم يُحدَّد، يُستخدم القيمة
-               الافتراضية من rag_config.yaml.
+    k = min(max(top_k or retrieval_config.default_top_k, 1), retrieval_config.max_top_k)
+    candidate_k = min(max(k * 3, retrieval_config.candidate_k), retrieval_config.max_top_k)
 
-    Returns:
-        قائمة SearchResult مرتبة حسب درجة التشابه تنازليًا.
-    """
-    effective_top_k = top_k or retrieval_config.default_top_k
-    effective_top_k = min(effective_top_k, retrieval_config.max_top_k)
+    strategy = expansion_strategy
+    if strategy is None and query_expansion_config.enabled:
+        strategy = query_expansion_config.selected_strategy
+    q = apply_strategy(query.strip(), strategy) if strategy else query.strip()
 
-    query_embedding = embed_text(query)
+    hits = hybrid_search(q, top_k=candidate_k, where=where, mode=mode)
 
-    store = get_vector_store()
-    results = store.search(query_embedding=query_embedding, top_k=effective_top_k)
+    if (prf_config.enabled if use_prf is None else use_prf) and hits:
+        prf_q = expand_query_with_prf(q, hits)
+        if prf_q != q:
+            hits = hybrid_search(prf_q, top_k=candidate_k, where=where, mode=mode)
+            q = prf_q
 
-    return results
+    if use_reranker is False:
+        return hits[:k]
+    return rerank(query=q, results=hits, top_k=k)
