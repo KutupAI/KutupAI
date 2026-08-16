@@ -1,0 +1,56 @@
+# Application Layer — متطلبات التشغيل
+
+طبقة C++ / Drogon. لا تُثبَّت بحزم pip.
+
+## بيئة التشغيل
+
+- Windows 10/11 x64
+- Visual Studio 2022 مع C++ (MSVC)
+- CMake 3.16 أو أحدث
+- Git
+- vcpkg في `C:\vcpkg` (أو حدّث مسار الـ toolchain)
+- Orchestration Layer على `http://127.0.0.1:8000`
+
+## تثبيت vcpkg و Drogon
+
+```powershell
+cd C:\
+git clone https://github.com/microsoft/vcpkg.git
+cd C:\vcpkg
+.\bootstrap-vcpkg.bat
+.\vcpkg.exe install drogon:x64-windows
+```
+
+Drogon يسحب معه jsoncpp وملحقات الخادم.
+
+## البناء
+
+```powershell
+cd C:\Users\SSCPrgWeb\Desktop\SmartGovernmentAI\Application
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake"
+cmake --build build --config Release
+```
+
+## متغيرات البيئة
+
+| المتغير | القيمة الافتراضية / المطلوبة |
+|---|---|
+| `APP_SERVER_PORT` | `8080` |
+| `ORCHESTRATION_BASE_URL` | `http://127.0.0.1:8000` |
+| `APP_TEMP_UPLOAD_ROOT_DIR` | مسار كامل: `...\SmartGovernmentAI\Storage\files\temp_processing` |
+| `ORCHESTRATION_TIMEOUT_SECONDS` | `300` |
+| `APP_MAX_UPLOAD_SIZE_MB` | `10` |
+
+لا تضع قيمة فيها `C:\...` — هذا مسار غير صالح.
+
+## التشغيل
+
+```powershell
+cd C:\Users\SSCPrgWeb\Desktop\SmartGovernmentAI\Application
+$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
+$env:APP_TEMP_UPLOAD_ROOT_DIR="C:\Users\SSCPrgWeb\Desktop\SmartGovernmentAI\Storage\files\temp_processing"
+$env:APP_SERVER_PORT="8080"
+.\build\Release\SmartGovernmentAI_Application.exe
+```
+
+Endpoint الحي: `POST /api/Chat/SendMessage`
