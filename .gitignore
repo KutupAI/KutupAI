@@ -1,0 +1,144 @@
+# =====================================================================
+# SmartGovernmentAI — files that must NOT be pushed to GitHub
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# Secrets / environment
+# ---------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+secrets.env
+Config/secrets.env
+!Config/secrets.env.example
+
+# ---------------------------------------------------------------------
+# IDE / editor (local only)
+# ---------------------------------------------------------------------
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+
+# ---------------------------------------------------------------------
+# OS junk
+# ---------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------
+# Logs & temp
+# ---------------------------------------------------------------------
+*.log
+logs/
+tmp/
+*.tmp
+*.bak
+
+# ---------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+ENV/
+
+# ---------------------------------------------------------------------
+# Node / TypeScript (Presentation)
+# ---------------------------------------------------------------------
+node_modules/
+.turbo/
+Presentation/dist/
+
+# ---------------------------------------------------------------------
+# C++ build artifacts
+# ---------------------------------------------------------------------
+**/CMakeFiles/
+**/CMakeCache.txt
+cmake-build-*/
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exp
+
+# ---------------------------------------------------------------------
+# Inference — GGUF models (put file here: Inference/models/)
+# ---------------------------------------------------------------------
+*.gguf
+!Inference/models/README.md
+!Inference/models/model_registry.json
+
+# ---------------------------------------------------------------------
+# Inference — llama-server binaries (put here: Inference/llama_server/)
+# Keep launchers + build config; ignore runtime binaries
+# ---------------------------------------------------------------------
+Inference/llama_server/*.exe
+Inference/llama_server/*.dll
+Inference/llama_server/output.log
+!Inference/llama_server/server_launcher.sh
+!Inference/llama_server/server_launcher.bat
+!Inference/llama_server/build_config.cmake
+!Inference/llama_server/README.md
+
+# ---------------------------------------------------------------------
+# Optimization — ONNX models (put file here: Optimization/models/)
+# ---------------------------------------------------------------------
+*.onnx
+!Optimization/models/README.md
+!Optimization/models/model_metadata.json
+
+# ---------------------------------------------------------------------
+# RAG — vector DB + embedding caches (generated locally)
+# ---------------------------------------------------------------------
+RAG/documents/.chroma_db/
+**/chroma_db/
+**/.chroma/
+*.sqlite3
+.cache/
+**/sentence_transformers_cache/
+**/huggingface/
+**/transformers_cache/
+
+# ---------------------------------------------------------------------
+# Storage — uploaded / processed user files (runtime data)
+# ---------------------------------------------------------------------
+Storage/files/uploads/*
+Storage/files/processed/*
+!Storage/files/uploads/.gitkeep
+!Storage/files/processed/.gitkeep
+
+# ---------------------------------------------------------------------
+# Test / coverage artifacts
+# ---------------------------------------------------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+*.cover
+
+# ---------------------------------------------------------------------
+# llama.cpp prebuilt binaries + hf download cache (per-machine runtime tools)
+# ---------------------------------------------------------------------
+llama/
+llama.zip
+llama-ui.tar.gz
+*.tar.gz
+Inference/models/.cache/

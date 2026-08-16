@@ -1,0 +1,89 @@
+/**
+ * KutupAI — Global Design Tokens
+ * ---------------------------------------------------------------
+ * الهوية البصرية: Black + Red، مستوحاة من "Kutup Yıldızı" (نجمة القطب/الشمالية)
+ * كإشارة بصرية موجّهة (guidance) تعكس اسم المنتج وفكرة "الذكاء الذي يرشدك".
+ * لا تُستخدم رموز سياحية (علم/معالم)، فقط لمسة مفاهيمية subtle.
+ *
+ * يُفترض تحميل هذا الملف مرة واحدة على مستوى التطبيق (App.tsx / main.tsx
+ * الحاليين في المشروع) دون المساس بأي ستايل عام آخر — كل كلاسات
+ * الكومبوننتس هنا معرّفة عبر CSS Modules فلا يوجد تعارض أسماء.
+ */
+
+:root {
+  /* --- الألوان الأساسية --- */
+  --kutup-bg: #0a0a0c;
+  --kutup-bg-elevated: #141417;
+  --kutup-surface: #1c1c20;
+  --kutup-surface-hover: #232327;
+  --kutup-border: rgba(255, 255, 255, 0.08);
+  --kutup-border-strong: rgba(255, 255, 255, 0.14);
+
+  --kutup-red: #e0332c;
+  --kutup-red-hover: #f0453d;
+  --kutup-red-dim: #5c1613;
+  --kutup-red-glow: rgba(224, 51, 44, 0.35);
+
+  --kutup-white: #f6f6f8;
+  --kutup-gray: #9a9aa4;
+  --kutup-gray-dim: #5c5c66;
+
+  /* --- الطباعة --- */
+  --font-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* --- الأشكال والحواف --- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  /* --- الظلال --- */
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-glow-red: 0 0 24px var(--kutup-red-glow);
+}
+
+/* --- نجمة القطب: الحركة التوقيعية المستخدمة في Loading / Welcome --- */
+@keyframes kutup-star-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes kutup-glow-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(224, 51, 44, 0);
+  }
+  50% {
+    box-shadow: var(--shadow-glow-red);
+  }
+}
+
+/* يُستخدم لإخفاء عناصر input الأصلية بصرياً مع بقائها متاحة للوحة المفاتيح
+   وقارئات الشاشة (مثال: input[type=file] خلف زر 📎 مخصص). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

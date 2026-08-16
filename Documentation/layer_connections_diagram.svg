@@ -1,0 +1,117 @@
+<svg viewBox="0 0 1050 1126" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+<rect x="0" y="0" width="1050" height="1126" fill="#F7F8FA"/>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto">
+<path d="M0,0.5 L9,4.5 L0,8.5 Z" fill="#666"/>
+</marker>
+</defs>
+<rect x="40" y="30.0" width="520" height="204.0" rx="10" fill="#FFFFFF" stroke="#4F86C6" stroke-width="2.5"/>
+<rect x="40" y="30.0" width="520" height="6" rx="3" fill="#4F86C6"/>
+<text x="300.0" y="64.0" font-size="18" font-weight="700" fill="#222" text-anchor="middle">Presentation Layer</text>
+<text x="300.0" y="84.0" font-size="12" fill="#666" text-anchor="middle" font-style="italic">TypeScript  ·  React</text>
+<circle cx="66" cy="99.0" r="3" fill="#4F86C6"/>
+<text x="78" y="104.0" font-size="13" fill="#333">User Interface</text>
+<circle cx="66" cy="121.0" r="3" fill="#4F86C6"/>
+<text x="78" y="126.0" font-size="13" fill="#333">Upload Document</text>
+<circle cx="66" cy="143.0" r="3" fill="#4F86C6"/>
+<text x="78" y="148.0" font-size="13" fill="#333">Display Analysis Result</text>
+<circle cx="66" cy="165.0" r="3" fill="#4F86C6"/>
+<text x="78" y="170.0" font-size="13" fill="#333">Display Processing Status</text>
+<circle cx="66" cy="187.0" r="3" fill="#4F86C6"/>
+<text x="78" y="192.0" font-size="13" fill="#333">Communicate with Backend API</text>
+<rect x="40" y="289.0" width="520" height="248.0" rx="10" fill="#FFFFFF" stroke="#4CAF93" stroke-width="2.5"/>
+<rect x="40" y="289.0" width="520" height="6" rx="3" fill="#4CAF93"/>
+<text x="300.0" y="323.0" font-size="18" font-weight="700" fill="#222" text-anchor="middle">Application Layer</text>
+<text x="300.0" y="343.0" font-size="12" fill="#666" text-anchor="middle" font-style="italic">C++  ·  Drogon / Crow</text>
+<circle cx="66" cy="358.0" r="3" fill="#4CAF93"/>
+<text x="78" y="363.0" font-size="13" fill="#333">REST API</text>
+<circle cx="66" cy="380.0" r="3" fill="#4CAF93"/>
+<text x="78" y="385.0" font-size="13" fill="#333">Receive Documents</text>
+<circle cx="66" cy="402.0" r="3" fill="#4CAF93"/>
+<text x="78" y="407.0" font-size="13" fill="#333">Authentication</text>
+<circle cx="66" cy="424.0" r="3" fill="#4CAF93"/>
+<text x="78" y="429.0" font-size="13" fill="#333">User Management</text>
+<circle cx="66" cy="446.0" r="3" fill="#4CAF93"/>
+<text x="78" y="451.0" font-size="13" fill="#333">Document Management</text>
+<circle cx="66" cy="468.0" r="3" fill="#4CAF93"/>
+<text x="78" y="473.0" font-size="13" fill="#333">Communicate with AI Layer</text>
+<circle cx="66" cy="490.0" r="3" fill="#4CAF93"/>
+<text x="78" y="495.0" font-size="13" fill="#333">Return Results</text>
+<rect x="40" y="592.0" width="520" height="182.0" rx="10" fill="#FFFFFF" stroke="#8E6FCE" stroke-width="2.5"/>
+<rect x="40" y="592.0" width="520" height="6" rx="3" fill="#8E6FCE"/>
+<text x="300.0" y="626.0" font-size="18" font-weight="700" fill="#222" text-anchor="middle">Orchestration Layer</text>
+<text x="300.0" y="646.0" font-size="12" fill="#666" text-anchor="middle" font-style="italic">Python  ·  LangGraph (Supervisor Agent)</text>
+<circle cx="66" cy="661.0" r="3" fill="#8E6FCE"/>
+<text x="78" y="666.0" font-size="13" fill="#333">Manage Multi-Agent Workflow</text>
+<circle cx="66" cy="683.0" r="3" fill="#8E6FCE"/>
+<text x="78" y="688.0" font-size="13" fill="#333">Select Worker Agent</text>
+<circle cx="66" cy="705.0" r="3" fill="#8E6FCE"/>
+<text x="78" y="710.0" font-size="13" fill="#333">Control Execution Order</text>
+<circle cx="66" cy="727.0" r="3" fill="#8E6FCE"/>
+<text x="78" y="732.0" font-size="13" fill="#333">Agent Communication</text>
+<rect x="40" y="829.0" width="520" height="246.0" rx="10" fill="#FFFFFF" stroke="#E0985B" stroke-width="2.5"/>
+<rect x="40" y="829.0" width="520" height="6" rx="3" fill="#E0985B"/>
+<text x="300.0" y="863.0" font-size="18" font-weight="700" fill="#222" text-anchor="middle">Worker Agents Layer</text>
+<text x="300.0" y="883.0" font-size="12" fill="#666" text-anchor="middle" font-style="italic">Python  ·  Dynamic Modules (not a fixed pipeline)</text>
+<rect x="60.0" y="903.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="175.0" y="919.0" font-size="11" fill="#333" text-anchor="middle">OCR Agent</text>
+<rect x="300.0" y="903.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="415.0" y="919.0" font-size="11" fill="#333" text-anchor="middle">Classification Agent</text>
+<rect x="60.0" y="933.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="175.0" y="949.0" font-size="11" fill="#333" text-anchor="middle">Extraction Agent</text>
+<rect x="300.0" y="933.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="415.0" y="949.0" font-size="11" fill="#333" text-anchor="middle">Validation Agent</text>
+<rect x="60.0" y="963.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="175.0" y="979.0" font-size="11" fill="#333" text-anchor="middle">RAG Agent</text>
+<rect x="300.0" y="963.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="415.0" y="979.0" font-size="11" fill="#333" text-anchor="middle">Summary Agent</text>
+<rect x="60.0" y="993.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="175.0" y="1009.0" font-size="11" fill="#333" text-anchor="middle">Writer Agent</text>
+<rect x="300.0" y="993.0" width="230.0" height="24" rx="5" fill="#E0985B" fill-opacity="0.12" stroke="#E0985B" stroke-width="1.2"/>
+<text x="415.0" y="1009.0" font-size="11" fill="#333" text-anchor="middle">Routing Agent</text>
+<text x="300.0" y="1031.0" font-size="10.5" fill="#B33" text-anchor="middle" font-style="italic">No direct connection to Storage — results return to Orchestration</text>
+<line x1="300.0" y1="238.0" x2="300.0" y2="283.0" stroke="#666" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="343.7" y="251.5" width="112.6" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="400.0" y="265.5" font-size="11" fill="#444" text-anchor="middle">REST API (HTTPS)</text>
+<line x1="300.0" y1="541.0" x2="300.0" y2="586.0" stroke="#666" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="340.6" y="554.5" width="118.7" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="400.0" y="568.5" font-size="11" fill="#444" text-anchor="middle">Async Job Trigger</text>
+<line x1="300.0" y1="778.0" x2="300.0" y2="823.0" stroke="#666" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="346.8" y="791.5" width="106.4" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="400.0" y="805.5" font-size="11" fill="#444" text-anchor="middle">In-Process Call</text>
+<rect x="710" y="446.0" width="300" height="204.0" rx="10" fill="#FFFFFF" stroke="#607D8B" stroke-width="2.5"/>
+<rect x="710" y="446.0" width="300" height="6" rx="3" fill="#607D8B"/>
+<text x="860.0" y="479.0" font-size="16" font-weight="700" fill="#222" text-anchor="middle">Data Storage Layer</text>
+<text x="860.0" y="497.0" font-size="11.5" fill="#666" text-anchor="middle" font-style="italic">PostgreSQL / SQL Server</text>
+<circle cx="732" cy="512.0" r="3" fill="#607D8B"/>
+<text x="744" y="517.0" font-size="12.5" fill="#333">Documents</text>
+<circle cx="732" cy="534.0" r="3" fill="#607D8B"/>
+<text x="744" y="539.0" font-size="12.5" fill="#333">Users</text>
+<circle cx="732" cy="556.0" r="3" fill="#607D8B"/>
+<text x="744" y="561.0" font-size="12.5" fill="#333">Processing Status</text>
+<circle cx="732" cy="578.0" r="3" fill="#607D8B"/>
+<text x="744" y="583.0" font-size="12.5" fill="#333">Agent Results</text>
+<circle cx="732" cy="600.0" r="3" fill="#607D8B"/>
+<text x="744" y="605.0" font-size="12.5" fill="#333">Logs</text>
+<rect x="710" y="818.0" width="300" height="268.0" rx="10" fill="#FFFFFF" stroke="#607D8B" stroke-width="2.5" stroke-dasharray="6,4"/>
+<text x="860.0" y="850.0" font-size="15.5" font-weight="700" fill="#222" text-anchor="middle">Shared AI Services</text>
+<text x="860.0" y="868.0" font-size="11" fill="#666" text-anchor="middle" font-style="italic">called by Agents as needed</text>
+<rect x="726" y="884.0" width="268" height="44" rx="6" fill="#D1595F" fill-opacity="0.10" stroke="#D1595F" stroke-width="1.4"/>
+<text x="860.0" y="902.0" font-size="12.5" font-weight="700" fill="#222" text-anchor="middle">AI Inference Layer</text>
+<text x="860.0" y="918.0" font-size="10" fill="#555" text-anchor="middle">llama.cpp · llama-server · Gemma 3 GGUF</text>
+<rect x="726" y="950.0" width="268" height="44" rx="6" fill="#4F86C6" fill-opacity="0.10" stroke="#4F86C6" stroke-width="1.4"/>
+<text x="860.0" y="968.0" font-size="12.5" font-weight="700" fill="#222" text-anchor="middle">Knowledge / RAG Layer</text>
+<text x="860.0" y="984.0" font-size="10" fill="#555" text-anchor="middle">BGE-M3 Embeddings · ChromaDB</text>
+<rect x="726" y="1016.0" width="268" height="44" rx="6" fill="#4CAF93" fill-opacity="0.10" stroke="#4CAF93" stroke-width="1.4"/>
+<text x="860.0" y="1034.0" font-size="12.5" font-weight="700" fill="#222" text-anchor="middle">Optimization Layer</text>
+<text x="860.0" y="1050.0" font-size="10" fill="#555" text-anchor="middle">ONNX Runtime</text>
+<path d="M 560,413.0 C 635,413.0 635,503.1 710,503.1" fill="none" stroke="#607D8B" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="566.3" y="448.1" width="137.5" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="635.0" y="462.1" font-size="10.5" fill="#444" text-anchor="middle">Docs · Users · Status</text>
+<path d="M 560,683.0 C 635,683.0 635,605.1 710,605.1" fill="none" stroke="#607D8B" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="575.1" y="634.1" width="119.8" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="635.0" y="648.1" font-size="10.5" fill="#444" text-anchor="middle">Workflow + Results</text>
+<line x1="560" y1="952.0" x2="704" y2="952.0" stroke="#666" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="600.3" y="926.0" width="69.4" height="18" rx="4" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<text x="635.0" y="940.0" font-size="11" fill="#444" text-anchor="middle">As needed</text>
+</svg>

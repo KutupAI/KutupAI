@@ -1,0 +1,73 @@
+# =====================================================================
+# rag_config.yaml — Knowledge / RAG Layer
+# =====================================================================
+
+documents:
+  laws_path: "RAG/documents/laws"
+  regulations_path: "RAG/documents/regulations"
+  internal_docs_path: "RAG/documents/internal_docs"
+  uploads_path: "RAG/documents/uploads"
+  text_globs:
+    - "**/*.txt"
+    - "**/*.md"
+  pdf_globs:
+    - "**/*.pdf"
+
+chunking:
+  chunk_size: 1000
+  chunk_overlap: 150
+  separators:
+    - "\nMADDE "
+    - "\nMadde "
+    - "\n\n"
+    - "\n"
+    - " "
+    - ""
+
+indexing:
+  batch_size: 16
+  reindex_on_update: true
+
+retrieval:
+  default_top_k: 5
+  max_top_k: 20
+  candidate_k: 20
+  # hybrid | vector | bm25
+  mode: "hybrid"
+  rrf_k: 60
+  vector_weight: 0.55
+  bm25_weight: 0.45
+
+prf:
+  enabled: true
+  top_n_docs: 3
+  max_expand_terms: 5
+  min_term_len: 4
+
+reranker:
+  enabled: true
+  model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  # candidates sent to CrossEncoder before cutting to top_k
+  top_n: 15
+
+query_expansion:
+  enabled: true
+  # Strategies tried by the QE experiment; winner is written to selected_strategy
+  strategies:
+    - "none"
+    - "prf"
+    - "synonym"
+  selected_strategy: "prf"
+  max_extra_terms: 4
+
+evaluation:
+  datasets_dir: "RAG/evaluation/datasets"
+  default_dataset: "RAG/evaluation/datasets/eval_set.json"
+  hit_ks: [1, 2, 3]
+  llm_dataset:
+    max_questions_per_chunk: 2
+    temperature: 0.3
+    max_tokens: 512
+
+runtime:
+  device: "cpu"

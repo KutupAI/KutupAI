@@ -1,0 +1,1 @@
+# AgentResult ORM/data model.

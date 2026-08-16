@@ -1,0 +1,8 @@
+server:
+  host: 127.0.0.1
+  port: 8080
+
+model:
+  context_size: 8192
+  threads: 12
+  gpu_layers: 0

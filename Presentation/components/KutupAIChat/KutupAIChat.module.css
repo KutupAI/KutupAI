@@ -1,0 +1,26 @@
+.appShell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--kutup-bg);
+  color: var(--kutup-white);
+  overflow: hidden;
+}
+
+.inputArea {
+  border-top: 1px solid var(--kutup-border);
+  background: var(--kutup-bg);
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+}
+
+.inputInner {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+  .inputArea {
+    padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+  }
+}

@@ -1,0 +1,2 @@
+// useAuth
+// Authentication state hook.

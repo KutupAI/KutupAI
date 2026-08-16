@@ -1,0 +1,30 @@
+{
+  "default_model": "gemma3",
+  "models": [
+    {
+      "model_name": "gemma3",
+      "role": "general_text_llm",
+      "used_by": ["extraction_agent", "validation_agent", "rag_agent", "summary_agent", "writer_agent", "routing_agent"],
+      "quantization": "Q4_K_M",
+      "gguf_path": "Inference/models/gemma3.gguf",
+      "context_length": 8192,
+      "gpu_enabled": false,
+      "backend": "CPU",
+      "client": "Inference/client/llama_client.py",
+      "notes": "Built without CUDA - CPU inference only"
+    },
+    {
+      "model_name": "qwen-vl",
+      "role": "vision_language_classifier",
+      "used_by": ["classification_agent"],
+      "quantization": "TBD - must be benchmarked on target hardware before pick (see task doc section 4/10)",
+      "gguf_path": "Inference/models/qwen-vl.gguf",
+      "mmproj_path": "Inference/models/qwen-vl-mmproj.gguf",
+      "context_length": 8192,
+      "gpu_enabled": false,
+      "backend": "CPU",
+      "client": "Inference/client/qwen_vl_client.py",
+      "notes": "Placeholder entry - actual Qwen model size/quantization not yet chosen. Section 4 requires benchmarking model size x quantization x VRAM x latency x accuracy together before any variant is treated as final; section 10 requires comparing at least two Qwen sizes/quantizations."
+    }
+  ]
+}

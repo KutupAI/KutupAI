@@ -1,0 +1,1 @@
+"""SmartGovernmentAI Knowledge / RAG Layer."""
