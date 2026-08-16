@@ -15,9 +15,14 @@ class GraphState(TypedDict, total=False):
     document_id: str
     document_path: str
     document_text: str
+    # Optional user text accompanying the uploaded file (Presentation → Application)
+    accompanying_text: str
+    question: str
+    text: str
 
-    # Partial agent outputs
+    # Partial agent outputs. ocr_result is the unified contract { Success, Data }.
     ocr_result: Dict[str, Any]
+    ocr_status: str
     classification_result: Dict[str, Any]
     extraction_result: Dict[str, Any]
     validation_result: Dict[str, Any]

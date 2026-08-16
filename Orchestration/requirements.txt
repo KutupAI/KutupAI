@@ -1,0 +1,14 @@
+# Orchestration Layer — Python dependencies
+
+fastapi>=0.110,<1
+uvicorn>=0.27,<1
+pydantic>=2,<3
+
+# OCR Agent is called in-process from this layer. Also install:
+#   pip install -r Agents/ocr_agent/requirements.txt
+
+# Python 3.11+
+# Run from the repository root:
+#   pip install -r Orchestration/requirements.txt
+#   pip install -r Agents/ocr_agent/requirements.txt
+#   python -m Orchestration.main
