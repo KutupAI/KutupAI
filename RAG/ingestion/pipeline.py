@@ -112,7 +112,19 @@ def ingest_documents(documents: List[Document], *, rebuild_bm25: bool = True) ->
         export_file.write("]\n")
     finally:
         export_file.close()
-    temporary_export.replace(export_path)
+    try:
+        # Atomik değiştirme, yarım yazılmış bir inceleme dosyası bırakmamak
+        # için normal yoldur. Windows'ta VS Code/Explorer dosyayı açık
+        # tutabiliyor; bu yardımcı çıktı yüzünden başarılı indeksleme durmaz.
+        temporary_export.replace(export_path)
+    except PermissionError:
+        fallback_export = export_path.with_name(f"{export_path.stem}_latest.json")
+        temporary_export.replace(fallback_export)
+        export_path = fallback_export
+        print(
+            "Warning: indexed_chunks.json is open in another application; "
+            f"the current inspection export was written to {export_path}."
+        )
 
     if rebuild_bm25:
         rebuild_bm25_from_chunks(get_vector_store().export_all())
@@ -167,6 +179,8 @@ def _chunk_export_record(doc: Document) -> dict:
         "article_no": doc.metadata.get("article_no"),
         "article_type": doc.metadata.get("article_type", "unknown"),
         "source_file": doc.metadata.get("source_file", "unknown"),
+        "page_start": doc.metadata.get("page_start", doc.metadata.get("page")),
+        "page_end": doc.metadata.get("page_end", doc.metadata.get("page")),
         "text_length": len(doc.page_content),
         "text_preview": doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content,
         "full_text": doc.page_content,
@@ -186,6 +200,8 @@ def _export_chunks_to_json(documents: List[Document], output_path: str = "RAG/do
             "article_no": doc.metadata.get("article_no"),
             "article_type": doc.metadata.get("article_type", "unknown"),
             "source_file": doc.metadata.get("source_file", "unknown"),
+            "page_start": doc.metadata.get("page_start", doc.metadata.get("page")),
+            "page_end": doc.metadata.get("page_end", doc.metadata.get("page")),
             "text_length": len(doc.page_content),
             "text_preview": doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content, # İlk 300 karakter önizleme
             "full_text": doc.page_content # Tam metin (Dosya boyutu çok büyük olursa bunu kaldırabilirsiniz)

@@ -52,6 +52,27 @@ PARAGRAPH_PATTERN = re.compile(r"(?m)^\s*\((\d+)\)\s+")
 CLAUSE_PATTERN = re.compile(r"(?m)(?:^|\s)([a-zA-ZçğıöşüÇĞİÖŞÜ])\)\s+|(?:^|\s)(\d+)\s*[-–]\s+")
 PAGE_MARKER_PATTERN = re.compile(r"\[\[RAG_PAGE:(\d+)\]\]")
 
+
+def _heading_start_before_article(text: str, previous_end: int, article_start: int) -> int:
+    """Return the position of a standalone title immediately before an article.
+
+    Kanunlarda ``Atıf yapılan hükümler`` veya ``Yürürlük`` gibi başlıklar
+    çoğunlukla ilgili madde satırından hemen önce gelir. Başlığı önceki
+    maddenin sonuna bırakmak hem aramayı hem de LLM bağlamını yanıltır.
+    Yalnız boş satırla ayrılmış, kısa ve noktalamasız başlıklar taşınır.
+    """
+    prefix = text[previous_end:article_start]
+    match = re.search(
+        r"(?:^|\n\s*\n)\s*([A-ZÇĞİÖŞÜ][^\n]{2,100})\s*$",
+        prefix,
+    )
+    if not match:
+        return article_start
+    heading = match.group(1).strip()
+    if any(char in heading for char in ".;:!?()") or any(char.isdigit() for char in heading):
+        return article_start
+    return previous_end + match.start(1)
+
 # ============================================================
 # Metin Temizleme Fonksiyonları (Data Validation & Cleaning)
 # ============================================================
@@ -91,6 +112,69 @@ def _page_at_offset(text: str, offset: int, fallback: Any = None) -> int | None:
         page = int(match.group(1))
     return page
 
+
+def _chunk_anchor(text: str, *, from_end: bool = False, limit: int = 120) -> str:
+    """Return a stable, marker-free anchor for locating a generated chunk.
+
+    Bölümleyici bazı fıkraları yeniden birleştirirken satır sonlarını
+    standartlaştırabilir. Bu durumda üretilen chunk, kaynak metinle birebir
+    aynı olmayabilir. Sayfa hesabı için kısa bir başlangıç/bitiş çapası yeterli
+    ve güvenlidir; çapalar yalnız kaynak metindeki konumu bulmak için kullanılır.
+    """
+    plain = PAGE_MARKER_PATTERN.sub("", text)
+    plain = re.sub(r"\s+", " ", plain).strip()
+    if from_end:
+        return plain[-limit:]
+    return plain[:limit]
+
+
+def _whitespace_tolerant_find(text: str, fragment: str, start: int, end: int) -> tuple[int, int] | None:
+    """Find ``fragment`` while accepting newline/space normalization differences."""
+    if not fragment:
+        return None
+    # ``clean_text`` boşlukları normalize eder; burada yalnız satır sonu/boşluk
+    # farkını esnek bırakır, kelime veya noktalama işaretlerini değiştirmeyiz.
+    pattern = re.escape(fragment).replace(r"\ ", r"\s+")
+    match = re.search(pattern, text[start:end])
+    if not match:
+        return None
+    return start + match.start(), start + match.end()
+
+
+def _locate_chunk_span(
+    source_text: str,
+    chunk_text: str,
+    *,
+    start: int = 0,
+    end: int | None = None,
+) -> tuple[int, int] | None:
+    """Locate a generated chunk in its source and return its best text span.
+
+    Önce tam eşleşme denenir. Başarısız olursa chunk'ın kaynakta aynen kalan
+    başlangıç ve bitiş parçaları ile konum hesaplanır. Böylece yapısal
+    bölümleme yüzünden oluşan ``\n``/``\n\n`` farkları sayfa bilgisini 1'e
+    düşürmez.
+    """
+    region_end = len(source_text) if end is None else min(end, len(source_text))
+    if start >= region_end:
+        return None
+
+    exact = source_text.find(chunk_text, start, region_end)
+    if exact >= 0:
+        return exact, exact + len(chunk_text)
+
+    first_anchor = _chunk_anchor(chunk_text)
+    first = _whitespace_tolerant_find(source_text, first_anchor, start, region_end)
+    if not first:
+        return None
+
+    last_anchor = _chunk_anchor(chunk_text, from_end=True)
+    last = _whitespace_tolerant_find(source_text, last_anchor, first[0], region_end)
+    if not last:
+        # Tek bir çapa bile sayfa başlangıcını doğru hesaplamaya yeterlidir.
+        return first
+    return first[0], max(first[1], last[1])
+
 # ============================================================
 # Madde Tespiti ve Yapısal Bölme (Structural Extraction)
 # ============================================================
@@ -121,8 +205,14 @@ def split_articles(document: Document) -> List[Dict[str, Any]]:
     if table_match:
         text = text[:table_match.start()].strip()
 
-    normal_matches = list(ARTICLE_PATTERN.finditer(text))
     additional_matches = list(ADDITIONAL_ARTICLE_PATTERN.finditer(text))
+    # ``EK MADDE 1`` içinde normal ``MADDE 1`` deseni de eşleşir. Bu ikinci
+    # eşleşme korunursa Ek Madde 1 yanlışlıkla sıradan Madde 1 olur.
+    normal_matches = [
+        match
+        for match in ARTICLE_PATTERN.finditer(text)
+        if not any(extra.start() <= match.start() < extra.end() for extra in additional_matches)
+    ]
     
     all_matches = normal_matches + additional_matches
     all_matches.sort(key=lambda match: match.start())
@@ -136,23 +226,34 @@ def split_articles(document: Document) -> List[Dict[str, Any]]:
             unique_matches.append(match)
     all_matches = unique_matches
 
+    # Her madde öncesindeki kısa bölüm başlığını (Yürürlük, Atıf yapılan
+    # hükümler vb.) o maddenin parçası yap. Böylece başlık önceki maddeye
+    # sızmaz ve başlıkla arama yapılabilir.
+    records = []
+    previous_match_end = 0
+    for match in all_matches:
+        records.append((
+            match,
+            _heading_start_before_article(text, previous_match_end, match.start()),
+        ))
+        previous_match_end = match.end()
+
     # Hiç madde bulunamadıysa tüm metni tek parça olarak döndür
-    if not all_matches:
+    if not records:
         return [{"article_no": None, "article_type": "legal_document", "content": text, "start_offset": 0}]
 
     articles = []
     
     # İlk maddeden önceki kısım (Kanun adı, amaç, kapsam vb. - Preamble)
-    first_article_start = all_matches[0].start()
+    first_article_start = records[0][1]
     if first_article_start > 0:
         preamble = text[:first_article_start].strip()
         if preamble:
             articles.append({"article_no": None, "article_type": "preamble", "content": preamble, "start_offset": 0})
 
     # Her bir maddeyi sınırlarına göre kes ve meta verisini çıkar
-    for index, match in enumerate(all_matches):
-        start = match.start()
-        end = all_matches[index + 1].start() if index + 1 < len(all_matches) else len(text)
+    for index, (match, start) in enumerate(records):
+        end = records[index + 1][1] if index + 1 < len(records) else len(text)
         
         article_text = text[start:end].strip()
         if not article_text: continue
@@ -160,23 +261,33 @@ def split_articles(document: Document) -> List[Dict[str, Any]]:
         article_no = None
         article_type = "madde"
 
-        normal_match = ARTICLE_PATTERN.match(text, start)
+        normal_match = ARTICLE_PATTERN.match(text, match.start())
         if normal_match:
             article_no = normal_match.group(1).replace(" ", "") # Boşlukları temizle (Örn: "7 7" -> "77")
             article_type = "madde"
         else:
-            additional_match = ADDITIONAL_ARTICLE_PATTERN.match(text, start)
+            additional_match = ADDITIONAL_ARTICLE_PATTERN.match(text, match.start())
             if additional_match:
                 prefix = additional_match.group(1).strip()
                 number = additional_match.group(2)
+                prefix_lower = prefix.lower()
                 
                 # "Madde 10 ilâ 15" gibi aralık ifadelerini yakala
                 if "ilâ" in prefix or "ila" in prefix:
                     article_no = prefix.replace("Madde ", "").replace("madde ", "")
                 else:
-                    article_no = f"{prefix} {number}" if number else prefix
-                    
-                prefix_lower = prefix.lower()
+                    # PDF'lerde ``EK MADDE`` / ``GEÇİCİ MADDE`` büyük harfle
+                    # gelir. Metadata ve kaynak gösteriminde tek biçim kullan.
+                    if "geçici" in prefix_lower:
+                        canonical_prefix = "Geçici Madde"
+                    elif "ek" in prefix_lower:
+                        canonical_prefix = "Ek Madde"
+                    elif "muvakkat" in prefix_lower:
+                        canonical_prefix = "Muvakkat Madde"
+                    else:
+                        canonical_prefix = prefix
+                    article_no = f"{canonical_prefix} {number}" if number else canonical_prefix
+
                 if "geçici" in prefix_lower: article_type = "gecici_madde"
                 elif "ek" in prefix_lower: article_type = "ek_madde"
                 elif "muvakkat" in prefix_lower: article_type = "muvakkat_madde"
@@ -408,34 +519,34 @@ def split_documents(documents: List[Document]) -> List[Document]:
         )
         articles = split_articles(document)
 
-        for article in articles:
+        for article_index, article in enumerate(articles):
             chunks = chunk_article(article, max_size, overlap_size)
-            search_from = int(article.get("start_offset", 0))
+            article_start = int(article.get("start_offset", 0))
+            article_end = (
+                int(articles[article_index + 1].get("start_offset", len(normalized_document_text)))
+                if article_index + 1 < len(articles)
+                else len(normalized_document_text)
+            )
 
             for chunk_index, chunk in enumerate(chunks):
                 metadata = deepcopy(document_metadata)
                 article_no = chunk.get("article_no")
                 article_type = chunk.get("article_type")
                 content_with_markers = chunk.get("content", "")
-                # Özel işaretler silinmeden chunk normalize kaynakta bulunur.
-                # Böylece madde birden çok PDF sayfasını geçse de sayfa bilgisi doğru kalır.
-                position = normalized_document_text.find(content_with_markers, search_from)
-                if position < 0:
-                    position = normalized_document_text.find(content_with_markers)
-                if position >= 0:
-                    search_from = position + 1  # Örtüşme önceki chunk bitiminden önce başlayabilir.
-                fallback_page = document_metadata.get("page_start") or document_metadata.get("page")
-                page_start = _page_at_offset(normalized_document_text, max(position, 0), fallback_page)
-                # Sonraki madde sayfa işaretinden hemen sonra başlayabilir; işaret
-                # mevcut chunk'a değil, sonraki maddeye aittir.
-                content_for_end = re.sub(
-                    r"(?:\s*\[\[RAG_PAGE:\d+\]\])+\s*$", "", content_with_markers
-                ).rstrip()
-                page_end = _page_at_offset(
+                # Özel işaretler silinmeden chunk kaynakta bulunur. Yapısal
+                # bölümleme satır sonlarını değiştirmişse çapa tabanlı eşleşme
+                # kullanılır; aksi hâlde başarısız konum page_start=1 olurdu.
+                span = _locate_chunk_span(
                     normalized_document_text,
-                    max(position, 0) + max(len(content_for_end) - 1, 0),
-                    fallback_page,
+                    content_with_markers,
+                    start=article_start,
+                    end=article_end,
                 )
+                fallback_page = document_metadata.get("page_start") or document_metadata.get("page")
+                position = span[0] if span else article_start
+                end_position = (span[1] - 1) if span else article_start
+                page_start = _page_at_offset(normalized_document_text, position, fallback_page)
+                page_end = _page_at_offset(normalized_document_text, end_position, fallback_page)
                 content = PAGE_MARKER_PATTERN.sub("", content_with_markers).strip()
 
                 chunk_id = _build_chunk_id(metadata, article_no, chunk_index, content)
