@@ -1,9 +1,8 @@
 """
 update_index.py
 ------------------
-إعادة فهرسة ملف قانوني محدد عند تعديله (بدلاً من إعادة فهرسة كل شيء
-من الصفر). المرحلة الأولى: تنفيذ بسيط لكن صحيح - حذف كل الـ chunks
-القديمة المرتبطة بهذا الملف، ثم إعادة فهرسته من جديد بالكامل.
+Değişen tek bir hukukî dosyayı, tüm corpus'u sıfırdan kurmadan yeniden indeksler.
+Önce dosyaya bağlı eski chunk'ları siler, ardından aynı dosyayı bütünüyle ekler.
 """
 
 from pathlib import Path
@@ -14,21 +13,20 @@ from RAG.vector_store.chroma_store import get_vector_store
 
 def reindex_file(file_path: Path) -> int:
     """
-    إعادة فهرسة ملف واحد: حذف الـ chunks القديمة المرتبطة به ثم إعادة
-    إدخاله بالكامل. يُستخدم عند تعديل نص قانوني موجود مسبقًا.
+    Tek dosyanın eski chunk'larını siler ve güncel metni tam olarak yeniden ekler.
 
     Args:
-        file_path: مسار الملف الذي تم تعديله.
+        file_path: Değiştirilen dosyanın yolu.
 
     Returns:
-        عدد الـ chunks الجديدة بعد إعادة الفهرسة.
+        Yeniden indeksleme sonrası oluşan yeni chunk sayısı.
     """
     store = get_vector_store()
 
-    # حذف كل الـ chunks القديمة المرتبطة بهذا الملف تحديدًا عبر الـ metadata
+    # Bu dosyaya ait eski chunk'lar metadata üzerinden hedefli biçimde silinir.
     store.delete(where={"source_file": file_path.name})
 
-    # إعادة الفهرسة الكاملة لنفس الملف بعد التعديل
+    # Değişen aynı dosya tam olarak yeniden indekslenir.
     new_count = index_file(file_path)
     return new_count
 

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "cmk_tutuklama",
+    "query": "CMK 100 maddesine göre tutuklama şartları nelerdir?",
+    "expected_law_number": "5271",
+    "expected_article_number": "100",
+    "answerable": true
+  },
+  {
+    "id": "tck_kasten_oldurme",
+    "query": "Kasten öldürme hangi maddede düzenlenir?",
+    "expected_law_number": "5237",
+    "expected_article_number": "81",
+    "answerable": true
+  },
+  {
+    "id": "cocuk_koruma",
+    "query": "Çocuk hakkında koruyucu ve destekleyici tedbirler hangi kanunda düzenlenir?",
+    "expected_law_number": "5395",
+    "expected_article_number": "5",
+    "answerable": true
+  },
+  {
+    "id": "invalid_article",
+    "query": "5271 sayılı Kanunun 999. maddesi neyi düzenler?",
+    "answerable": false
+  }
+]

@@ -1,4 +1,9 @@
-"""Format retrieval hits for Agents (context text + sources)."""
+"""
+Geri Getirilen Sonuçları Ajanlar İçin Biçimlendirme (Context + Sources)
+-----------------------------------------------------------------------
+LLM'e gönderilecek bağlam metnini ve kaynak listesini hazırlar.
+KutupAI metadata yapısına (article_no / law_number) tam uyumludur.
+"""
 
 from __future__ import annotations
 
@@ -8,28 +13,53 @@ from RAG.vector_store.vector_store_interface import SearchResult
 
 
 def format_context(results: List[SearchResult]) -> str:
+    """Sonuçları LLM'in anlayacağı yapılandırılmış bir metne dönüştürür."""
     if not results:
-        return "No relevant legal passages were found."
+        return "İlgili herhangi bir hukuki pasaj bulunamadı."
+    
     parts = []
     for i, r in enumerate(results, start=1):
         m = r["metadata"]
+        
+        # 🚀 KutupAI metadata yapısına uyum (article_no veya article_number)
+        art_no = m.get('article_no') or m.get('article_number', '?')
+        
+        # 🚀 Kanun adını çıkar: Önce law_name'e bak, yoksa source_file'dan türet
+        law_name = m.get('law_name')
+        if not law_name or law_name == 'unknown':
+            source_file = m.get('source_file') or m.get('source', '')
+            # Dosya adından uzantıyı at ve kanun adını al (Örn: "1076_Yedek Subaylar Kanunu")
+            law_name = source_file.replace('.pdf', '').replace('_', ' ') if source_file else 'Bilinmeyen Kanun'
+            
+        source_file = m.get('source_file') or m.get('source', '?')
+        page_start = m.get("page_start") or m.get("page")
+        page_end = m.get("page_end") or m.get("page")
+        page_label = ""
+        if page_start:
+            page_label = f" | Sayfa: {page_start}" if page_start == page_end else f" | Sayfalar: {page_start}-{page_end}"
+        
         header = (
-            f"[{m.get('law_name', 'unknown')} | Madde {m.get('article_number', '?')} "
-            f"| {m.get('source_file', '?')} | score={r['score']}]"
+            f"[KAYNAK {i}] {law_name} | Madde {art_no} | Dosya: {source_file}{page_label} | Skor: {r['score']:.4f}"
         )
-        parts.append(f"{i}. {header}\n{r['text']}")
+        parts.append(f"{header}\n{r['text']}")
+        
     return "\n\n".join(parts)
 
 
 def extract_sources(results: List[SearchResult]) -> List[Dict[str, Any]]:
-    return [
-        {
-            "law_name": r["metadata"].get("law_name", "unknown"),
-            "article_number": r["metadata"].get("article_number", "unknown"),
-            "source_file": r["metadata"].get("source_file", "unknown"),
-            "source_type": r["metadata"].get("source_type", "unknown"),
-            "chunk_id": r["metadata"].get("chunk_id", r.get("id", "")),
+    """Kaynakça listesini sözlük formatında döndürür."""
+    sources = []
+    for r in results:
+        m = r["metadata"]
+        sources.append({
+            "law_name": m.get("law_name", "unknown"),
+            "article_no": m.get("article_no") or m.get("article_number", "unknown"),
+            "law_number": m.get("law_number", "unknown"),
+            "source_file": m.get("source_file") or m.get("source", "unknown"),
+            "source_type": m.get("source_type", "unknown"),
+            "page_start": m.get("page_start") or m.get("page"),
+            "page_end": m.get("page_end") or m.get("page"),
+            "chunk_id": m.get("chunk_id", r.get("id", "")),
             "score": r["score"],
-        }
-        for r in results
-    ]
+        })
+    return sources

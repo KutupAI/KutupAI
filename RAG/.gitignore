@@ -1,0 +1,4 @@
+# Re-include the curated, reviewable corpus in this RAG delivery.
+!documents/laws/*.pdf
+!documents/regulations/*.pdf
+!documents/indexed_chunks.json

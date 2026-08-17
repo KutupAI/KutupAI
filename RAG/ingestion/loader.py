@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader, TextLoader
 from langchain_core.documents import Document
@@ -36,6 +36,7 @@ def _bucket_name(directory: Path, cfg: DocumentsConfig) -> str:
     mapping = {
         cfg.laws_path.resolve(): "laws",
         cfg.regulations_path.resolve(): "regulations",
+        cfg.amendments_path.resolve(): "amendments",
         cfg.internal_docs_path.resolve(): "internal_docs",
         cfg.uploads_path.resolve(): "uploads",
     }
@@ -47,11 +48,56 @@ def _keep(path: Path) -> bool:
     return name not in _SKIP_NAMES and not name.startswith(".") and not name.endswith(".meta.json")
 
 
+def _merge_pdf_pages(documents: List[Document]) -> List[Document]:
+    """Merge PDF pages before legal article extraction.
+
+    ``PyPDFLoader`` yields one Document per page.  Treating each page as an
+    independent legal document turns article continuations into false
+    preambles, loses the article number, and produces unstable chunk IDs.
+    Text documents pass through unchanged; PDF pages are merged in page order
+    and retain their original page range for citations.
+    """
+    grouped: Dict[str, List[Document]] = {}
+    passthrough: List[Document] = []
+    for doc in documents:
+        source = Path(str((doc.metadata or {}).get("source", "")))
+        if source.suffix.lower() != ".pdf":
+            passthrough.append(doc)
+            continue
+        grouped.setdefault(str(source), []).append(doc)
+
+    merged: List[Document] = list(passthrough)
+    for source, pages in grouped.items():
+        pages.sort(key=lambda page: int((page.metadata or {}).get("page", 0)))
+        first_meta = dict(pages[0].metadata or {})
+        page_numbers = [int((page.metadata or {}).get("page", 0)) for page in pages]
+        first_meta.update(
+            {
+                "source": source,
+                "page_start": min(page_numbers) + 1,
+                "page_end": max(page_numbers) + 1,
+            }
+        )
+        merged.append(
+            Document(
+                # Kanun tek belge olarak işlenirken sayfa sınırları korunur.
+                # Hukukî chunker özel işaretleri tüketir ve her chunk'a sayfa aralığı yazar.
+                page_content="\n\n".join(
+                    f"[[RAG_PAGE:{int((page.metadata or {}).get('page', 0)) + 1}]]\n{page.page_content}"
+                    for page in pages if page.page_content
+                ),
+                metadata=first_meta,
+            )
+        )
+    return merged
+
+
 def load_directory(directory: Path, cfg: DocumentsConfig | None = None) -> List[Document]:
     cfg = cfg or documents_config
     raw = _load_with(directory, cfg.text_globs, TextLoader, {"encoding": "utf-8"})
     raw += _load_with(directory, cfg.pdf_globs, PyPDFLoader)
 
+    raw = _merge_pdf_pages(raw)
     source_type = _bucket_name(directory, cfg)
     kept: List[Document] = []
     for doc in raw:

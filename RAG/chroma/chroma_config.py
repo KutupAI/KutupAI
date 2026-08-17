@@ -1,23 +1,21 @@
 """
 chroma_config.py
 ------------------
-ChromaDB persistence settings. Imported only by vector_store/chroma_store.py.
+ChromaDB kalıcılık ayarları. Değerler merkezi YAML ayarından gelir.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-
-_RAG_ROOT = Path(__file__).resolve().parents[1]
+from RAG.configuration.rag_config_loader import vector_store_config
 
 
 @dataclass(frozen=True)
 class ChromaConfig:
-    persist_directory: str = str((_RAG_ROOT / "documents" / ".chroma_db").resolve())
-    collection_name: str = "legal_documents"
-    # Cosine distance — matches normalized BGE-M3 vectors
-    distance_metric: str = "cosine"
+    persist_directory: str = str(vector_store_config.persist_directory)
+    collection_name: str = vector_store_config.collection_name
+    # Cosine metriği normalize edilmiş BGE-M3 vektörleriyle uyumludur.
+    distance_metric: str = vector_store_config.distance_metric
 
 
 chroma_config = ChromaConfig()

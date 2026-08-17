@@ -71,5 +71,18 @@ class ChunkMetadata:
 
 
 def validate_chunk_metadata(meta: Dict[str, Any]) -> List[str]:
-    """Return list of missing required fields (empty = valid)."""
-    return [f for f in REQUIRED_CHUNK_FIELDS if f not in meta or meta[f] in ("", None)]
+    """
+    Gerekli alanların eksik olup olmadığını kontrol eder.
+    🚀 KutupAI uyumluluğu: 'article_number' veya 'article_no' alanlarından en az biri varsa geçerli sayılır.
+    """
+    missing = []
+    for f in REQUIRED_CHUNK_FIELDS:
+        if f == "article_number":
+            # Hibrit filtreleme için article_no da kabul edilebilir
+            if (f not in meta or meta[f] in ("", None)) and (meta.get("article_no") in ("", None)):
+                missing.append(f)
+        else:
+            if f not in meta or meta[f] in ("", None):
+                missing.append(f)
+                
+    return missing

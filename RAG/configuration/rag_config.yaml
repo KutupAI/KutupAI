@@ -1,73 +1,121 @@
-# =====================================================================
-# rag_config.yaml — Knowledge / RAG Layer
-# =====================================================================
+# ============================================================================
+# Hukukî RAG çalışma ayarları
+# ============================================================================
+# Bu dosya, deney yapılırken değiştirilecek tek merkezdir. Değişiklikten sonra
+# çalışan Python sürecini kapatıp tekrar başlatın; ayarlar modül açılışında okunur.
 
 documents:
+  # İndekse girecek güvenilir kaynak klasörleri.
   laws_path: "RAG/documents/laws"
   regulations_path: "RAG/documents/regulations"
+  amendments_path: "RAG/documents/amendments"
   internal_docs_path: "RAG/documents/internal_docs"
   uploads_path: "RAG/documents/uploads"
-  text_globs:
-    - "**/*.txt"
-    - "**/*.md"
-  pdf_globs:
-    - "**/*.pdf"
+  text_globs: ["**/*.txt", "**/*.md"]
+  pdf_globs: ["**/*.pdf"]
 
 chunking:
-  chunk_size: 1000
+  # Bir chunk'ın hedef karakter sınırı ve komşu chunk'a aktarılan bağlam.
+  # Hukukî madde yapısı korunur; bu değerler yalnızca uzun metinleri böler.
+  chunk_size: 800
   chunk_overlap: 150
-  separators:
-    - "\nMADDE "
-    - "\nMadde "
-    - "\n\n"
-    - "\n"
-    - " "
-    - ""
+  separators: ["\nMADDE ", "\nMadde ", "\n\n", "\n", " ", ""]
 
 indexing:
-  batch_size: 16
+  # Embedding modeli iç batch boyutu ve Chroma'ya tek seferde yazılan chunk sayısı.
+  # CPU'da 384 güvenlidir; bellek yetersizse 128'e indirin.
+  batch_size: 32
+  ingest_batch_size: 384
   reindex_on_update: true
 
+embedding:
+  # BGE-M3 Türkçe ve çok dilli hukuk sorgularında kullanılan ana embedding modelidir.
+  model_name: "BAAI/bge-m3"
+  embedding_dim: 1024
+  normalize_embeddings: true
+  batch_size_cpu: 32
+  batch_size_cuda: 64
+  show_progress: true
+
+vector_store:
+  # Persistent indeks yerelde üretilir; Git'e eklenmez.
+  persist_directory: "RAG/documents/.chroma_db"
+  collection_name: "legal_documents"
+  distance_metric: "cosine"
+
 retrieval:
+  # vector: Hit@1 odaklı, bm25: tam terim odaklı, hybrid: ikisini RRF ile birleştirir.
   default_top_k: 5
   max_top_k: 20
   candidate_k: 20
-  # hybrid | vector | bm25
+  max_candidate_k: 40
   mode: "hybrid"
+  # RRF sabiti büyüdükçe iki arama kaynağının sıra farkları daha az etkili olur.
   rrf_k: 60
   vector_weight: 0.55
   bm25_weight: 0.45
 
 prf:
+  # Pseudo Relevance Feedback: ilk sonuçlardan ek terim çıkarır; geniş sorularda recall artırır.
   enabled: true
   top_n_docs: 3
   max_expand_terms: 5
   min_term_len: 4
 
 reranker:
+  # Son adayları çapraz-encoder ile tekrar sıralar; doğruluğu artırır, gecikme ekler.
   enabled: true
-  model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
-  # candidates sent to CrossEncoder before cutting to top_k
+  model_name: "BAAI/bge-reranker-v2-m3"
   top_n: 15
+  # 0.0 yalnız reranker, 1.0 yalnız ilk retrieval sırası demektir.
+  base_rank_weight: 0.0
 
 query_expansion:
-  enabled: true
-  # Strategies tried by the QE experiment; winner is written to selected_strategy
-  strategies:
-    - "none"
-    - "prf"
-    - "synonym"
-  selected_strategy: "prf"
+  # Kural tabanlı genişletme. Önce ablation testiyle faydası doğrulanmalıdır.
+  enabled: false
+  strategies: ["none", "prf", "synonym"]
+  selected_strategy: "none"
   max_extra_terms: 4
+
+query_transform:
+  # Yazım düzeltme ve güvenli yeniden ifade etme her sorguda çalışır.
+  # `use_llm` yalnız ayrı 8081 Qwen dönüşüm servisi çalışıyorsa açılmalıdır;
+  # kapalıyken sistem gecikmesiz, kural tabanlı dönüşüm kullanır.
+  enabled: true
+  use_llm: true
+  base_url: "http://127.0.0.1:8081/v1/chat/completions"
+  max_queries: 3
+  max_query_chars: 320
+  max_tokens: 96
+  timeout_seconds: 8
+
+agent:
+  # Qwen/llama.cpp OpenAI-uyumlu yerel servis ayarları.
+  base_url: "http://127.0.0.1:8080/v1/chat/completions"
+  timeout_seconds: 45
+  temperature: 0.0
+  top_p: 1.0
+  max_tokens: 450
+  # LLM'e verilen kanıt bağlamının üst sınırı; büyütmek doğruluk garantisi vermez.
+  context_max_tokens: 2700
+  max_chunk_chars: 1500
+
+cache:
+  # Yalnız aynı pipeline sürümündeki cevaplar kullanılır. Semantic hit eşiğini
+  # düşürmek hız kazandırır ama yanlış benzer soruya cevap verme riskini artırır.
+  enabled: true
+  threshold: 0.94
+  max_entries: 200
 
 evaluation:
   datasets_dir: "RAG/evaluation/datasets"
-  default_dataset: "RAG/evaluation/datasets/eval_set.json"
-  hit_ks: [1, 2, 3]
+  default_dataset: "RAG/evaluation/datasets/heldout_legal.json"
+  hit_ks: [1, 2, 3, 5]
   llm_dataset:
     max_questions_per_chunk: 2
-    temperature: 0.3
+    temperature: 0.0
     max_tokens: 512
 
 runtime:
-  device: "cpu"
+  # auto CUDA varsa GPU'yu, yoksa CPU'yu seçer. CPU zorlamak için "cpu" yazın.
+  device: "auto"

@@ -1,0 +1,644 @@
+{
+  "examples": [
+    {
+      "id": "citation_213_1",
+      "query": "213 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "213"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "213_Vergi Usul Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_477_1",
+      "query": "477 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "477"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "477_Disiplin Mahkemeleri Kuruluşu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_1076_1",
+      "query": "1076 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "1076"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_1593_1",
+      "query": "1593 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "1593"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_1632_1",
+      "query": "1632 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "1632"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "1632_Askeri Ceza Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2313_1",
+      "query": "2313 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2313"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2313_Uyuşturucu Maddelerin Murakabesi.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2559_1",
+      "query": "2559 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2559"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2559_Polis Vazife ve Salahiyet Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2692_1",
+      "query": "2692 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2692"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2692_Sahil Güvenlik Komutanlığı.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2802_1",
+      "query": "2802 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2802"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2802_Hakimler ve Savcılar Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2863_1",
+      "query": "2863 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2863"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2863_Kültür ve Tabiat Varlıklarını Koruma Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2872_1",
+      "query": "2872 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2872"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2872_Çevre Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2911_1",
+      "query": "2911 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2911"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2911_Toplantı ve Gösteri Yürüyüşleri Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2918_1",
+      "query": "2918 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2918"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2918_Karayolları Trafik Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2935_1",
+      "query": "2935 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2935"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2935_Olağanüstü Hal Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_2992_1",
+      "query": "2992 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "2992"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "2992_Adalet Bakanlığı Kuruluş Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_3234_1",
+      "query": "3234 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "3234"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "3234_Jandarma Teşkilat Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_3628_1",
+      "query": "3628 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "3628"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "3628_Mal Bildiriminde Bulunulması.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_3713_1",
+      "query": "3713 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "3713"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "3713_Terörle Mücadele Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4208_1",
+      "query": "4208 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4208"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4208_Kara Paranın Aklanmasının Önlenmesi.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4458_1",
+      "query": "4458 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4458"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4458_Gümrük Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4483_1",
+      "query": "4483 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4483"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4483_Memurlar ve Diğer Kamu Görevlilerinin Yargılanması.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4721_1",
+      "query": "4721 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4721"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4721_Türk Medeni Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4733_1",
+      "query": "4733 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4733"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4733_Tütün ve Alkol Piyasası Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_4857_1",
+      "query": "4857 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "4857_İş Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5070_1",
+      "query": "5070 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5070"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5070_Elektronik İmza Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5176_1",
+      "query": "5176 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5176"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5176_Kamu Görevlileri Etik Kurulu Kurulması.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5187_1",
+      "query": "5187 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5187"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5187_Basın Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5235_1",
+      "query": "5235 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5235"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5235_Adli Yargı İlk Derece Mahkemeleri Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5237_1",
+      "query": "5237 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5237_Türk Ceza Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5252_1",
+      "query": "5252 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5252"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5252_TCK Yürürlük ve Uygulama Şekli.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5271_1",
+      "query": "5271 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5271_Ceza Muhakemesi Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5275_1",
+      "query": "5275 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5275"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5275_Ceza ve Güvenlik Tedbirlerinin İnfazı.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5320_1",
+      "query": "5320 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5320"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5320_CMK Yürürlük ve Uygulama Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5326_1",
+      "query": "5326 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5326"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5326_Kabahatler Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5395_1",
+      "query": "5395 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5395"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5395_Çocuk Koruma Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5510_1",
+      "query": "5510 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5510"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5510_Sosyal Sigortalar Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5549_1",
+      "query": "5549 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5549"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5549_Suç Gelirlerinin Aklanmasının Önlenmesi.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5607_1",
+      "query": "5607 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5607"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5607_Kaçakçılıkla Mücadele Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5651_1",
+      "query": "5651 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5651"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5651_İnternet Ortamında Yapılan Yayınların Düzenlenmesi.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    },
+    {
+      "id": "citation_5809_1",
+      "query": "5809 sayılı Kanunun 1. maddesi neyi düzenler?",
+      "expected_law_numbers": [
+        "5809"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "relevant_chunk_ids": [],
+      "relevant_source_files": [
+        "5809_Elektronik Haberleşme Kanunu.pdf"
+      ],
+      "split": "citation_lookup",
+      "notes": "Corpus-derived exact statute/article lookup test."
+    }
+  ]
+}

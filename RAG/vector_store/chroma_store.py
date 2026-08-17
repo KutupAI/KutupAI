@@ -31,13 +31,33 @@ class ChromaStore(VectorStoreInterface):
 
     @property
     def raw(self) -> Chroma:
-        """Escape hatch for advanced LangChain APIs (indexing scripts only)."""
+        """Yalnız indeksleme scriptleri için gelişmiş LangChain API erişimi."""
         return self._store
 
     def add_documents(self, documents: List[Document], ids: Optional[List[str]] = None) -> List[str]:
         if not documents:
             return []
-        return self._store.add_documents(documents=documents, ids=ids)
+        if ids is not None and len(ids) != len(documents):
+            raise ValueError("ids must have the same length as documents")
+
+        # Bu değer embedding modelinin batch boyutundan bilerek bağımsızdır.
+        # HuggingFace GPU'da küçük batch kodlarken Chroma daha büyük upsert alır.
+        # Kurulu Chroma sınırı okunur ve tam sınır bildiren sürümler için pay bırakılır.
+        client = getattr(self._store, "_client", None)
+        get_limit = getattr(client, "get_max_batch_size", None)
+        chroma_limit = int(get_limit()) if callable(get_limit) else 5_000
+        batch_size = max(1, min(chroma_limit, 5_000))
+        assigned_ids: List[str] = []
+        for start in range(0, len(documents), batch_size):
+            end = start + batch_size
+            batch_ids = ids[start:end] if ids is not None else None
+            assigned_ids.extend(
+                self._store.add_documents(
+                    documents=documents[start:end],
+                    ids=batch_ids,
+                )
+            )
+        return assigned_ids
 
     def similarity_search(
         self,
@@ -53,7 +73,7 @@ class ChromaStore(VectorStoreInterface):
 
         results: List[SearchResult] = []
         for doc, distance in pairs:
-            # Chroma cosine distance is typically in [0, 2]; map to similarity.
+            # Chroma cosine uzaklığı genelde [0, 2] aralığındadır; benzerliğe dönüştürülür.
             similarity = max(0.0, 1.0 - (float(distance) / 2.0))
             results.append(
                 SearchResult(
@@ -71,7 +91,7 @@ class ChromaStore(VectorStoreInterface):
         self._store.delete(where=where)
 
     def count(self) -> int:
-        collection = self._store._collection  # noqa: SLF001 — intentional for count()
+        collection = self._store._collection  # noqa: SLF001 — count() için bilinçli iç erişim.
         return int(collection.count())
 
     def reset(self) -> None:

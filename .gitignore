@@ -107,6 +107,10 @@ Inference/llama_server/output.log
 # RAG — vector DB + embedding caches (generated locally)
 # ---------------------------------------------------------------------
 RAG/documents/.chroma_db/
+RAG/documents/.turbovec/
+RAG/documents/.faiss/
+RAG/documents/manifest.json
+RAG/documents/indexed_chunks.json
 **/chroma_db/
 **/.chroma/
 *.sqlite3
@@ -133,3 +137,38 @@ htmlcov/
 .ruff_cache/
 coverage/
 *.cover
+
+# ---------------------------------------------------------------------
+# RAG corpus, local experiments, and office working files
+# Keep the small README/.gitkeep placeholders, but never publish the local
+# legal corpus, cache, or generated benchmark/render outputs by accident.
+# ---------------------------------------------------------------------
+RAG/documents/.semantic_cache.json
+RAG/documents/laws/*
+!RAG/documents/laws/.gitkeep
+!RAG/documents/laws/README.md
+RAG/documents/regulations/*
+!RAG/documents/regulations/.gitkeep
+!RAG/documents/regulations/README.md
+RAG/documents/amendments/*
+RAG/documents/quarantine/*
+RAG/documents/uploads/*
+!RAG/documents/uploads/README.md
+RAG/documents/internal_docs/*
+!RAG/documents/internal_docs/.gitkeep
+!RAG/documents/internal_docs/README.md
+RAG/evaluation/experiments/
+RAG/evaluation/models/
+RAG/evaluation/*_render*/
+RAG/evaluation/mentor_report_render/
+RAG/evaluation/report_render/
+
+# Local CUDA/llama.cpp downloads and temporary document lock files
+Inference/llama_server/cuda_bin/
+Inference/llama_server/*.zip
+~$*.docx
+rag_*.log
+rag_*.err.log
+final_report_qa.pdf
+rag_final_report_render/
+rag_report_render/

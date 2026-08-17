@@ -1,0 +1,6 @@
+[
+  {"id": "nonexistent_cmk_article", "query": "5271 sayılı Ceza Muhakemesi Kanununun 999. maddesi ne diyor?", "answerable": false},
+  {"id": "nonexistent_law", "query": "9999 sayılı Kanunun 1. maddesindeki yükümlülük nedir?", "answerable": false},
+  {"id": "unsupported_service_lookup", "query": "Vergi borcumu hangi resmi internet sayfasından sorgulayabilirim?", "answerable": false},
+  {"id": "out_of_corpus_subject", "query": "Mars'ta kurulan bir şirket için Türk hukukunda özel bir kanun var mı?", "answerable": false}
+]

@@ -29,11 +29,27 @@ class Bm25Index:
             corpus = [tokenize(d.text) or ["_empty_"] for d in self.docs]
             self._bm25 = BM25Okapi(corpus)
 
-    def search(self, query: str, top_k: int = 10) -> List[SearchResult]:
+    def search(self, query: str, top_k: int = 10, where: dict | None = None) -> List[SearchResult]:
         if not self._bm25 or not self.docs or not query.strip():
             return []
         scores = self._bm25.get_scores(tokenize(query))
-        ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+
+        def matches(metadata: dict) -> bool:
+            if not where:
+                return True
+            for key, expected in where.items():
+                actual = metadata.get(key)
+                if isinstance(expected, dict) and "$in" in expected:
+                    if actual not in expected["$in"]:
+                        return False
+                elif actual != expected:
+                    return False
+            return True
+
+        # Filtreleme sıralamadan önce yapılır. Global kısa listeyi sonradan
+        # filtrelemek doğru maddeyi aday olmadan eleyebilir.
+        eligible = [i for i, doc in enumerate(self.docs) if matches(doc.metadata)]
+        ranked = sorted(eligible, key=lambda i: scores[i], reverse=True)[:top_k]
         max_score = max((scores[i] for i in ranked), default=1.0) or 1.0
         out: List[SearchResult] = []
         for i in ranked:

@@ -21,7 +21,7 @@ class SearchResult(TypedDict):
     id: str
     text: str
     metadata: Dict[str, Any]
-    score: float  # similarity in [0, 1] when possible
+    score: float  # Mümkün olduğunda [0, 1] aralığına dönüştürülmüş benzerlik skoru.
 
 
 class VectorStoreInterface(ABC):

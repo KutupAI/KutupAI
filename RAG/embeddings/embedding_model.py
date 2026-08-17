@@ -2,8 +2,7 @@
 embedding_model.py
 --------------------
 LangChain HuggingFaceEmbeddings wrapper around BAAI/bge-m3.
-
-This is the only place the embedding model is constructed.
+KutupAI Optimized: GPU acceleration ve hata toleransı eklendi.
 """
 
 from __future__ import annotations
@@ -21,28 +20,31 @@ from RAG.embeddings.embedding_config import embedding_config
 def get_embeddings() -> Embeddings:
     """
     Singleton HuggingFaceEmbeddings (BGE-M3).
-
-    Uses LangChain's HuggingFace integration so the same object
-    plugs into LangChain Chroma / retrievers.
+    CUDA desteği ile hızlandırılmıştır.
     """
-    return HuggingFaceEmbeddings(
-        model_name=embedding_config.model_name,
-        model_kwargs={"device": embedding_config.device},
-        encode_kwargs={
-            "normalize_embeddings": embedding_config.normalize_embeddings,
-            "batch_size": embedding_config.batch_size,
-        },
-        show_progress=embedding_config.show_progress,
-    )
+    try:
+        return HuggingFaceEmbeddings(
+            model_name=embedding_config.model_name,
+            model_kwargs={"device": embedding_config.device},
+            encode_kwargs={
+                "normalize_embeddings": embedding_config.normalize_embeddings,
+                "batch_size": embedding_config.batch_size,
+            },
+            show_progress=embedding_config.show_progress,
+        )
+    except Exception as e:
+        print(f" Embedding modeli yüklenirken hata oluştu: {e}")
+        print(" Lütfen internet bağlantınızı kontrol edin veya modelin önbelleğe alındığından emin olun.")
+        raise e
 
 
 def embed_text(text: str) -> List[float]:
-    """Embed a single query/document string."""
+    """Tek bir sorgu/metin string'ini vektöre dönüştürür."""
     return get_embeddings().embed_query(text)
 
 
 def embed_batch(texts: List[str]) -> List[List[float]]:
-    """Embed multiple documents."""
+    """Birden fazla belgeyi toplu halde vektöre dönüştürür."""
     if not texts:
         return []
     return get_embeddings().embed_documents(texts)

@@ -1,0 +1,1558 @@
+{
+  "dataset": "RAG/evaluation/datasets/heldout_legal.json",
+  "records": [
+    {
+      "id": "employment_001",
+      "question": "Iki yildir calisan bir isci isveren tarafindan isten cikarilirsa bildirim suresi nasil belirlenir?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "17"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_17_00000_81415b74432e",
+          "law_number": "4857",
+          "article_number": "17",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 17 - Belirsiz süreli iş sözleşmelerinin feshinden önce durumun diğer tarafa bildirilmesi gerekir. İş sözleşmeleri; a) İşi altı aydan az sürmüş olan işçi için, bildirimin diğer tarafa yapılmasından başlayarak iki hafta sonra, b) İşi altı aydan birbuçuk yıla kadar sürmüş olan işçi için, bildirimin diğer tarafa yapılmasından başlayarak dört hafta sonra, c) İşi birbuçuk yıldan üç yıla kadar sürmüş olan işçi için, bildirimin diğer tarafa yapılmasından başlayarak altı hafta sonra,"
+        },
+        {
+          "chunk_id": "4857_17_00001_bff6b6a0dcce",
+          "law_number": "4857",
+          "article_number": "17",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "d) İşi üç yıldan fazla sürmüş işçi için, bildirim yapılmasından başlayarak sekiz hafta sonra, feshedilmiş sayılır.Bu süreler asgari olup sözleşmeler ile artırılabilir.Bildirim şartına uymayan taraf, bildirim süresine ilişkin ücret tutarında tazminat ödemek zorundadır.İşveren bildirim süresine ait ücreti peşin vermek suretiyle iş sözleşmesini feshedebilir.İşverenin bildirim şartına uymaması veya bildirim süresine ait ücreti peşin ödeyerek sözleşmeyi feshetmesi, bu Kanunun 18, 19, 20 ve 21 inci maddesi hükümlerinin uygulanmasına engel olmaz."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_002",
+      "question": "Bir calisanin is sozlesmesi feshedilirken gecerli neden gosterilmesi hangi hukuki duzenlemeye dayanir?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "18"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_18_00000_6d4cc4b79d7f",
+          "law_number": "4857",
+          "article_number": "18",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 18 - Otuz veya daha fazla işçi çalıştıran işyerlerinde en az altı aylık kıdemi olan işçinin belirsiz süreli iş sözleşmesini fesheden işveren, işçinin yeterliliğinden veya davranışlarından ya da işletmenin, işyerinin veya işin gereklerinden kaynaklanan geçerli bir sebebe dayanmak zorundadır. (Ek cümle: 10/9/2014-6552/2 md.) Yer altı işlerinde çalışan işçilerde kıdem şartı aranmaz. Altı aylık kıdem hesabında bu Kanunun 66 ncı maddesindeki süreler dikkate alınır. Özellikle aşağıdaki hususlar fesih için geçerli bir sebep oluşturmaz: a) Sendika üyeliği veya çalışma saatleri dışında veya işverenin rızası ile çalışma saatleri içinde sendikal faaliyetlere katılmak. b) İşyeri sendika temsilciliği yapmak."
+        },
+        {
+          "chunk_id": "4857_18_00001_178f160712ba",
+          "law_number": "4857",
+          "article_number": "18",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "çalışma saatleri dışında veya işverenin rızası ile çalışma saatleri içinde sendikal faaliyetlere katılmak. b) İşyeri sendika temsilciliği yapmak. c) Mevzuattan veya sözleşmeden doğan haklarını takip veya yükümlülüklerini yerine getirmek için işveren aleyhine idari veya adli makamlara başvurmak veya bu hususta başlatılmış sürece katılmak.6 d) Irk, renk, cinsiyet, medeni hal, aile yükümlülükleri, hamilelik, doğum, din, siyasi görüş ve benzeri nedenler. e) 74 üncü maddede öngörülen ve kadın işçilerin çalıştırılmasının yasak olduğu sürelerde işe gelmemek."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_003",
+      "question": "Ucreti odenmeyen isci hakli nedenle derhal fesih yapabilir mi?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "24"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_24_00000_adcf28cfebf5",
+          "law_number": "4857",
+          "article_number": "24",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 24 - Süresi belirli olsun veya olmasın işçi, aşağıda yazılı hallerde iş sözleşmesini sürenin bitiminden önce veya bildirim süresini beklemeksizin feshedebilir: I. Sağlık sebepleri: a) İş sözleşmesinin konusu olan işin yapılması işin niteliğinden doğan bir sebeple işçinin sağlığı veya yaşayışı için tehlikeli olursa. b) İşçinin sürekli olarak yakından ve doğrudan buluşup görüştüğü işveren yahut başka bir işçi bulaşıcı veya işçinin işi ile bağdaşmayan bir hastalığa tutulursa. II. Ahlak ve iyiniyet kurallarına uymayan haller ve benzerleri: a) İşveren iş sözleşmesi yapıldığı sırada bu sözleşmenin esaslı noktalarından biri hakkında yanlış vasıflar veya şartlar göstermek yahut gerçeğe uygun olmayan bilgiler vermek veya sözler söylemek suretiyle işçiyi yanıltırsa."
+        },
+        {
+          "chunk_id": "4857_24_00001_c3bd368b567b",
+          "law_number": "4857",
+          "article_number": "24",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "biri hakkında yanlış vasıflar veya şartlar göstermek yahut gerçeğe uygun olmayan bilgiler vermek veya sözler söylemek suretiyle işçiyi yanıltırsa. b) İşveren işçinin veya ailesi üyelerinden birinin şeref ve namusuna dokunacak şekilde sözler söyler, davranışlarda bulunursa veya işçiye cinsel tacizde bulunursa. c) İşveren işçiye veya ailesi üyelerinden birine karşı sataşmada bulunur veya gözdağı verirse, yahut işçiyi veya ailesi üyelerinden birini kanuna karşı davranışa özendirir, kışkırtır, sürükler, yahut işçiye ve ailesi üyelerinden birine karşı hapsi gerektiren bir suç işlerse yahut işçi hakkında şeref ve haysiyet kırıcı asılsız ağır isnad veya ithamlarda bulunursa."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_004",
+      "question": "Isveren isciyi ahlak ve iyi niyet kurallarina aykiri davranis nedeniyle derhal isten cikarabilir mi?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "25"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_25_00000_43afe59fab6d",
+          "law_number": "4857",
+          "article_number": "25",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 25 - Süresi belirli olsun veya olmasın işveren, aşağıda yazılı hallerde iş sözleşmesini sürenin bitiminden önce veya bildirim süresini beklemeksizin feshedebilir: I- Sağlık sebepleri: a) İşçinin kendi kastından veya derli toplu olmayan yaşayışından yahut içkiye düşkünlüğünden doğacak bir hastalığa yakalanması veya engelli hâle gelmesi durumunda, bu sebeple doğacak devamsızlığın ardı ardına üç iş günü veya bir ayda beş iş gününden fazla sürmesi.7 7 25/4/2013 tarihli ve 6462 sayılı Kanunun 1 inci maddesiyle, bu alt bentte yer alan “veya sak atlığa uğraması halinde” ibaresi “yakalanması veya engelli hâle gelmesi durumunda” şeklinde değiştirilmiştir."
+        },
+        {
+          "chunk_id": "4857_25_00001_a156afffffcd",
+          "law_number": "4857",
+          "article_number": "25",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "yer alan “veya sak atlığa uğraması halinde” ibaresi “yakalanması veya engelli hâle gelmesi durumunda” şeklinde değiştirilmiştir. b) İşçinin tutulduğu hastalığın tedavi edilemeyecek nitelikte olduğu ve işyerinde çalışmasında sakınca bulunduğunun Sağlık Kurulunca saptanması durumunda. (a) alt bendinde sayılan sebepler dışında işçinin hastalık, kaza, doğum ve gebelik gibi hallerde işveren için iş sözleşmesini bildirimsiz fesih hakkı; belirtilen hallerin işçinin işyerindeki çalışma süresine göre 17 nci maddedeki bildirim sürelerini altı hafta aşmasından sonra doğar. Doğum ve gebelik hallerinde bu süre 74 üncü maddedeki sürenin bitiminde başlar. Ancak işçinin iş sözleşmesinin askıda kalması nedeniyle işine gidemediği süreler için ücret işlemez. II- Ahlak ve iyi niyet"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_005",
+      "question": "Maas en gec ne zaman ve hangi esaslarla odenmelidir?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "32"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_32_00000_d4a4b8a3be89",
+          "law_number": "4857",
+          "article_number": "32",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 32 - Genel anlamda ücret bir kimseye bir iş karşılığında işveren veya üçüncü kişiler tarafından sağlanan ve para ile ödenen tutardır.(Değişik ikinci fıkra : 17/4/2008-5754/85 md.) Ücret, prim, ikramiye ve bu nitelikteki her çeşit istihkak kural olarak, Türk parası ile işyerinde veya özel olarak açılan bir banka hesabına ödenir.Ücret, prim, ikramiye ve bu nitelikteki her çeşit istihkak, yabancı para olarak kararlaştırılmış ise ödeme günündeki rayice göre Türk parası ile ödeme yapılabilir."
+        },
+        {
+          "chunk_id": "4857_32_00001_554b62d34e40",
+          "law_number": "4857",
+          "article_number": "32",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 21,
+          "page_end": 21,
+          "evidence_text": "Çalıştırılan işçilerin ücret, prim, ikramiye ve bu nitelikteki her çeşit istihkakının özel olarak açılan banka hesabına yatırılmak suretiyle ödenmesi hususunda; tabi olduğu vergi mükellefiyeti türü, işletme büyüklüğü, çalıştırdığı işçi sayısı, işyerinin bulunduğu il ve benzeri gibi unsurları dikkate alarak işverenleri veya üçüncü kişileri zorunlu tutmaya, banka hesabına yatırılacak ücret, prim, ikramiye ve bu nitelikteki her çeşit istihkakının, brüt ya da kanuni kesintiler düşüldükten sonra kalan net miktar üzerinden olup olmayacağını belirlemeye Çalışma ve Sosyal Güvenlik Bakanlığı, Maliye Bakanlığı ve Hazine Müsteşarlığından sorumlu Devlet Bakanlığı müştereken yetkilidir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_006",
+      "question": "Fazla mesai yapan calisanin ucreti ve serbest zaman hakki nasil duzenlenir?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "41"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_41_00000_9dc099a625bb",
+          "law_number": "4857",
+          "article_number": "41",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 41 - Ülkenin genel yararları yahut işin niteliği veya üretimin artırılması gibi nedenlerle fazla çalışma yapılabilir.Fazla çalışma, Kanunda yazılı koşullar çerçevesinde, haftalık kırkbeş saati aşan çalışmalardır.63 üncü madde hükmüne göre denkleştirme esasının uygulandığı hallerde, işçinin haftalık ortalama çalışma süresi, normal haftalık iş süresini aşmamak koşulu ile, bazı haftalarda toplam kırkbeş saati aşsa dahi bu çalışmalar fazla çalışma sayılmaz.Her bir saat fazla çalışma için verilecek ücret normal çalışma ücretinin saat başına düşen miktarının yüzde elli yükseltilmesi suretiyle ödenir."
+        },
+        {
+          "chunk_id": "4857_41_00001_a65b8aa51cc9",
+          "law_number": "4857",
+          "article_number": "41",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Haftalık çalışma süresinin sözleşmelerle kırkbeş saatin altında belirlendiği durumlarda yukarıda belirtilen esaslar dahilinde uygulanan ortalama haftalık çalışma süresini aşan ve kırkbeş saate kadar yapılan çalışmalar fazla sürelerle çalışmalardır.Fazla sürelerle çalışmalarda, her bir saat fazla çalışma için verilecek ücret normal çalışma ücretinin saat başına düşen miktarının yüzde yirmibeş yükseltilmesiyle ödenir.Fazla çalışma veya fazla sürelerle çalışma yapan işçi isterse, bu çalışmalar karşılığı zamlı ücret yerine, fazla çalıştığı her saat karşılığında bir saat otuz dakikayı, fazla sürelerle çalıştığı her saat karşılığında bir saat onbeş dakikayı serbest zaman olarak kullanabilir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_007",
+      "question": "Yillik ucretli izin hakkinin dogmasi icin en az ne kadar calismak gerekir?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "53"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_53_00000_85c040b072b3",
+          "law_number": "4857",
+          "article_number": "53",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 53 - İşyerinde işe başladığı günden itibaren, deneme süresi de içinde olmak üzere, en az bir yıl çalışmış olan işçilere yıllık ücretli izin verilir. Yıllık ücretli izin hakkından vazgeçilemez. Niteliklerinden ötürü bir yıldan az süren mevsimlik veya kampanya işlerinde çalışanlara bu Kanunun yıllık ücretli izinlere ilişkin hükümleri uygulanmaz. İşçilere verilecek yıllık ücretli izin süresi, hizmet süresi; a) Bir yıldan beş yıla kadar (beş yıl dahil) olanlara ondört günden, b) Beş yıldan fazla onbeş yıldan az olanlara yirmi günden,"
+        },
+        {
+          "chunk_id": "4857_53_00001_774bf106c20f",
+          "law_number": "4857",
+          "article_number": "53",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "hizmet süresi; a) Bir yıldan beş yıla kadar (beş yıl dahil) olanlara ondört günden, b) Beş yıldan fazla onbeş yıldan az olanlara yirmi günden, c) Onbeş yıl (dahil) ve daha fazla olanlara yirmialtı günden, Az olamaz. (Ek cümle: 10/9/2014-6552/5 md.) Yer altı işlerinde çalışan işçilerin yıllık ücretli izin süreleri dörder gün arttırılarak uygulanır. Ancak onsekiz ve daha küçük yaştaki işçilerle elli ve daha yukarı yaştaki işçilere verilecek yıllık ücretli izin süresi yirmi günden az olamaz. Yıllık izin süreleri iş sözleşmeleri ve toplu iş sözleşmeleri ile artırılabilir. Yıllık ücretli izne hak kazanma ve izni kullanma dönemi"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "employment_008",
+      "question": "Dogum yapan calisanin analik izni kac hafta surer?",
+      "expected_law_numbers": [
+        "4857"
+      ],
+      "expected_article_numbers": [
+        "74"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4857_74_00000_2fb98c84f841",
+          "law_number": "4857",
+          "article_number": "74",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 74 - Kadın işçilerin doğumdan önce sekiz ve doğumdan sonra sekiz hafta olmak üzere toplam onaltı haftalık süre için çalıştırılmamaları esastır.Çoğul gebelik halinde doğumdan önce çalıştırılmayacak sekiz haftalık süreye iki hafta süre eklenir.Ancak, sağlık durumu uygun olduğu takdirde, doktorun onayı ile kadın işçi isterse doğumdan önceki üç haftaya kadar işyerinde çalışabilir.Bu durumda, kadın işçinin çalıştığı süreler doğum sonrası sürelere eklenir.(Ek cümle: 13/2/2011-6111/76 md.) Kadın işçinin erken doğum yapması halinde ise doğumdan önce kullanamadığı çalıştırılmayacak süreler, doğum sonrası sürelere eklenmek suretiyle kullandırılır."
+        },
+        {
+          "chunk_id": "4857_74_00001_1ad073957a63",
+          "law_number": "4857",
+          "article_number": "74",
+          "source_file": "4857_İş Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "(Ek cümleler: 29/1/2016-6663/22 md.) Doğumda veya doğum sonrasında annenin ölümü hâlinde, doğum sonrası kullanılamayan süreler babaya kullandırılır.Üç yaşını doldurmamış çocuğu evlat edinen eşlerden birine veya evlat edinene çocuğun aileye fiilen teslim edildiği tarihten itibaren sekiz hafta analık hâli izni kullandırılır."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_001",
+      "question": "Bir kisiyi kasten olduren fail hangi temel suc kapsaminda degerlendirilir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "81"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_81_00000_9fdcaf81474e",
+          "law_number": "5237",
+          "article_number": "81",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 31,
+          "page_end": 31,
+          "evidence_text": "Madde 81- (1) Bir insanı kasten öldüren kişi, müebbet hapis cezası ile cezalandırılır. Nitelikli haller"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_002",
+      "question": "Kavga sirasinda birinin vucut butunlugune zarar vermenin cezai karsiligi nedir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "86"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_86_00001_6689092926fb",
+          "law_number": "5237",
+          "article_number": "86",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "86- (1) Kasten başkasının vücuduna acı veren veya sağlığının ya da algılama yeteneğinin bozulmasına neden olan kişi, bir yıl altı aydan üç yıla kadar hapis cezası i le cezalandırılır.(2) (Ek fıkra: 31/3/2005 – 5328/4 md.) Kasten yar alama fiilinin kişi üzerindeki etkisinin ba sit bir tıbbî müdahaleyle giderilebilecek ölçüde hafif olması hâlinde, mağdurun şikâyeti üzerine, altı aydan bir yıl altı aya kadar hapis veya ad lî para cezasına hükmo lunur.(Ek cümle:12/5/2022 -7406/3 md.) Suçun k adına karşı işlenmesi hâlinde cezanın alt sınırı dokuz aydan az olamaz.34 29/6/2005 tarihli ve 5377 sayılı Kanunun 10 uncu maddesiyle bu maddenin başlığı “İntihar” iken, \"İntihara yönlendirme\" şeklinde değiştirilmiştir."
+        },
+        {
+          "chunk_id": "5237_86_00002_a43ecc602969",
+          "law_number": "5237",
+          "article_number": "86",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "35 31/3/2005 ta rihli ve 5328 sayılı Kanunun 3 üncü maddesiyle bu maddede yer alan “üç yıldan” ibareleri, “iki yıldan” şeklinde değiştirilmiştir.36 31/3/2005 tarihli ve 5328 sayılı Kanunun 4 üncü maddesiyle bu maddeye ikinci fıkra eklenmiş, diğer fıkra buna göre teselsül ettirilmiş, mevcut ikinci fıkrasındaki \"iki yıldan beş yı la kadar hapis cezasına hükmolunur.\" ibaresi \" şikâyet aranmaksızın, verilecek ceza yarı oranında artırılır.\" şeklinde değiştirilmiştir.37 4/6/2025 tarihli ve 7550 sayılı Kanunun 9 uncu maddesiyle bu maddenin birinci fıkrasında yer alan “bir yıldan” ibaresi “bir yıl altı aydan” şeklinde, ikin ci fıkrasında yer alan “dört aydan bir yıla” ibaresi “altı aydan bir yıl altı aya” ve “altı aydan” ibaresi “dokuz aydan” şeklinde değiştirilmiştir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_003",
+      "question": "Sosyal medya uzerinden bir kimsenin onurunu rencide eden sozler soylemek hangi suca girebilir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "125"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_125_00000_59a355b23dde",
+          "law_number": "5237",
+          "article_number": "125",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 28,
+          "page_end": 28,
+          "evidence_text": "madde 125), 3. Genel güvenliğin taksirle tehlikeye sokulması ("
+        },
+        {
+          "chunk_id": "5237_125_00000_284b037b8f01",
+          "law_number": "5237",
+          "article_number": "125",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 125- (1) Bir kimseye onur, şeref ve saygınlığını rencide edebilecek nitelikte somut bir fiil veya olgu isnat eden (...) 56 veya sövmek suretiyle bir kimsenin onur, şer ef ve saygınlığına saldıran kişi, üç aydan iki yıla kadar hapis veya adlî para cezası ile cezalandırılır. Mağdurun gıyabında hakaretin cezalandırılabilmesi için fiilin en az üç kişiyle ihtilat e derek işlenmesi gerekir. (2) Fiilin, ma ğduru muhatap al an sesl i, yazılı veya görüntülü bir iletiyle işlenmesi halinde, yukarıdaki fıkrada belirtilen cezaya hükmolunur. (3) Hakaret suçunun; a) Kamu görevlisine karşı görevinden dolayı,"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_004",
+      "question": "Magazadan bedelini odemeden mal almak hangi suc basligi altinda incelenir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "141"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_141_00000_b78954c62581",
+          "law_number": "5237",
+          "article_number": "141",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 52,
+          "page_end": 52,
+          "evidence_text": "Madde 141- (1) Zilyedinin rızası olmadan başkasına ait taşınır bir malı, kendisine veya başkasına bir yarar sağlamak maksadıy la bulunduğu yerden alan kimseye bir yı ldan üç yıla kadar hapis cezası verilir. (2) (Mülga: 2/7/2012-6352/105 md.) Nitelikli hırsızlık64"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_005",
+      "question": "Gece vakti konuta girerek esya calinmasi hangi nitelikli halle ilgilidir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "142"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_142_00000_4d3641de58b4",
+          "law_number": "5237",
+          "article_number": "142",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 142- (1) Hırsızlık suçunun; a) Kime ait olursa olsun kamu kurum ve kuruluşlarında veya ibadete ayrılmış yerlerde bulunan ya da kamu yararına veya hizmetine tahsis edilen eşya hakkında, b) (Mülga: 18/6/2014-6545/62 md.) c) Halkın yararlanmasına sunu lmuş ulaşım aracı içinde veya bunların belli varış veya kalkış yerlerinde bulunan eşya hakkında, d) Bir afet veya genel bir felaketin meydana getirebileceği za rarları önlemek veya hafifletmek maksadıyla hazırlanan eşya hakkında, e) Adet veya tahsis veya kullanımları gereği açıkta bırakılmış eşya hakkında, f) (Mülga: 2/7/2012-6352/82 md.) İşlenmesi hâlinde, üç yıldan yedi yıla kadar hapis cezasına hükmolunur. (2) Suçun; a) Kişinin malını koruyamayacak durumda olmasından veya ölmesinden yararlanarak,"
+        },
+        {
+          "chunk_id": "5237_142_00001_5b69becf5a17",
+          "law_number": "5237",
+          "article_number": "142",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "üç yıldan yedi yıla kadar hapis cezasına hükmolunur. (2) Suçun; a) Kişinin malını koruyamayacak durumda olmasından veya ölmesinden yararlanarak, b) Elde veya üstte taşınan eşyayı çekip almak suretiyle ya da özel beceriyle, c) Doğal bir afetin veya sosyal olayların meydana getirdiği korku veya kargaşadan yararlanarak, d) Haksız yere elde bulundurul an veya taklit anahtarla ya da diğer bir aletle kilit açmak veya kilitlenmesini engellemek suretiyle, e) Bilişim sistemlerinin kullanılması suretiyle, f) Tanınmamak için tedbir alarak veya yetkisi olmadığı halde resmi sıfat takınarak, g) (…)64 büyük veya küçük baş hayvan hakkında,"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_006",
+      "question": "Hileli davranislarla bir kisiyi kandirip para almak hangi suc olabilir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "157"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_157_00000_7be68b2a5e19",
+          "law_number": "5237",
+          "article_number": "157",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 57,
+          "page_end": 57,
+          "evidence_text": "Madde 157- (1) Hileli davranışlarla bir kimseyi aldatıp, onun veya başkasının zararına olarak, kendisine veya başkasına bir ya rar sağlayan kişiye bir yıldan beş yıla kadar hapis ve beşbin güne kadar adlî para cezası verilir. Nitelikli dolandırıcılık"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_007",
+      "question": "Kamu kurumunun araci kilinmasiyla dolandiricilik yapilmasi hangi agirlastirilmis suc turudur?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "158"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_158_00000_41b1b059625e",
+          "law_number": "5237",
+          "article_number": "158",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 158- (1) Dolandırıcılık suçunun; a) Dinî inanç ve duyguların istismar edilmesi suretiyle, b) Kişinin içinde bulunduğu tehlikeli durum veya zor şartlardan yararlanmak suretiyle, c) Kişinin algılama yeteneğinin zayıflığından yararlanmak suretiyle, d) Kamu kurum ve kuruluşlarının, kamu meslek kuruluşlarının, siyasi parti, vakıf veya dernek tüzel kişiliklerinin araç olarak kullanılması suretiyle, e) Kamu kurum ve kuruluşlarının zararına olarak, f) Bilişim sistemlerinin, banka veya kredi kurumlarının araç olarak kullanılması suretiyle, g) Basın ve yayın araçlarının sağladığı kolaylıktan yararlanmak suretiyle,"
+        },
+        {
+          "chunk_id": "5237_158_00001_211d00c96996",
+          "law_number": "5237",
+          "article_number": "158",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "banka veya kredi kurumlarının araç olarak kullanılması suretiyle, g) Basın ve yayın araçlarının sağladığı kolaylıktan yararlanmak suretiyle, h) Tacir veya şirket yöne ticisi olan ya da şirket adına hareket eden kişilerin ticari faaliyetleri sırasında; kooperatif yöneticilerinin kooperatifin faaliyeti kapsamında, i) Serbest meslek sahibi kişiler tarafından, mesleklerinden dolayı kendilerine duyulan güvenin kötüye kullanılması suretiyle, j) Banka veya diğer kr edi kurumlarınca tahsis edilmemesi gereken bir kredinin açılmasını sağlamak maksadıyla, k) Sigorta bedelini almak maksadıyla,"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_008",
+      "question": "Trafik guvenligini tehlikeye sokacak bicimde arac kullanmanin cezai duzenlemesi nerededir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "179"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_179_00000_15a9b5cf93f1",
+          "law_number": "5237",
+          "article_number": "179",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 179 - (1) Kara, deniz, hava veya demiryolu ulaşımı nın güven içinde akışını sağlamak için konulmuş her türlü işareti değiştirerek, kullanılamaz hale getirerek, konuldukları yerden kaldırarak, yanlış işaretler vererek, geçiş, varış, kalkış veya iniş yolları üzerine bi r şey koyarak ya da teknik işletim siste mine müdahale ederek, baş kalarının hayatı, sağlığ ı veya malvarlığı bakımından bir tehlikeye neden olan kişiye bir yıldan altı yıla kadar hapis cezası verilir.75 4/6/2025 tarihli ve 7550 sayılı Kanunun 12 nci maddesiyle bu maddenin ikinci fıkrasında yer alan “üç aydan” ibaresi “dört aydan” ve üçüncü fıkrasında yer alan “yukarıdak i fıkra hükmüne göre cezalandırılır.” ibaresi “altı aydan iki yıla kadar hapis cezası ile cezalandırılır.” şeklinde değiştirilmiştir."
+        },
+        {
+          "chunk_id": "5237_179_00002_7848378899a3",
+          "law_number": "5237",
+          "article_number": "179",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "(2) Kara, deniz, hava veya demiryolu ulaşım araçlarını ki şilerin hayat, sağlık veya malvarlığı açısından tehlikeli olabile cek şekilde sevk ve idar e eden kişi, dört aydan iki yıla kadar hapis cezası ile cezalandırılır.76 (3) Alkol veya uyuşturucu madde etkisiyle ya da başka bir nedenle emniyetli bir şekilde araç sevk ve idare edemeyecek halde olmasına rağmen araç kullanan kişi altı aydan iki yıla kadar hapis cezası ile cezalandırılır. Trafik güvenliğini taksirle tehlikeye sokma"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_009",
+      "question": "Kisisel kullanim icin uyusturucu veya uyarici madde satin almak ya da bulundurmak hangi maddeyle ilgilidir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "191"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_191_00001_0f578f646606",
+          "law_number": "5237",
+          "article_number": "191",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "191- (Değişik: 18/6/2014 – 6545/68 md.) (1) Kullanmak için uyuşturucu veya uyarıcı mad de satın alan, kabul eden vey a bulunduran ya da uyuşturucu veya uyarıcı madde kullanan kişi, iki yıldan beş yıla kadar hapis cezası ile cezalandırılır.(2) Bu suçtan dolayı başlatılan sor uşturmada şüpheli hakkında 4/12/2004 tarihli ve 5271 sayılı Ceza Muhakemesi Kanununun 171 inci maddesindeki şartlar aranmaksızın, beş yıl süreyle kamu davasının açılmasının ertelenmesine karar verilir.Cumhuriyet savcısı, bu durumda şüpheliyi, erteleme sür esi zarfında kendisine yüklenen yükümlülüklere uygun davranmadığı vey a yasakları ihlal ettiği takd irde kendisi bakımından ortaya çıkabilecek sonuçlar konusunda uyarır .(Ek cümle:28/3/2023 -7445/18 md.) Erteleme kararı kolluk birimlerine de bildirilir."
+        },
+        {
+          "chunk_id": "5237_191_00002_5b80f92570aa",
+          "law_number": "5237",
+          "article_number": "191",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "(3) (Değişik:28/3/2023-7445/18 md.) Erteleme süresi zarfında şüpheli hakkında asgari bir yıl süreyle de netimli serbestlik tedbiri uygulanır.Bu süre denetimli serbestlik müdürlüğünün teklifi üzerine veya resen Cumhuriyet savcısının kararı ile altışar aylık sürelerle en fazla iki yıl daha uzatılabilir.Hakkında denetimli serbestl ik tedbiri verilen kişi, gerek g örülmesi hâlinde denetimli serbestlik süre si içinde tedaviye tabi tutulabilir.Cumhuriyet savcısı, erteleme süresi zarfında uyuşturucu veya uyarıcı madde k ullanıp kullanmadığını tespit etmek için yılda en az iki defa şüpheli nin ilgili kuruma sevkine kar ar verir.(4) Kişinin, erteleme süresi zarfında;"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "criminal_010",
+      "question": "Bir orgute uye olmak ile orgut yonetmek arasindaki ceza hukuku duzenlemesi hangi maddededir?",
+      "expected_law_numbers": [
+        "5237"
+      ],
+      "expected_article_numbers": [
+        "220"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5237_220_00000_e308a9d9532e",
+          "law_number": "5237",
+          "article_number": "220",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 220 - (1) Kanunun suç saydığı fiilleri işlemek ama cıyla örgüt kuranlar veya yönetenler, örgütün yapısı, sahip bulunduğu üye sayısı ile araç ve gereç bakımından amaç suçları işlemeye elverişli olması halinde, beş yıldan on yıla kadar hapis cezası ile cezalandırılır. Ancak, örgütün varlığı için üye sayısının en az üç kişi olması gerekir. (2) Suç işlemek amacıyla kurulmuş olan örgüte üye olanlar, iki yıldan beş yıla kadar hapis cezası ile cezalandırılır. (3) Örgütün silahlı olması hali nde, yukarıdaki fıkralara göre verilecek ceza yarısı oranında artırılır. (4) Örgütün faaliyeti çerçevesinde suç işlenmesi halinde, ayrıca bu suçlardan dolayı da cezaya hükmolunur."
+        },
+        {
+          "chunk_id": "5237_220_00001_090ec8509047",
+          "law_number": "5237",
+          "article_number": "220",
+          "source_file": "5237_Türk Ceza Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "(5) (Ek cümle:24/12/2025-7571/20 md.) Örgütün faaliyeti çerçevesinde işlenen 89 14/4/2020 tarihli ve 7242 sayılı Kanunun 13 üncü m addesiyle, birinci fıkrada yer alan “iki yıl dan altı yıla” ibaresi “dört yıldan sekiz yıla” ve ikinci f ıkrada yer alan “bir yı ldan üç yıla” ibaresi “iki yıldan dört yıla” şeklinde değiştirilmiştir.90 24/12/2025 tarihli ve 7571 sayılı Kanunun 20 nci maddesiyle bu maddenin birinci fıkrasında yer alan “dört yıldan sekiz yıla” ibaresi “beş yıldan on yıla”, ikinci fıkrasında yer alan “dört yıla” ibaresi “beş yıla”, üçüncü fıkr asında yer alan “dörtte birinden yarısına kadar” ibaresi “yarısı oranında” şeklinde değiştirilmiştir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_001",
+      "question": "Sucustunde yakalanan kisi hangi usulle ve kim tarafindan yakalanabilir?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "90"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_90_00000_08d6682bee6a",
+          "law_number": "5271",
+          "article_number": "90",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 90 – (1) Aşağıda b elirtilen hâllerde, herkes tarafından geçici olarak yakalama yapılabilir: a) Kişiye suçu işlerken rastlanması."
+        },
+        {
+          "chunk_id": "5271_90_00001_95b522924a50",
+          "law_number": "5271",
+          "article_number": "90",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "b) Suçüstü bir fiilden dolayı izlenen kişinin kaçması olasılığının bulunması veya hemen kimliğini belirleme olanağının bulunmaması.(2) Kolluk görevlileri, tutuklama kararı veya yakalama emri düzenlenmesini gerektiren ve gecikmesinde sakınca bulunan hâllerde; Cumhuriyet savcısına veya âmirlerine derhâl başvurma olanağı bulunmadığı takdirde, yakalama yetkisine sahiptirler.(3) Soruşturma ve kovuşturması şikâyete bağlı olmakla birlikte, çocuklara, beden veya akıl hastalığı, malûllük veya güçsüzlükleri nedeniyle kendilerini idareden aciz bulunanlara karşı işlenen suçüstü hallerinde kişinin yakalanması şikâyete bağlı değildir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_002",
+      "question": "Gozalti suresi ne kadar olabilir ve uzatma ne zaman mumkundur?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "91"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_91_00000_2592770539d7",
+          "law_number": "5271",
+          "article_number": "91",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 91 – (1) Yukarıdaki maddeye göre yakalanan kişi, Cumhuriyet Savcılığınca bırakılmazsa, soruşturmanın tamamlanması iç in gözaltına alınmasına karar verilebilir. (Değişik ikinci cümle: 25/5/2005 – 5353/8 md.) Gözaltı süresi, yakalama yerine en yakın hâkim veya mahkemeye gönderilmesi için zorunlu süre hariç, yakalama anından itibaren yirmidört saati geçemez. (Ek cümle: 25/5/"
+        },
+        {
+          "chunk_id": "5271_91_00001_0706e103c42e",
+          "law_number": "5271",
+          "article_number": "91",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "2005 – 5353/8 md.) Yakalama yerine en yakın hâkim veya mahkemeye gönderilme için zorunlu süre oniki saatten fazla olamaz.(2) Gözaltına alma, bu tedbirin soruşturma yönünden zorunlu olmasına ve kişinin bir suçu işlediği şüphesini gösteren somut delillerin varlığına bağlıdır.11 (3) Toplu olarak işlenen suçlarda, delillerin toplanmasındaki güçlük veya şüpheli sayısının çokluğu nedeniyle; Cumhuriyet savcısı gözaltı süresinin, her defasında bir günü geçmemek üzere, üç gün süreyle uzatılmasına yazılı olarak emir verebilir.Gözaltı süresinin uzatılması emri gözaltına alınana derhâl tebliğ edilir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_003",
+      "question": "Tutuklama karari icin hangi kosullar aranir?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "100"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_100_00000_2020b26d822d",
+          "law_number": "5271",
+          "article_number": "100",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 100 – (1) Kuvvetli suç şü phesinin varlığını gösteren somut delillerin ve bir tutuklama nedeninin bulunması halinde, şüpheli veya sanık hakkında tutuklama kararı verilebilir. İşin önemi, verilmesi beklenen ceza veya güvenlik tedbiri ile ölçülü olmaması halinde, tutuklama kararı verilemez.13 (2) Aşağıdaki hallerde bir tutuklama nedeni var sayılabilir: a) Şüpheli veya sanığın kaçması, saklanması veya kaçacağı şüphesini uyandıran somut olgular varsa."
+        },
+        {
+          "chunk_id": "5271_100_00001_8beba675aefd",
+          "law_number": "5271",
+          "article_number": "100",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "hallerde bir tutuklama nedeni var sayılabilir: a) Şüpheli veya sanığın kaçması, saklanması veya kaçacağı şüphesini uyandıran somut olgular varsa. b) Şüpheli veya sanığın davranışları; 1. Delilleri yok etme, gizleme veya değiştirme, 2. Tanık, mağdur veya başkaları üzerinde baskı yapılması girişiminde bulunma, Hususlarında kuvvetli şüphe oluşturuyorsa. (3) Aşağıdaki suçların işlendiği hususunda somut delillere dayanan kuvvetli şüphe sebeplerinin varlığı halinde, tutuklama nedeni var sayılabilir:14 a) 26.9.2004 tarihli ve 5237 sayılı Türk Ceza Kanununda yer alan;15 1. Soykırım ve insanlığa karşı suçlar ("
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_004",
+      "question": "Tutuklamaya iliskin hakim kararinin gerekceli olmasi nerede duzenlenmistir?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "101"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_101_00000_2758fa7d2518",
+          "law_number": "5271",
+          "article_number": "101",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 101 – (1) Soruşturma evresinde şüphelinin tutuklanmasına Cumhuriyet savcısının istemi üzerine sulh ceza hâkimi tarafından, kovuşturma evresinde sanığın tutuklanmasına Cumhuriyet savcısının istemi üzerine veya re'sen mahkemece karar verilir. Bu istemlerde mutlaka gerekçe gösterilir ve adlî kontrol uygulamasının yetersiz kalacağını belirten hukukî ve fiilî nedenlere yer verilir. (2) (Değişik: 2/7/2012 -6352/97 md.) Tutuklamaya, tutuklamanın devamına veya bu husustaki bir tahliye isteminin reddine ilişkin kararlarda; a) Kuvvetli suç şüphesini, b) Tutuklama nedenlerinin varlığını, c) Tutuklama tedbirinin ölçülü olduğunu,"
+        },
+        {
+          "chunk_id": "5271_101_00001_d8b2256d929d",
+          "law_number": "5271",
+          "article_number": "101",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "isteminin reddine ilişkin kararlarda; a) Kuvvetli suç şüphesini, b) Tutuklama nedenlerinin varlığını, c) Tutuklama tedbirinin ölçülü olduğunu, d) (Ek:8/7/2021-7331/14 md.) Adli kontrol uygulamasının yetersiz kalacağını, gösteren deliller somut olgularla gerekçelendirilerek açıkça gösterilir. Kararın içeriği şüpheli veya sanı ğa sözlü olarak bildirilir, ayrıca bir örneği yazılmak suretiyle kendilerine verilir ve bu husus kararda belirtilir. (3) Tutuklama istenildiğinde, şüpheli veya sanık, kendisinin seçeceği veya baro tarafından görevlendirilecek bir müdafiin yardımından yararlanır. (4) Tutuklama kararı verilmezse, şüpheli veya sanık derhâl serbest bırakılır. (5) Bu madde ile 100 üncü madde gereğince verilen kararlara itiraz edilebilir. Tutuklulukta geçecek süre"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_005",
+      "question": "Suphelinin ifadesi alinmadan once bilgilendirilmesi gereken haklari nelerdir?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "147"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_147_00000_74fb5b507169",
+          "law_number": "5271",
+          "article_number": "147",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 147 – (1) Şüphelinin veya sanığın ifadesinin alınmasında veya sorguya çekilmesinde aşağıdaki hususlara uyulur: a) Şüpheli veya sanığın kimliği saptanır. Şüpheli veya sanık, kimliğine ilişkin soruları doğru olarak cevaplandırmakla yükümlüdür. b) Kendisine yüklenen suç anlatılır. c) Müdafi seçme hakkının bulunduğu ve onun hukukî yardımından yararlanabileceği, müdafiin ifade veya sorgusunda hazır bulunabileceği, kendisine bildirilir. Müdafi seçecek durumda olmadığı ve bir müdafi yardımından faydalanmak istediği takdirde, kendisine baro tarafından bir müdafi görevlendirilir. d) 95 inci madde hükmü saklı kalmak üzere, yakalanan kişinin yakınlarından istediğine yakalandığı derhâl bildirilir. e) Yüklenen suç hakkında açıklamada bulunmamasının kanunî hakkı olduğu söylenir."
+        },
+        {
+          "chunk_id": "5271_147_00001_2005d6384666",
+          "law_number": "5271",
+          "article_number": "147",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "kişinin yakınlarından istediğine yakalandığı derhâl bildirilir. e) Yüklenen suç hakkında açıklamada bulunmamasının kanunî hakkı olduğu söylenir. f) Şüpheden kurtulması için somut delillerin toplanmasını isteyebileceği hatırlatılır ve kendisi aleyhine var olan şüphe nedenlerini ortadan kaldırmak ve lehine olan hususları ileri sürmek olanağı tanınır. 53 Bu madde başlığı “Şüpheli veya sanığ ın zorla getirilmesi “ iken, 6/12/2006 tarihli ve 5560 sayılı Kanunun 20 nci maddesiyle metne işlendiği şekilde değiştirilmiştir. g) İfade verenin veya sorguya çekilenin kişisel ve ekonomik durumu hakkında bilgi alınır. h) İfade ve sorgu işlemlerinin kaydında, teknik imkânlardan yararlanılır."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_006",
+      "question": "Mudafinin sorusturma dosyasini inceleme yetkisi hangi durumlarda sinirlanabilir?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "153"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_153_00001_314893abcef2",
+          "law_number": "5271",
+          "article_number": "153",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "153 – (Değişik: 2/12/2014-6572/44 md.) (1) Müdafi, soruşturma evresinde dosya içeriğini inceleyebilir ve istediği belgelerin bir 55 3/10/2016 tarihli ve 676 sayılı KHK’nin 2 nci maddesiyle, bu fıkrada yer alan “tutuklu ve” ibaresi “şüpheli, sanık veya” şeklinde, “kovuşturma açılması halinde tutuklu veya hükümlünün müdafilik veya vekilliğini” ibaresi “soruşturma ya da kovuşturma bulunması halinde müdafilik veya vekillik görevini” şeklinde değiştirilmiştir.56 Anayasa Mahkemesinin 24/7/2019 tarihli ve E.:2018/73; K.:2019/65 sayılı Kararı ile bu fıkrada yer alan “soruşturma ya da” ibaresi iptal edilmiştir."
+        },
+        {
+          "chunk_id": "5271_153_00002_364b8c9be142",
+          "law_number": "5271",
+          "article_number": "153",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 62,
+          "page_end": 62,
+          "evidence_text": "57 3/10/2016 tarihli ve 676 sayılı KHK’nin 2 nci maddesiyle, bu fıkrada yer alan “müdafi veya vekil hakkında açılan kovuşturmanın yapıldığı” ibaresi “hâkim veya” şeklinde, “Kovuşturma sonunda” ibaresi “Soruşturma sonunda kovuşturmaya yer olmadığına dair karar verilmesi veya kovuşturma sonunda” şeklinde değiştirilmiş, aynı fıkraya “Müdafilik görevinden yasaklama kararı,” ibaresinden sonra gelmek üzere “avukat hakkındaki soruşturma veya” ibaresi ve “Ancak,” ibaresinden sonra gelmek üzer e “soruşturma veya” ibaresi eklenmiş, daha sonra bu hüküm 1/2/2018 tarihli ve 7070 sayılı Kanunun 2 nci maddesiyle aynen kabul edilerek kanunlaşmıştır."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "procedure_007",
+      "question": "Savci bir sucun islendigi izlenimini veren durumda hangi sorusturma gorevlerini yapar?",
+      "expected_law_numbers": [
+        "5271"
+      ],
+      "expected_article_numbers": [
+        "160"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5271_160_00000_846f0eed6189",
+          "law_number": "5271",
+          "article_number": "160",
+          "source_file": "5271_Ceza Muhakemesi Kanunu.pdf",
+          "page_start": 65,
+          "page_end": 65,
+          "evidence_text": "Madde 160 – (1) Cumhuriyet savcısı, ihbar veya başka bir suretle bir suçun işlendiği izlenimini veren bir hâli öğrenir öğrenmez kamu davasını açmaya yer olup olmadığına karar vermek üzere hemen işin gerçeğini araştırmaya başlar. (2) C umhuriyet savcısı, maddî gerçeğin araştırılması ve adil bir yargılamanın yapılabilmesi için, emrindeki adlî kolluk görevlileri marifetiyle, şüphelinin lehine ve aleyhine olan delilleri toplayarak muhafaza altına almakla ve şüphelinin haklarını korumakla yükümlüdür. Cumhuriyet savcısının görev ve yetkileri"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "data_001",
+      "question": "Kisisel veriler hangi hukuki sartlarda acik riza olmadan islenebilir?",
+      "expected_law_numbers": [
+        "6698"
+      ],
+      "expected_article_numbers": [
+        "5"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6698_5_00000_41983e9de554",
+          "law_number": "6698",
+          "article_number": "5",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 5- (1) Kişisel veriler ilgili kişinin açık rızası olmaksızın işlenemez. (2) Aşağıdaki şartlardan birinin varlığı hâlinde, ilgili kişinin açık rızası aranmaksızın kişisel verilerinin işlenmesi mümkündür: a) Kanunlarda açıkça öngörülmesi. b) Fiili imkânsızlık nedeniyle rızasını açıklayamayacak durumda bulunan veya rızasına hukuki geçerlilik tanınmayan kişinin kendisinin ya da bir başkasının hayatı veya beden bütünlüğünün korunması için zorunlu olması. c) Bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması kaydıyla, sözleşmenin taraflarına ait kişisel verilerin işlenmesinin gerekli olması. ç) Veri sorumlusunun hukuki yükümlülüğünü yerine getirebilmesi için zorunlu olması. d) İlgili kişinin kendisi tarafından alenileştirilmiş olması."
+        },
+        {
+          "chunk_id": "6698_5_00001_5f7145eba208",
+          "law_number": "6698",
+          "article_number": "5",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Veri sorumlusunun hukuki yükümlülüğünü yerine getirebilmesi için zorunlu olması. d) İlgili kişinin kendisi tarafından alenileştirilmiş olması. e) Bir hakkın tesisi, kullanılması veya korunması için veri işlemenin zorunlu olması. f) İlgili kişinin temel hak ve özgürlüklerine zarar vermemek kaydıyla, veri sorumlusunun meşru menfaatleri için veri işlenmesinin zorunlu olması. Özel nitelikli kişisel verilerin işlenme şartları"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "data_002",
+      "question": "Veri sorumlusu veri toplarken ilgili kisiye hangi bilgileri vermelidir?",
+      "expected_law_numbers": [
+        "6698"
+      ],
+      "expected_article_numbers": [
+        "10"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6698_10_00000_84ed40d02887",
+          "law_number": "6698",
+          "article_number": "10",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_text": "MADDE 10- (1) Kişisel verilerin elde edilmesi sırasında veri sorumlusu veya yetkilendirdiği kişi, ilgili kişilere; a) Veri sorumlusunun ve varsa temsilcisinin kimliği, b) Kişisel verilerin hangi amaçla işleneceği, c) İşlenen kişisel verilerin kimlere ve hangi amaçla aktarılabileceği, ç) Kişisel veri toplamanın yöntemi ve hukuki sebebi, d) 11 inci maddede sayılan diğer hakları, konusunda bilgi vermekle yükümlüdür. İlgili kişinin hakları"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "data_003",
+      "question": "Bir kisi kendisi hakkinda islenen verileri ogrenmek veya sildirmek isterse hangi haklara sahiptir?",
+      "expected_law_numbers": [
+        "6698"
+      ],
+      "expected_article_numbers": [
+        "11"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6698_11_00000_0947819b699f",
+          "law_number": "6698",
+          "article_number": "11",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 11- (1) Herkes, veri sorumlusuna başvurarak kendisiyle ilgili; a) Kişisel veri işlenip işlenmediğini öğrenme, b) Kişisel verileri işlenmişse buna ilişkin bilgi talep etme, c) Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme, ç) Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme, d) Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme, e) 7 nci maddede öngörülen şartlar çerçevesinde kişisel verilerin silinmesini veya yok edilmesini isteme, f) (d) ve (e) bentleri uyarınca yapılan işlemlerin, kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme,"
+        },
+        {
+          "chunk_id": "6698_11_00001_b0549728c4e9",
+          "law_number": "6698",
+          "article_number": "11",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "yok edilmesini isteme, f) (d) ve (e) bentleri uyarınca yapılan işlemlerin, kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme, g) İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme, ğ) Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme, haklarına sahiptir. Veri güvenliğine ilişkin yükümlülükler"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "data_004",
+      "question": "Sirketin kisisel veri guvenligi icin teknik ve idari tedbir alma yukumlulugu hangi maddededir?",
+      "expected_law_numbers": [
+        "6698"
+      ],
+      "expected_article_numbers": [
+        "12"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6698_12_00000_8f8c9c0c8006",
+          "law_number": "6698",
+          "article_number": "12",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 12- (1) Veri sorumlusu; a) Kişisel verilerin hukuka aykırı olarak işlenmesini önlemek, b) Kişisel verilere hukuka aykırı olarak erişilmesini önlemek,"
+        },
+        {
+          "chunk_id": "6698_12_00001_9aee0d52e7c1",
+          "law_number": "6698",
+          "article_number": "12",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "c) Kişisel verilerin muhafazasını sağlamak, amacıyla uygun güvenlik düzeyini temin etmeye yönelik gerekli her türlü teknik ve idari tedbirleri almak zorundadır. (2) Veri sorumlusu, kişisel verilerin kendi adına başka bir gerçek veya tüzel kişi tarafından işlenmesi hâlinde, birinci fıkrada belirtilen tedbirlerin alınması hususunda bu kişilerle birlikte müştereken sorumludur.(3) Veri sorumlusu, kendi kurum veya kuruluşunda, bu Kanun hükümlerinin uygulanmasını sağlamak amacıyla gerekli denetimleri yapmak veya yaptırmak zorundadır.(4) Veri sorumluları ile veri işleyen kişiler, öğrendikleri kişisel verileri bu Kanun hükümlerine aykırı olarak başkasına açıklayamaz ve işleme amacı dışında kullanamazlar.Bu yükümlülük görevden ayrılmalarından sonra da devam eder."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "data_005",
+      "question": "KVKK kapsaminda veri guvenligi yukumluluklerine aykiriligin idari para cezasi sonucu nedir?",
+      "expected_law_numbers": [
+        "6698"
+      ],
+      "expected_article_numbers": [
+        "18"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6698_18_00000_b5b9f0f57384",
+          "law_number": "6698",
+          "article_number": "18",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 18- (1) Bu Kanunun; a) 10 uncu maddesinde öngörülen aydınlatma yükümlülüğünü yerine getirmeyenler hakkında 5.000 Türk lirasından 100.000 Türk lirasına kadar, b) 12 nci maddesinde öngörülen veri güvenliğine ilişkin yükümlülükleri yerine getirmeyenler hakkında 15.000 Türk lirasından 1.000.000 Türk lirasına kadar, c) 15 inci maddesi uyarınca Kurul tarafından verilen kararları yerine getirmeyenler hakkında 25.000 Türk lirasından 1.000.000 Türk lirasına kadar, ç) 16 ncı maddesinde öngörülen Veri Sorumluları Siciline kayıt ve bildirim yükümlülüğüne aykırı hareket edenler hakkında 20.000 Türk lirasından 1.000.000 Türk lirasına kadar,"
+        },
+        {
+          "chunk_id": "6698_18_00001_0ae3f9ab5433",
+          "law_number": "6698",
+          "article_number": "18",
+          "source_file": "6698_Kişisel Verilerin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "d) (Ek:2/3/2024-7499/35 md.) 9 uncu maddenin beşinci fıkrasında öngörülen bildirim yükümlülüğünü y erine getirmeyenler hakkında 50.000 Türk lirasından 1.000.000 Türk lirasına kadar, idari para cezası verilir.(2) (Değişik:2/3/2024-7499/35 md.) Birinci fıkranın (a), (b), (c) ve (ç) bentlerinde öngörülen idari para cezaları veri sorumlusu, (d) bendinde ö ngörülen idari para cezası veri sorumlusu veya veri işleyen gerçek kişiler ile özel hukuk tüzel kişileri hakkında uygulanır.(3) (Ek:2/3/2024-7499/35 md.) Kurulca verilen idari para cezalarına karşı, idare mahkemelerinde dava açılabilir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "consumer_001",
+      "question": "Ayipli bir urun alan tuketici hangi secimlik haklarini kullanabilir?",
+      "expected_law_numbers": [
+        "6502"
+      ],
+      "expected_article_numbers": [
+        "11"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6502_11_00000_70e7e4783590",
+          "law_number": "6502",
+          "article_number": "11",
+          "source_file": "6502_Tüketicinin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 11- (1) Malın ayıplı olduğunun anlaşılması durumunda tüketici; a) Satılanı geri vermeye hazır olduğunu bildirerek sözleşmeden dönme, b) Satılanı alıkoyup ayıp oranında satış bedelinden indirim isteme, c) Aşırı bir masraf gerektirmediği takdirde, bütün masrafları satıcıya ait olmak üzere satılanın ücretsiz onarılmasını isteme,"
+        },
+        {
+          "chunk_id": "6502_11_00001_e4fa463d94f8",
+          "law_number": "6502",
+          "article_number": "11",
+          "source_file": "6502_Tüketicinin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "ç) İmkân varsa, satılanın ayıpsız bir misli ile değiştirilmesini isteme, seçimlik haklarından birini kullanabilir.Satıcı, tüketicinin tercih ettiği bu talebi yerine getirmekle yükümlüdür.(2) Ücretsiz onarım veya malın ayıpsız misli ile değiştirilmesi hak ları üretici veya ithalatçıya karşı da kullanılabilir.Bu fıkradaki hakların yerine getirilmesi konusunda satıcı, üretici ve ithalatçı müteselsilen sorumludur.Üretici veya ithalatçı, malın kendisi tarafından piyasaya sürülmesinden sonra ayıbın doğduğunu ispat ettiği takdirde sorumlu tutulmaz.(3) Ücretsiz onarım veya malın ayıpsız misli ile değiştirilmesinin satıcı için orantısız güçlükleri beraberinde getirecek olması hâlinde tüketici, sözleşmeden dönme veya ayıp oranında bedelden indirim haklarından biri ni kullanabilir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "consumer_002",
+      "question": "Internet uzerinden yapilan alisverislerde mesafeli sozlesmeye dair kurallar hangi maddede yer alir?",
+      "expected_law_numbers": [
+        "6502"
+      ],
+      "expected_article_numbers": [
+        "48"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "6502_48_00001_01f86355e3ed",
+          "law_number": "6502",
+          "article_number": "48",
+          "source_file": "6502_Tüketicinin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "48 - (1) Mesafeli sözleşme, satıcı veya sağlayıcı ile tüketicinin eş zamanlı fiziksel varlığı olmaksızın, mal veya hizmetlerin uzaktan pazarlanmasına yönelik olarak oluşturulmuş bir sistem çerçevesinde, taraflar arasında sözleşmenin kurulduğu ana kadar ve kurulduğu an da dâhil olmak üzere uzaktan iletişim araçlarının kullanılması suretiyle kurulan sözleşmelerdir.(2) Tüketici, mesafeli sözleşmeyi ya da buna karşılık gelen herhangi bir teklifi kabul etmeden önce ayrıntıları yönetmelikte belirlenen hususlarda v e siparişi onaylandığı takdirde ödeme yükümlülüğü altına gireceği konusunda açık ve anlaşılır şekilde satıcı veya sağlayıcı tarafından bilgilendirilir.Tüketicinin bilgilendirildiğine ilişkin ispat yükü satıcı veya sağlayıcıya aittir."
+        },
+        {
+          "chunk_id": "6502_48_00002_5950de61787e",
+          "law_number": "6502",
+          "article_number": "48",
+          "source_file": "6502_Tüketicinin Korunması Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "(3) Satıcı veya sağla yıcı, tüketicinin siparişinin kendisine ulaştığı andan itibaren taahhüt edilen süre içinde edimini yerine getirir.(Değişik cümle:24/3/2022 -7392/7 md.) Tüketicinin isteği veya kişisel ihtiyaçları doğrultusunda hazırlanan mallara ilişkin sözleşmeler haricinde mal satışlarında bu süre her hâlükârda otuz günü geçemez.Satıcı veya sağlayıcının bu süre içinde edimini yerine getirmemesi durumunda tüketici sözleşmeyi feshedebilir.(4) Tüketici, on dört gün içinde herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayma hakkına sahiptir.Cayma hakkının kullanıldığına dair bildirimin bu süre içinde satıcı veya sağlayıcıya yöneltilmiş olması yeterlidir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "traffic_001",
+      "question": "Alkollu arac kullanirken surucunun uymasi gereken sinirlar ve yaptirimlar hangi kanunda aranir?",
+      "expected_law_numbers": [
+        "2918"
+      ],
+      "expected_article_numbers": [
+        "48"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "2918_48_00000_7dbd30555628",
+          "law_number": "2918",
+          "article_number": "48",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 48 – (Değişik: 24/5/2013 - 6487/19 md.) Uyuşturucu veya uyarıcı maddeleri almış olan sürücüler ile alkollü olan sürücülerin karayolunda araç sürmeleri yasaktır. Uyuşturucu veya uyarıcı maddelerin kullanılıp kullanılmadığı ya da alkolün kandaki miktarını tespit amacıyla, kollukça teknik cihazlar/test kitleri kullanılır.42 Kişinin yaralanmalı veya ölümlü ya da kollukça müdahil olunan maddi hasarlı trafik 42 12/2/2026 tarihli ve 7574 sayılı Kanunun 1 2 nci maddesiyle bu fıkrada yer alan “teknik cihazlar” ibaresi “teknik cihazlar/test kitleri” şeklinde değiştirilmiştir."
+        },
+        {
+          "chunk_id": "2918_48_00001_bd99eff77533",
+          "law_number": "2918",
+          "article_number": "48",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "kazasına karışması hâlinde, ikinci fıkrada belirtilen muayeneye tabi tutulması zorunludur.Teknik cihaz ile yapılan ölçüme itiraz eden veya bu cihaz ile ölçüm yapılmasına müsaade etmeyen bu sürücüler, en yakın adli tıp kurumuna veya adli tabipliğe veya Sağlık Bakanlığına bağlı sağlık kuruluşlarına götürülerek uyuşturucu veya uyarıcı madde ya da alkol tespitinde kullanılmak üzere vücutlarından kan, tükürük veya idrar gibi örnekler alınır.Bu işlem bakımından 4/12/2004 tarihli ve 5271 sayılı Ceza Muhakemesi Kanununun 75 inci maddesi hükümleri, beşinci fıkrası hariç olmak üzere uygulanır."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "traffic_002",
+      "question": "Hiz sinirini asan surucu icin uygulanacak trafik idari yaptirimi hangi maddeye dayanir?",
+      "expected_law_numbers": [
+        "2918"
+      ],
+      "expected_article_numbers": [
+        "51"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "2918_51_00000_77effd565452",
+          "law_number": "2918",
+          "article_number": "51",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 51 – (Değişik:12/2/2026-7574/14 md.) Sürücüler, aksine bir karar alınıp işaretlenmemişse yönetmelikte belirtilen hız sınırlarını aşmamak zorundadırlar. Hız ölçen teknik cihaz veya çeşitli teknik usullerle yapılan tespit sonucu yönetmeli kte belirlenen hız sınırlarını; a) Yerleşim yeri içinde; 1) 6-10 km/s aşanlara 2.000 Türk lirası, 2) 11-15 km/s aşanlara 4.000 Türk lirası, 3) 16-20 km/s aşanlara 6.000 Türk lirası, 4) 21-25 km/s aşanlara 8.000 Türk lirası, 5) 26-35 km/s aşanlara 12.000 Türk lirası, 6) 36-45 km/s aşanlara 15.000 Türk lirası, 7) 46-55 km/s aşanlara 20.000 Türk lirası, 8) 56-65 km/s aşanlara 25.000 Türk lirası, 9) 66 km/s ve daha fazla aşanlara 30.000 Türk lirası,"
+        },
+        {
+          "chunk_id": "2918_51_00001_f638774adec2",
+          "law_number": "2918",
+          "article_number": "51",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "7) 46-55 km/s aşanlara 20.000 Türk lirası, 8) 56-65 km/s aşanlara 25.000 Türk lirası, 9) 66 km/s ve daha fazla aşanlara 30.000 Türk lirası, b) Yerleşim yeri dışında; 1) 11-15 km/s aşanlara 2.000 Türk lirası, 2) 16-20 km/s aşanlara 4.000 Türk lirası, 3) 21-25 km/s aşanlara 6.000 Türk lirası, 4) 26-30 km/s aşanlara 8.000 Türk lirası, 5) 31-40 km/s aşanlara 12.000 Türk lirası, 6) 41-50 km/s aşanlara 15.000 Türk lirası, 7) 51-60 km/s aşanlara 20.000 Türk lirası, 8) 61-70 km/s aşanlara 25.000 Türk lirası, 9) 71 km/s ve daha fazla aşanlara 30.000 Türk lirası, idari para cezası verilir. Sürücüler tarafından bu maddenin ikinci fıkrasının (a) bendinin; a) (7) numaralı alt bendinin ihlali halinde her seferinde 30 gün, b) (8) numaralı alt bendinin ihlali halinde her seferinde 60 gün,"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "traffic_003",
+      "question": "Aracta emniyet kemeri kullanma zorunlulugu hangi trafik duzenlemesinde bulunur?",
+      "expected_law_numbers": [
+        "2918"
+      ],
+      "expected_article_numbers": [
+        "78"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "2918_78_00000_8dce3731ff48",
+          "law_number": "2918",
+          "article_number": "78",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 78 – (Başlığı ile Birlikte Değişik:12/2/2026-7574/26 md.) Araçların sürülmesi sırasında sürücü ve yolcuların güvenliğine ilişkin olarak; a) Emniyet kemerinin, b) Koruma başlığı ve koruma gözlüğünün, c) Çocuk bağlama sisteminin,"
+        },
+        {
+          "chunk_id": "2918_78_00001_0b112e98dadd",
+          "law_number": "2918",
+          "article_number": "78",
+          "source_file": "2918_Karayolları Trafik Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "d) Yönetmelikte belirlenen diğer koruyucu sistemlerin, usulüne uygun olarak kullanılması zorunludur.Koruyucu sistemleri usulüne uyg un olarak kullanmayanlar da koruyucu sistem kullanma mış sayılırlar.Koruyucu sistemlerinin nitelikleri ve nicelikle ri ile hangi araçlarda ve hangi tarihten itibaren hangi şartlarda bulundurulacağı ve kullanılacağı yönetmelikte belirtilir.Yönetmelikte cins ve sınıfları belirtilen araçlarda seyahat eden yolcuların, araç hareket etmeden önce ve seyahat sırasında emniyet kemerlerini bağlamaları konusunda uyarılmaları zorunludur."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "civil_001",
+      "question": "Evlenme yasina iliskin temel kural Turk Medeni Kanununun hangi maddesindedir?",
+      "expected_law_numbers": [
+        "4721"
+      ],
+      "expected_article_numbers": [
+        "124"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4721_124_00000_8b27e6310b14",
+          "law_number": "4721",
+          "article_number": "124",
+          "source_file": "4721_Türk Medeni Kanunu.pdf",
+          "page_start": 25,
+          "page_end": 25,
+          "evidence_text": "Madde 124- Erkek veya kadın onyedi yaşını doldurmadıkça evlenemez. Ancak, hâkim olağanüstü durumlarda ve pek önemli bir sebeple onaltı yaşını doldurmuş olan erkek veya kad ının evlenmesine izin verebilir. Olanak bulundukça karardan önce ana ve baba veya vasi dinlenir. II. Ayırt etme gücü"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "civil_002",
+      "question": "Eslerden birinin zina yapmasi bosanma davasi sebebi olabilir mi?",
+      "expected_law_numbers": [
+        "4721"
+      ],
+      "expected_article_numbers": [
+        "161"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4721_161_00000_42b62ae66ef9",
+          "law_number": "4721",
+          "article_number": "161",
+          "source_file": "4721_Türk Medeni Kanunu.pdf",
+          "page_start": 31,
+          "page_end": 31,
+          "evidence_text": "Madde 161- Eşlerden biri zina ederse, diğer eş boşanma davası açabilir. Davaya hakkı olan eşin boşanma sebebini öğrenmesinden başlayarak altı ay ve her hâlde zina eyleminin üzerinden beş yıl geçmekle dava hakkı düşer. Affeden tarafın dava hakkı yoktur. II. Hayata kast, pek kötü veya onur kırıcı davranış"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "civil_003",
+      "question": "Evlilik birligi temelinden sarsildiysa bosanma karari hangi duzenleme uyarinca verilebilir?",
+      "expected_law_numbers": [
+        "4721"
+      ],
+      "expected_article_numbers": [
+        "166"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4721_166_00000_9ff79ae03703",
+          "law_number": "4721",
+          "article_number": "166",
+          "source_file": "4721_Türk Medeni Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 166 - Evlilik birliği, ortak hayatı sürdürmeleri kendilerinden beklenme yecek derecede temelinden sarsılmış olursa, eşlerden her biri boşanma davası açabilir.Yukarıdaki fı krada belirtilen hâllerde, davacının kusuru daha ağır ise, davalının açılan davaya itiraz hakkı vardır.Bununla beraber bu itiraz, hakkın kötüye kullanılmas ı niteliğinde ise ve evlilik birliğinin devamında davalı ve çocuklar bakımından korunmaya değer bir yarar kalmamışsa boşanmaya karar verilebilir.Evlilik en az bir yıl sürmüş ise, eşlerin birlikte başvurması ya da bir eşin diğerinin davasını kabul etmesi h âlinde, evlilik birliği temelinden sarsılmış sayılır."
+        },
+        {
+          "chunk_id": "4721_166_00001_87b2181234eb",
+          "law_number": "4721",
+          "article_number": "166",
+          "source_file": "4721_Türk Medeni Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Bu hâlde boşanma kararı verilebilmesi içi n, hâkimin tarafları bizzat dinleyerek iradelerinin serbestçe açıklandığına kanaat getirmesi ve boşanmanın malî sonuçları ile çocukların durumu hususunda tarafla rca kabul edilecek düzenlemeyi uygun bulması şarttır.Hâkim, tarafların ve çocukların menfaatle rini göz önünde tutarak bu anlaşmada gerekli gördüğü değişiklikleri yapabilir.Bu değişikliklerin taraflarca da kabulü hâlinde boşanmaya hükmolunur.Bu hâlde tar afların ikrarlarının hâkimi bağlamayacağı hükmü uygulanmaz."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "civil_004",
+      "question": "Eslerin birlikte yasama, sadakat ve yardim yukumlulukleri hangi maddede duzenlenir?",
+      "expected_law_numbers": [
+        "4721"
+      ],
+      "expected_article_numbers": [
+        "185"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "4721_185_00000_96f78ed70549",
+          "law_number": "4721",
+          "article_number": "185",
+          "source_file": "4721_Türk Medeni Kanunu.pdf",
+          "page_start": 36,
+          "page_end": 36,
+          "evidence_text": "Madde 185- Evlenmeyle eşler arasında evlilik birliği kurulmuş olur. Eşler, bu birliğin mutluluğunu elbirliğiyle sağlamak ve çocukların bakımına, eğitim ve gözetimine beraberce özen göstermekle yükümlüdürler. Eşler birlikte yaşamak, birbirine sadık kalmak ve yardımcı olmak zorundadırlar. II. Konutun seçimi, birliğin yönetimi ve giderlere katılma"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "digital_001",
+      "question": "Guvenli elektronik imza elle atilan imza ile ayni hukuki sonucu dogurur mu?",
+      "expected_law_numbers": [
+        "5070"
+      ],
+      "expected_article_numbers": [
+        "5"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5070_5_00000_6de54d9e43c7",
+          "law_number": "5070",
+          "article_number": "5",
+          "source_file": "5070_Elektronik İmza Kanunu.pdf",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_text": "Madde 5- Güvenli elektronik imza, elle atılan imza ile aynı hukukî sonucu doğurur. Kanunların resmî şekle veya özel bir merasime tabi tuttuğu hukukî işlemler ile banka teminat mektupları ve Türkiye’de yerleşik sigorta şirketleri tarafından düzenlenen k efalet senetleri dışındaki teminat sözleşmeleri, güvenli elektronik imza ile gerçekleştirilemez. 23 Güvenli elektronik imza oluşturma araçları"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "internet_001",
+      "question": "Internette yayimlanan bir icerigin erisiminin engellenmesi hangi hallerde uygulanabilir?",
+      "expected_law_numbers": [
+        "5651"
+      ],
+      "expected_article_numbers": [
+        "8"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5651_8_00001_c7a5867832a8",
+          "law_number": "5651",
+          "article_number": "8",
+          "source_file": "5651_İnternet Ortamında Yapılan Yayınların Düzenlenmesi.pdf",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_text": "8- (1) İnternet ortamında yapılan ve içeriği aşağıdaki suçları oluşturduğu hususunda yeterli şüphe sebebi bulunan yayınlarla ilgili olarak içeriğin çıkarılmasına ve/veya 15 29/7/2020 tarihli ve 7253 sayılı Kanunun 4 üncü maddesiyle, bu madde başlığı “Erişimin engellenmesi kararı ve yerine getirilmesi” iken metne işlendiği şekilde değiştirilmiş ve birinci fıkrada yer alan “erişimin engellenmesine” ibaresi “içeriğin çıkarılmasına ve/veya erişimin engellenmesine” şeklinde değiştirilmiştir."
+        },
+        {
+          "chunk_id": "5651_8_00002_c6a31ed5c2eb",
+          "law_number": "5651",
+          "article_number": "8",
+          "source_file": "5651_İnternet Ortamında Yapılan Yayınların Düzenlenmesi.pdf",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_text": "16 29/7/2020 tarihli ve 7253 sayılı Kanunun 4 üncü maddesiyle, ikinci fıkranın birinci cümlesinde yer alan “Erişimin engellenmesi” ibaresi “İçeriğin çıkarılması ve/veya erişimin engellenmesi” şeklinde, ikinci ve altıncı cümlelerde yer alan “erişimin engellenmesine” ibareleri “içeriğin çıkarılmasına ve/veya erişimin engellenmesine” şeklinde, üçüncü fıkrada yer alan “erişimin engellenmesi” ibaresi “içeriğin çıkarılması ve/veya erişimin engellen mesi” şeklinde, dördüncü fıkranın birinci cümlesinde yer alan “erişimin engellenmesi” ibaresi “içeriğin çıkarılması ve/veya erişimin engellenmesi” şeklinde değiştirilmiştir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "press_001",
+      "question": "Sureli yayinda islenen suc nedeniyle cezai sorumluluk kimlere ait olabilir?",
+      "expected_law_numbers": [
+        "5187"
+      ],
+      "expected_article_numbers": [
+        "11"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5187_11_00000_f8b8c3f04894",
+          "law_number": "5187",
+          "article_number": "11",
+          "source_file": "5187_Basın Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 11- Basılmış eserler veya internet haber siteleri yoluyla işlenen suç yayım anında oluşur.4 Süreli yayınlar ve süresiz yayınlar yoluyla işlenen suçlardan eser sahibi sorumludur.Süreli yayınlarda eser sahibinin belli olmaması veya yayım sırasında ceza ehliyetine sahip bulunmaması ya da yurt dışında bulunması nedeniyle Türkiye'de yargılanamaması veya verilecek cezanın eser sahibinin diğer bir suçtan dolayı kesin hükümle mahkûm olduğu cezaya etki etmemesi hallerinde, sorumlu müdür ve yayın yönetmeni, genel yayın yönetmeni, editör, basın danışmanı gibi sorumlu müdürün bağlı olduğu yetkili sorumlu olur.Ancak bu eserin sorumlu müdürün ve sorumlu müdürün bağlı olduğu yetkilinin karşı çıkmasına rağmen yayımlanması halinde, bundan doğan sorumluluk yayımlatana aittir."
+        },
+        {
+          "chunk_id": "5187_11_00001_90d2f19ae5d2",
+          "law_number": "5187",
+          "article_number": "11",
+          "source_file": "5187_Basın Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Süresiz yayınlarda eser sahibinin belli olmaması veya yayım sırasında ceza ehliyetine sahip bulunmaması ya da yurt dışında olması nedeniyle Türkiye'de yargılanamaması veya verilecek cezanın eser sahibinin diğer bir suçtan dolayı kesin hükümle mahkûm olduğu cezaya etki etmemesi hallerinde yayımcı; yayımcının belli olmaması veya basım sırasında ceza ehliyetine sahip bulunmaması ya da yurt dışında olması nedeniyle Türkiye'de yargılanamaması hallerinde ise basımcı sorumlu olur.Yukarıdaki hükümler, süreli yayınlar ve süresiz yayınlar için bu Kanunda aranan şartlara uyulmaksızın yapılan yayınlar hakkında da uygulanır. Haber kaynağı"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "child_001",
+      "question": "Korunma ihtiyaci olan cocuk icin uygulanabilecek koruyucu ve destekleyici tedbirler nelerdir?",
+      "expected_law_numbers": [
+        "5395"
+      ],
+      "expected_article_numbers": [
+        "5"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5395_5_00000_dd3909399859",
+          "law_number": "5395",
+          "article_number": "5",
+          "source_file": "5395_Çocuk Koruma Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 5- (1) Koruyucu ve destekleyici tedbirler, çocuğun öncelikle kendi aile ortamında korunmasını sağlamaya yönelik danışmanlık, eğitim, bakım, sağlık ve barınma konularında alınacak tedbirlerdir. Bunlardan; a) Danışmanlık tedbiri, çocuğun bakımından sorumlu olan kimselere çocuk yetiştirme konusunda; çocuklara da eğitim ve gelişimleri ile ilgili sorunlarının çözümünde yol göstermeye, b) Eğitim tedbiri, çocuğun bir eğitim kurumuna gündüzlü veya yatılı olarak devamına; iş ve meslek edinmesi amacıyla bir meslek veya sanat edinme kursuna gitmesine veya meslek sahibi bir ustanın yanına yahut kamuya ya da özel sektöre ait işyerlerine yerleştirilmesine,"
+        },
+        {
+          "chunk_id": "5395_5_00001_36dba90c97c5",
+          "law_number": "5395",
+          "article_number": "5",
+          "source_file": "5395_Çocuk Koruma Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "edinme kursuna gitmesine veya meslek sahibi bir ustanın yanına yahut kamuya ya da özel sektöre ait işyerlerine yerleştirilmesine, c) Bakım tedbiri, çocuğun bakımından sorumlu olan kimsenin herhangi bir nedenle görevini yerine getirememesi hâlinde, çocuğun resmî veya özel bakım yurdu ya da koruyucu aile hizmetlerinden yararlandırılması veya bu kurumlara yerleştirilmesine, d) Sağlık tedbiri, çocuğun fiziksel ve ruhsal sağlığının korunması ve tedavisi için gerekli geçici veya sürekli tıbbî bakım ve rehabilitasyonuna, bağımlılık yapan maddeleri kullananların tedavilerinin yapılmasına,"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "terror_001",
+      "question": "Terorun tanimi Turk hukukunda hangi kanun maddesinde yapilir?",
+      "expected_law_numbers": [
+        "3713"
+      ],
+      "expected_article_numbers": [
+        "1"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "3713_1_00000_7fd551ee7d8f",
+          "law_number": "3713",
+          "article_number": "1",
+          "source_file": "3713_Terörle Mücadele Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Madde 1– (Değişik birinci fıkra: 15/7/2003 -4928/20 md.) Terör; cebir ve şiddet kullanarak; baskı, korkutma, yıldırma, sindirme veya tehdit yöntemlerinden biriyle, Anayasada belirtilen Cumhuriyetin niteliklerini, siyasî, hukukî, sosyal, laik, ekonomik düzeni değiştirmek, Devletin ülkesi ve milletiyle bölünmez bütünlüğünü bozmak, Türk Devletinin ve Cumhuriyetin varlığını tehlikeye düşürmek, Devlet otoritesini zaafa uğratmak veya yıkmak veya ele geçirmek, temel hak ve hürriyetleri yok etmek, Devletin iç ve dış güven liğini, kamu düzenini veya genel sağlığı bo zmak amacıyla bir örgüte mensup kişi veya kişiler tarafından girişilecek her türlü suç teşkil eden eylemlerdir. (Mülga ikinci ve üçüncü fıkralar: 29/6/2006-5532/17 md.) Terör suçlusu"
+        },
+        {
+          "chunk_id": "3713_1_00001_03853a3daf73",
+          "law_number": "3713",
+          "article_number": "1",
+          "source_file": "3713_Terörle Mücadele Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "1 – (Ek: 13/11/1995-4131/3 md.; Değişik: 12/7/2013-6495/86 md.)2425 (Değişik birinci fıkra: 14/4/2016 -6704/12 md.) 10/12/2003 tarihli ve 5018 sayılı Kamu Malî Yönetimi ve Kontrol Kanununun eki (I), (II), (III) ve (IV ) sayılı cetvellerde yer alan kamu kurum ve kuruluşları, kamu iktisadi teşebbüsleri ve bağlı ortaklıkları, il özel 22 12/7/2013 tarihli ve 6495 sayılı Kanunun 85 inci madd esiyle, bu bentte yer alan “sivillerden” ibaresinden sonra gelmek üzere “Sosyal Güvenlik Kurumunca” ibaresi eklenmiştir.23 25/4/2013 tarihli ve 6462 sayılı Kanunun 1 inci maddesiyle, bu fıkrada yer alan “sakatlanan” ibaresi “engelli hâle gelen” şeklinde değiştirilmiştir."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "terror_002",
+      "question": "Teror suclarinda cezalarin artirilmasina iliskin kural nerede duzenlenmistir?",
+      "expected_law_numbers": [
+        "3713"
+      ],
+      "expected_article_numbers": [
+        "5"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "3713_5_00000_c5bedba0ab66",
+          "law_number": "3713",
+          "article_number": "5",
+          "source_file": "3713_Terörle Mücadele Kanunu.pdf",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_text": "Madde 5 – (Değişik: 29/6/2006-5532/4 md.) 3 ve 4 üncü maddelerde yazılı suçları işleyenler hakkında ilgili kanunlara göre tayin edilecek hapis cezaları veya adlî para cezaları yarı oranında artırılarak hükmolunur. Bu suretle tayin olunacak cezalarda, gerek o fiil için, gerek her nevi ceza için muayyen olan cezanın yukarı sınırı aşılabilir. Ancak, müebbet hapis cezası yerine, ağırlaştırılmış müebbet hapis cezasına hükmolunur. Suçun, örgütün faaliyeti çerçevesinde işlenmiş olması d olayısıyla ilgili maddesinde cezasının artırılması öngörülmüşse; sadece bu madde hükmüne göre cezada artırım yapılır. Ancak, yapılacak artırım, cezanın üçte ikisinden az olamaz. (Ek fıkra: 22/7/2010 - 6008/4 md.) Bu madde hükümleri çocuklar hakkında uygulanmaz. Açıklama ve yayınlama"
+        },
+        {
+          "chunk_id": "3713_5_00000_aa740c66f773",
+          "law_number": "3713",
+          "article_number": "5",
+          "source_file": "3713_Terörle Mücadele Kanunu.pdf",
+          "page_start": 19,
+          "page_end": 19,
+          "evidence_text": "Madde 5 – 403 sayılı Türk Vatandaşlığı Kanununun 25 inci maddesinin (g) bendi gereğince Türk vatandaşlığı kaybettirilenlerin bu Kanunun"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "insurance_001",
+      "question": "Is kazasi sayilan olaylar sosyal guvenlik mevzuatinda hangi maddede tanimlanir?",
+      "expected_law_numbers": [
+        "5510"
+      ],
+      "expected_article_numbers": [
+        "13"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5510_13_00000_029d8e7fe65b",
+          "law_number": "5510",
+          "article_number": "13",
+          "source_file": "5510_Sosyal Sigortalar Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 13- İş kazası; a) Sigortalının işyerinde bulunduğu sırada, b) (Değişik: 17/4/2008-5754/8 md.) İşveren tarafından yürütülmekte olan iş nedeniyle sigortalı kendi adına ve hesabına bağımsız çalışıyorsa yürütmekte olduğu iş nedeniyle, c) Bir işverene bağlı olarak çalışan sigortalının, görevli olarak işyeri dışında başka bir yere gönderilmesi nedeniyle asıl işini yapmaksızın geçen zamanlarda,"
+        },
+        {
+          "chunk_id": "5510_13_00001_d2c9c48cb57c",
+          "law_number": "5510",
+          "article_number": "13",
+          "source_file": "5510_Sosyal Sigortalar Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "bağlı olarak çalışan sigortalının, görevli olarak işyeri dışında başka bir yere gönderilmesi nedeniyle asıl işini yapmaksızın geçen zamanlarda, d) (Değişik: 17/4/2008-5754/8 md.) Bu Kanunun 4 üncü maddesinin birinci fıkrasının (a) bendi kapsamındaki emziren kadın sigortalının, iş mevzuatı gereğince çocuğuna süt vermek için ayrılan zamanlarda, 23 17/4/2008 tarihli ve 5754 sayılı Kanunun 65 inci maddesiyle; 12 nci maddesinin üçüncü fıkrasında yer alan “üçüncü” ibaresi “dördüncü”olarak değiştirilmiş; aynı Kanunun 66 ncı maddesiyle “işçi sendikaları” ibaresinden sonra gelmek üzere “ve konfederasyonları” ibaresi eklenmiştir. 24 Bu bölüm başlığı “Kısa Vad eli Sigorta Hükümleri” iken, 17/4/2008 tarihli ve 5754 sayılı Kanunun 65 inci maddesiyle metne işlendiği şekilde"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "insurance_002",
+      "question": "Zorunlu sigortali sayilan kisiler hangi sosyal guvenlik maddesine gore belirlenir?",
+      "expected_law_numbers": [
+        "5510"
+      ],
+      "expected_article_numbers": [
+        "4"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5510_4_00000_2e8c9274d6c3",
+          "law_number": "5510",
+          "article_number": "4",
+          "source_file": "5510_Sosyal Sigortalar Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 4- (Değişik: 17/4/2008-5754/2 md.) Bu Kanunun kısa ve uzun vadeli sigorta kolları uygulaması bakımından; a) Hizmet akdi ile bir veya birden fazla işveren tarafından çalıştırılanlar,"
+        },
+        {
+          "chunk_id": "5510_4_00001_49caa6f2a784",
+          "law_number": "5510",
+          "article_number": "4",
+          "source_file": "5510_Sosyal Sigortalar Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Bu Kanunun kısa ve uzun vadeli sigorta kolları uygulaması bakımından; a) Hizmet akdi ile bir veya birden fazla işveren tarafından çalıştırılanlar, b) Köy ve mahalle muhtarları ile hizmet akdine bağlı olmaksızın kendi adına ve hesabına bağımsız çalışanlardan ise; 1) Ticarî kazanç veya serbest meslek kazancı nedeniyle gerçek veya basit usûlde gelir vergisi mükellefi olanlar, 2) Gelir vergisinden muaf olup, esnaf ve sanatkâr siciline kayıtlı olanlar, 3) Anonim şirketlerin yönetim kurulu üyesi olan ortakları, sermayesi paylara bölünmüş komandit şirketlerin komandite ortakları, diğer şirket ve donatma iştiraklerinin ise tüm ortakları, 4) Tarımsal faaliyette bulunanlar, 4 25/3/2020 tarihli ve 7226 sayılı Kanunun 44 üncü ma ddesiyle bu fıkrada yer alan “alanlar ve bu Kanunun ek 9"
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    },
+    {
+      "id": "check_001",
+      "question": "Karsiliksiz cek duzenlemenin cezai sorumlulugu hangi kanunda ele alinir?",
+      "expected_law_numbers": [
+        "5941"
+      ],
+      "expected_article_numbers": [
+        "5"
+      ],
+      "difficulty": null,
+      "question_type": null,
+      "gold_answer_evidence": [
+        {
+          "chunk_id": "5941_5_00000_6909a7d80320",
+          "law_number": "5941",
+          "article_number": "5",
+          "source_file": "5941_Çek Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "MADDE 5 – (1) (Değişik: 15/7/2016 -6728/63 md.) Üzerinde yazılı bulunan düzenleme tarihine göre kanuni ibraz süresi içinde ibrazında, çekle ilgili olarak “karşılıksızdır” işlemi yapılmasına sebebiyet veren kişi hakkında, hamilin şikâyeti ü zerine, her bir çekle ilgili olarak, binbeşyüz güne kadar adli para cezasına hükmolunur.Ancak, hükmedilecek adli para cezası; çek bedelinin karşılıksız kalan miktarı, (…) 8 az olamaz.Mahkeme ayrıca, çek düzenleme ve çek hesabı açma yasağına; bu yasağın bu lunması hâlinde, çek düzenleme ve çek hesabı açma yasağının devamına hükmeder.Yargılama sırasında da resen mahkeme tarafından koruma tedbiri olarak çek düzenleme ve çek hesabı açma yasağına karar verilir."
+        },
+        {
+          "chunk_id": "5941_5_00001_a8a2fe0b7f80",
+          "law_number": "5941",
+          "article_number": "5",
+          "source_file": "5941_Çek Kanunu.pdf",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_text": "Çek düzenleme ve çek hesabı açma yasağı, çek hesab ı sahibi gerçek veya tüzel kişi, bu tüzel kişi adına çek keşide edenler ve karşılıksız çekin bir sermaye şirketi adına düzenlenmesi durumunda ayrıca yönetim organı ile ticaret siciline tescil edilen şirket yetkilileri hakkında uygulanır.Koruma tedbiri ola rak verilen çek düzenleme ve çek hesabı açma yasağı kararlarına karşı yapılan itirazlar bakımından 9/6/1932 tarihli ve 2004 sayılı İcra ve İflas Kanununun 353 üncü maddesinin birinci fıkrası hükmü uygulanır.Bu suçtan dolayı açılan davalar icra mahkemesinde görülür ve İcra ve İflas Kanununun 347, 349, 350, 351, 352 ve 353 üncü maddelerinde düzenlenen yargılama usulüne ilişkin hükümler uygulanır."
+        }
+      ],
+      "review_status": "needs_legal_review",
+      "reviewer_task": "Evidence passages based on an indexed official text. Write or approve a concise answer only if it is supported by these passages; retain the cited law/article/page."
+    }
+  ],
+  "records_without_evidence": [],
+  "warning": "Evidence is corpus-grounded; a legal reviewer must approve any natural-language answer."
+}

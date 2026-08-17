@@ -1,30 +1,4006 @@
 {
   "version": 1,
-  "generator": "manual",
+  "generator": "template",
   "examples": [
     {
-      "query": "İş sözleşmesinin feshinde ihbar süreleri nelerdir?",
-      "relevant_chunk_ids": ["is_kanunu_4857.txt#17"],
-      "relevant_source_files": ["is_kanunu_4857.txt"],
-      "notes": "Madde 17 bildirim / ihbar süreleri"
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
     },
     {
-      "query": "Bildirim süreleri kaç haftadır?",
-      "relevant_chunk_ids": ["is_kanunu_4857.txt#17"],
-      "relevant_source_files": ["is_kanunu_4857.txt"],
-      "notes": "Madde 17"
+      "query": "1076_Yedek Subaylar Kanunu kapsamında YEDEK SUBAYLAR VE YEDEK ASKERİ MEMURLAR KANUNU (1) Kanun Numarası : 1076 Kabul Tarihi : 16/6/1927 Yayımlandığı R. Gazete : Tarih : 9/7/1927 Sayı : 628 ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
     },
     {
-      "query": "Geçerli fesih sebebi ne zaman aranır?",
-      "relevant_chunk_ids": ["is_kanunu_4857.txt#18"],
-      "relevant_source_files": ["is_kanunu_4857.txt"],
-      "notes": "Madde 18"
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 1 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_1_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
     },
     {
-      "query": "Resmi yazışmada hangi alanlar zorunludur?",
-      "relevant_chunk_ids": [],
-      "relevant_source_files": ["yazisma_usulleri.txt"],
-      "notes": "internal docs"
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 1 – Yedek subay ve memur sınıfı seferde muhtelif kadro boşluklarını doldurmak maksadiyle yapılmıştır. Bu sınıfa ayrılanlar hazar vaktinde yetişt ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_1_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 2 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_2_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 2 – Yedek subay ve yedek askeri memurları şunlardır: A) (Değişik: 1/2/1930 - 1555/1 md.) Kara, deniz, hava ve jandarmadan müteakit ve mü stafi o ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_2_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_3_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 3 – (Değişik: 12/11/1980 - 2338/1 md.) a) Her celp yılından evvel müteakip yıl Silahlı Kuvvetlerin subay sınıflarına göre yedek subay ihtiyacı G ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_3_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_3_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında b) Dört yıl ve daha fazla süreli fakülte, akademi , yüksekokul ve enstitüler ile Milli Eğitim Bakanlığınca bunların dengi olduğu kabul edilen yurt dış ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_3_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_3_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında b - Kanunda geçen \"ihtiyat zabit ve ihtiyat askeri memurlar\" ibareleri, 29/11/1983 tarih ve 2962 sayılı Kanunun 2 nci maddesiyl e, \"yedek subay ve yed ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_3_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında c) Yükümlüler, Silahlı Kuvvetlerin ihtiyaç duyduğu yedek subay miktarından fazla ise; 1. İstekliler, yükümlülüklerini erbaş - er olarak yerine getireb ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında yedek subay ihtiyacı karşılanır. Seçimin şekli ve yapılma esasları ile celp usulleri, bu konulara ilişkin olarak çıkarılacak yönetmelikte saptanır. d) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında adayı olarak ayrılırlar. e) Yedek subay adayı yükümlülerin askerlik hizmetleri, eğitim - öğretim için askerlik şubelerinden sevkleri ile başlar. f) Ye ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında yaş haddinin sonundan iki kat düşülür. (1) Yedek subayların hizmet süreleri barışta Cumhurbaşkanı kararı ile oniki aya kadar indirilebilir.(1) (2) g)  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında h) (Değişik: 27/3/2007-5613/1 md.) Yedek subaylardan hastalananlar, muvazzaf subay emsalleri gibi sıhhî izin süresine tabi tutulurlar.Sıhhî izin süres ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00005"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında (1) 2/7/2018 tarihli ve 700 sayılı KHK ’nin 5 inci maddesiyle, bu bendin birinci paragrafında yer alan “Genelkurmay Başkanlığının göstereceği lüzum üz ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00005"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında ı) (Ek: 21/7/1999 - 4414/1 md.; Değişik: 22/5/2012 - 6318/23 md.) En az dört yıl s üreli fakülte veya yüksekokulları kendi nam ve hesabına bitirip tem ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Teğmen nasbedilmeden ayrılanlardan; (a) Asteğmen rütbesindeyken temel askerlik eğitimine başladıktan sonra ayrılanların eksik kalan hizmetleri asteğme ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00002_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Askerlik hizmet süresini tamamlamadan dis iplinsizlik veya ahlaki nedenlerle Türk Silahlı Kuvvetleriyle ilişikleri kesilen veya mahkeme kararı ile ya  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00002_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 4 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_4_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 4 – (Mülga: 23/3/1950 - 5619/29 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_4_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 5 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_5_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 5 – Vakti seferde görülecek lüzum üzerine cetvelde yazılı müddetlerin azaltılm asına Başkumandanlık salahiyettardır. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_5_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 6 – (Değişik birinci fıkra: 3/10/2016 -KHK-676/45 md.; Aynen kabul: 1/2/2018 -7070/38 md.) 3 üncü maddedeki hizmetleri veya yedek subaylığı esna ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında (Ek : 17/9/1943 - 4497/2 md.) Muvazzaflık hizmetlerini yaptıktan ve yedek subay nasbedildikten sonra orduda istifade edilebilecek başka bir meslek vey ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 7 – (Değişik: 17/3/1932 - 1933/1 md.) Üçüncü maddede yazılı hizmetler esnasında talim ve tahsil devrelerinden her hangi birine kanuni bir mazere ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_2"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Makbul bir mazereti olmaksızın muhtelif zamanlarda ceman üç ay devamsızlık gösterenler veya suihalleri görülenlerin kanuni cezalarından başka yedek su ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_2"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 8 – (Değişik: 29/11/1983 - 2962/3 md.) Yedek subay adayı olarak askere sevkden evvel veya yedek subay yetiştirilmekte iken aşağıdaki engel hali  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında çıkarmayı gerektiren bir suçtan mahküm olanlar, 2. Kamu hizmetlerinden müebbeten yasaklı olanlar, 3. Hileli müflis olduğu ilan edilenler, b) Yönetmeli ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında yıkıcı, bölücü ideolojik görüşü benimsemiş olduğu anlaşılanlar, Okul disiplin kurullarının vereceği subay olamaz kararı üzerine er olurlar. c) Yedek s ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 9 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_9_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 9 – (Mülga: 22/5/2012 - 6318/26 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_9_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_10_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 10 – (Mülga: 22/5/2012 - 6318/26 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_10_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 11 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_11_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=11"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 11 – (Değişik: 3/10/2016-KHK-676/46 md.; Aynen kabul: 1/2/2018-7070/39 md.) Malûliyet iddia edenlerin sevkleri, bulundukları askerlik şubelerinc ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_11_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=11"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 12 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_12_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=12"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 12 – (Mülga: 22/5/2012 - 6318/26 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_12_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=12"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 13 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_13_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=13"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 13 – Seferberliğin ilanında veya manevra ve saire için celp puslası alındıktan sonra raporla gösterilmiş had hastalıklarla rüküp ve nüzule iktid ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_13_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=13"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 14 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_14_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 14 – (Değişik: 25/12/1967-976/1 md.) A) (Değişik: 22/5/2012 - 6318/24 md.) Seferde görev alacak yedek subay ve yedek askeri memurlara bu görevle ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_14_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 14 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_14_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında B) Sefer görevi alan yükümlüler; seferberlik ilanında,ilan saatinden başlıyarak 6 saat içinde yola çıkmaya ve Köy ve mahallerinin şube merkezlerine ol ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_14_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 14 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_14_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Sefer görev emri yükümlüye imza ettirilmemiş olsa dahi mutebe rdir.Bu yükümlülerden yabancı memleketlerde bulunanların çağırılmaları, elçilik veya kon ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_14_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 14 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_14_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında C) Yedek subay ve yedek askeri memurlar barışta manevra,tatbikat, atış ve konferanslar gibi öğrenim ve eğitim gayesiyle, yol hariç 45 günü geçmemek üz ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_14_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 14 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_14_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında (2) (1) 2/7/2018 tarihli ve 700 sayılı KHK’nin 5 inci maddesiyle, bu paragrafta yer alan “Bakanlar Kurulu” ibareleri “Cumhurbaşkanı” şeklinde değiştir ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_14_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=14"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_3"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Hizmete çağrıldıkları halde gelmeyenler (1) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_3"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 15 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_15_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=15"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 15 – (Değişik: 22/5/2012 - 6318/25 md.) Talim ve manevra için çağrıldıkları halde 1111 sayılı Kanunun 47 nci maddesine göre özürsüz gelmedikleri ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_15_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=15"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 16 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_16_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=16"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 16 – (Değişik: 21/4/1988 - 3443/1 md.) Her ne sebeple olursa olsun Türk Silahlı Kuvetlerinden ayrılanlar muvazzaf olarak tekrar Silahlı Kuvvetle ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_16_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=16"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 17 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_17_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=17"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 17 – (Değişik: 5/2/2009-5837/18 md.) Yedek subaylar; barışta silah altında geçen süreleri, hizmet sürelerinden sayılmak suretiyle, m uvazzaf sub ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_17_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=17"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 18 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_18_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=18"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 18 – Yedek subay ve memurlarından seferde ordudaki vazifelerini ifa ederek, terhis edilenler, memursalar ordudaki hizmetleri kendi memuriyetinde ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_18_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=18"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 19 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_19_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=19"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 19 – (Mülga: 10/2/1954 - 6245/63 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_19_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=19"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 20 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_20_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 20 – Umumi ve kısmi seferberlik için çağrılan mülazimlere ve yüzbaşılara bir defaya mahsus olmak üzere elbise ve teçhizat tedariki için tahsisat ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_20_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 21 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_21_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=21"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 21 – Seferberlikte silah altına alınan yedek subay ve memurlarına celp ve terhislerinde vazife verildiği tarih ile salıverildikleri tarih arasın ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_21_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=21"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 22 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_22_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 22 – (Değişik: 16/4/1987 - 3358/3 md.) Yedek subay ve memurlar barışta ve seferde ancak, 5434 sayılı Kanunda yazılı yaşlara kadar hizmete celp o ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_22_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 22 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_22_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında (Değişik ikinci fıkra: 26/2/2008 -5743/2 md.) Ancak, sefer ve fe vkalade haller dolayısıyla, ordunun kısmen veya tamamen seferi mevcuda tamamlanamamas ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_22_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 23 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_23_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=23"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 23 – (Değişik: 27/7/1970 - 1316/1 md.) Yedeksubay ve yedek askeri memurluktan çıkarılmayı ve yaşlarına göre haklarında Ask erlik Kanununun uygul ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_23_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=23"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_4"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında a) Türk Silahlı Kuvvetlerinde subaylıktan çıkarmayı gerektiren bir suçtan mahkum olanlar. b) Kamu hizmetinden müebbeden yasaklı olanlar. c) Hileli müf ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_4"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 24 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_24_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=24"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 24 – Mesleklerindeki iktidar ve ihtisaslariyle temeyyüz ederek tanınmış olan yedek subay ve memurları Erkanı Harbiyei Umumiye Riyaseti ve Müdafa ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_24_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=24"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 25 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_25_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında 25 – (Değişik: 7/4/1965 - 573/1 md.) Yedek subay ve yedek askeri memurlardan hiçbirisi barış ve savaş hizmetinden istisna edilemez.Ancak Türkiye Büyük ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_25_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 25 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_25_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında İzin almaksızın görevi terk edenler 3634 sayılı Milli Müdafaa M ükellefiyeti Kanununun 66 ncı maddesine göre cezalandırılırlar.Milli hayatın ve Türk S ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_25_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 25 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_25_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında a) Olağanüstü durumun, seferberlik ve savaş hallerinin devamında her erteleme işlemi en çok iki aya kadar hüküm ifade eder. Bu sürenin içinde veya son ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_25_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 25 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_25_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında sürenin içinde veya sonunda Cumhurbaşkanınca, Türkiye Büyük Millet Meclisi üyeleri hariç, diğer ertelemeler kısıtlanabilir veya kaldırılabilir. (1) b) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_25_00004"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_5"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında c) Her hangi bir yedek subayın ve yedek askeri memurun ertelenebilmesi için o kimsenin olağanüstü durumun, seferberlik ve savaş hallerinin başlangıç t ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_5"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 26 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_26_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 26 – Umumi veya kısmi seferberlikte tabip, baytar, kimyager, eczacı ve dişçilerin evvela serbest çalışanları, badehu yirmi beşinci maddenin fıka ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_26_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 26 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_26_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında (Değişik ikinci fıkra: 26/2/2008 -5743/2 md.) Ancak, sefer ve fevkalade haller dolayısı yla, ordunun kısmen veya tamamen seferi mevcuda tamamlanamamas ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_26_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 27 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_27_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=27"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 27 – (Değişik: 3/6/1935 - 2754/4 md.) Yedek subay ve memurları silah altına davet edildikleri zaman askeri elbiseyi giymeğe mecburdurlar. Atidek ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_27_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=27"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 28 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_28_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=28"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 28 – Yedek subay ve memurları bu hüviyetlerini ordu haricinde şerefli bir unvan olarak isim ve meslek ilave edilmemiş kart ve imzalarında istima ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_28_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=28"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 29 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_29_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=29"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 29 – Muvazzaflığı iktisap etmemiş olan yedek subaylardan mülazim ve yüzbaşı rütbesinde bulunanlar talip olurlarsa lazım gelen evsafı haiz bulund ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_29_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=29"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 30 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_30_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=30"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 30 – İşbu kanunun muhtelif maddelerinin tatbikatına ait teferruat, yapılacak talimatnamelerle tanzim olunur. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_30_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=30"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 31 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_31_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=31"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 31 – Bu kanuna muhalif bilcümle ahkam ile 5 Nisan 1326 tarihli ihtiyat zabitan kanunu ve zeyli mülgadır. (1) 2/7/2018 tarihli ve 700 sayılı KHK’ ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_31_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=31"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 1 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_1_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 1 – (Ek: 1/2/1930-1555/5 md.; Değişik birinci fıkra: 21/5/1932-1972/2 md.) Üçüncü maddede yazılı derecelerdeki tahsili bitirdikten sonra şahadet ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_1_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 1 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_1_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Nüfus memurları bu malümatı yoklama defterlerindek i künyelerine geçirmeğe mecburdurlar. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_1_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 2 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_2_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 2 – (Ek: 1/2/1930 - 1555/5 md.) Üçüncü maddede yazılı derecede tahsili olanlardan 9 Kanunuevvel 1927 tarihinden sonra asker edilmiş ve fakat ask ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_2_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_3_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 3 – (Ek: 1/2/1930 - 1555/5 md.) Üçüncü maddede gösterilen tahsil derecesinde olanlardan 9 Kanunuevvel 1927 tarihinden sonra asker edilenler mezk ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_3_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 4 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_4_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 4 – (Ek: 1/2/1930 - 1555/5 md.) Üçüncü müzeyyel madde hükmüne muhalif olarak memur istihdam edenler hakkında Türk Ceza Kanununun iki yüz otuzdok ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_4_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 5 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_5_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 5 – (Ek: 31/5/1944 - 4575/1 md.) Hazarda gerek muvazzaf ve gerek ihtiyat hizmet için çağırılan Yedek Subay ve Yedek Askeri Memurlardan askere ça ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_5_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 6 – (Ek: 12/11/1980 - 2338/2 md.) Bu Kanuna tabi yükümlülerin celp ve sevkleri ile buna ilişkin işlemlerine ait diğer hususlar, Türkiye Radyolar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 7 – (Ek: 16/4/1987 - 3358/4 md.) Milli Eğitim Gençlik ve Spor Bakanlığının ihtiyaç göstermesi ve Genelkurmay Başkanlığının uygun görmesi üzerine ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında İhtiyacın bunlarla da karşılanamaması halinde yeteri kadarı, öğretmen olabilecek öğrenimi görmüş olup da istekte bulunmayanlar arasından kura ile tesp ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bu yükümlüler; öğretmenlik görevleri sırasında resmi elbise giyemezler, emsali yedek subaylar kadar hizmet yaparlar, hizmetleri askerlik şubelerinden  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Milli Eğitim Gençlik ve Spor Bakanlığı emrine verilenler hakkında firar, hava değişimi,izin tecavüzü,kısa süreli firar, kısa süreli izin tecavüzü,yokl ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 8 – (Ek: 1/2/2011-6108/3 md.) Vatani görevini yapmakta iken barışta ve savaşta, yurt içinde ve yurt dışında, görev esnasında veya görev dışında  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bu ödemeden sigorta primi dâhil hiçbir kesinti yapılmaz ve tedavi süresinde yapılan sağlık yardımı personelden tahsil edilmez.Olay/kaza durumu, keyif  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde ek madde ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_ek_madde_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=ek madde"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında ek maddeye çevrilerek 21/6/1927 tarih ve 1111 sayılı Kanuna ek 5 inci madde olarak eklenmiştir. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_ek_madde_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=ek madde"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_6"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Tedavisi devam edenlerden; a) Haklarında düzenlenecek kesin işlemli sağlık kurulu raporu ile 8/6/1949 tarihli ve 5434 sayılı Türkiye Cumhuriyeti Emekl ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_6"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 9 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_9_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 9-(Ek: 13/7/2013-6496/6 md.) Bu Kanun kapsamında askerlik yükümlülüğünü yerine getirenlere, askerliğe sevk edi ldiği tarihten geçerli olmak üzer ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_9_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 9 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_9_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Ancak, söz konusu olayların gerçekleştiği tarihte bakaya, firar, izin tecavüzü, hava değişimi tecavüzünde bulunanlar ile kendini askerliğe yaramayacak ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_9_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_10_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 10- (15/8/2017-KHK-694/2 md.; Aynen kabul: 1/2/2018-7078/2 md.) Sağlık Bakanlığınca talep edilmesi halinde; 9/11/2016 tarihli ve 6756 sayılı Ola ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_10_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_10_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Buna ilişkin usul ve esaslar, Millî Savunma Bakanlığı ve Sağlık Bakanlığı arasında yapılan protokolle belirlenir. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_10_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde Muvakkat Madde ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Muvakkat Madde – Aşağıda gösterilenlerin yedek subaylığı ve yedek askeri memurluğu şu şartlar dairesinde yapılır: A) Evvelce hesap memuru sınıfından y ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde Muvakkat Madde ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında yetişip de hesap memuru vekili olarak terhis edilmiş bulunanlar (Bunlar çağırıldıkları zaman ihtiyat hesap memur muavini olarak istihdam olunurlar) B) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde Muvakkat Madde ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Mektebi Alisi nden ve muavin baytar mektebinden çıkanlar (çağırıldıklarında mukaddema emsalinin ilk çağrılışlarındaki rütbe ile tavzif olunurlar.) C)  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde Muvakkat Madde ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında görülenler yedek subay vekili nasbolunurlar, Liyakatları görülmiyenlerin yedek subaylığa namzetlik hakları refedilerek ihtiyat çavuş olurlar.) D) Kısa ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_Muvakkat_Madde_00003"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=Muvakkat Madde"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 1 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_1_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 1 – (Ek: 27/7/1970 - 1316/2 md.) Bu kanunun yürürlüğe girdiği tarihten evvel 1076 sayılı Kanun hükümlerine göre yede ksubay adayı seçilenlerden  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_1_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 2 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_2_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 2 – (Ek: 27/7/1970 - 1316/2 md.) Bu kanunun yürürlüğe girdiğinden önce silah altına alınmış yedeksubaylar (Yedeksubay adayları dahil) 1 Ekim 197 ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_2_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_3_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 3 – (Ek: 27/7/1970-1316/2 md.) 11/10/1960 tarih ve 97 sayılı Kanunun geçici 2 nci maddesi şümulüne girip de bu kan unun yürürlüğe girdiği tariht ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_3_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 4 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_4_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 4 – (Ek: 27/7/1970 - 1316/2 md.) Bu kanunun yürürlüğe girdiği tarihten evvel 1111 sayılı Askerlik Kanununa göre son yoklama kaçağı veya bakaya d ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_4_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 4 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_4_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bu kanunun yürürlüğe girdiği tarihe kadar; bakaya, yoklama kaçağı ve saklı suçlarından mahküm olanların cezaları; ceza mahkümiyetlerinin neticeleri il ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_4_00001"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 5 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_5_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 5 – (Ek:27/7/1970 - 1316/2 md.) Bu kanunun hükümleri yürürlüğe girdikten sonra yapılacak ilk yedek subay adayı celbinde; Silahlı Kuvvetlerin Sub ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_5_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 6 – (Ek:12/11/1980 - 2338/3 md.; Değişik: 24/3/1981 - 2440/1 md.) Silahlı Kuvvetlerin ihtiyacı olan meslek ve vasıfları haiz yükümlüler hakkında ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Dört aylık temel askerlik eğitimine tabi olanların sağlık nedeni ile istirahat,hava değişimi ve sağlık kurumlarında tedavi ve müşahadede geçen süreler ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_6_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bu maddeye tabi yükümlülerin celp ve sevkleri ile buna ilişkin işlemlerine ait diğer hususlar Türkiye Radyoları ve Televizyonu aracılığıyla ilan edilm ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_6_00002"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_7_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 7 – (Ek: 29/11/1983-2962/5 md.) Yoklama kaçağı veya bakaya suçundan hüküm giydikleri için halen erbaş olarak askerlik hizmetini yapmakta olanlar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_7_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_8_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 8 – (Ek: 16/4/1987-3358/9 md.) Bu Kanunun yürürlüğe girdiği tarihte, Silahlı Kuvvetlerde yedek subay olarak yükümlülüğünü yerine getirmekte olan ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_8_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_7"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bakanlığınca ihtiyaç gösterilmesi ve Genelkurmay Başkanlığınca uygun görülmesi halinde istekleri üzerine Bakanlığa bağlı okullarda geri kalan hizmetle ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_preamble_00000_7"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 9 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_9_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 9 – (Ek: 16/4/1987 - 3358/9 md.) Kanunun yürürlüğe girdiği tarihte bu Kanun hükümlerine göre askerlik çağı yaş sınırını geçmiş olan yedek subay  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_9_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_10_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 10 – (Ek: 16/4/1987 - 3358/9 md.) Bu Kanunun yürürlüğe girdiği tarihe kadar saklı,yoklama kaçağı ve bakaya durumunda olan yedek subay adaylarınd ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_10_00000_1"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_10_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Bedelin ödeme usul ve esasları ve uygulama ile ilgili diğer hususlar Bakanlar Kurulu Kararı ile düzenlenir. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_10_00001_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 11 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_11_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=11"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 11 – (Ek: 21/4/1988 - 3443/2 md.) Bu Kanunun yürürlüğe girdiği tarihten önce, 1 076 sayılı Kanunun 2703 sayılı Kanunla değişik 16 ncı maddesi hü ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_11_00000_1076_Yedek Subaylar Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=11"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 32 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_32_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=32"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 32 – Bu kanun neşri tarihinden beş ay sonra muteberdir. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_32_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=32"
+    },
+    {
+      "query": "1076 sayılı 1076_Yedek Subaylar Kanunu Madde 33 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1076_33_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=33"
+    },
+    {
+      "query": "1076_Yedek Subaylar Kanunu kapsamında Madde 33 – Bu kanunun icrayı ahkamına İcra Vekilleri Heyeti memurdur. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1076_33_00000"
+      ],
+      "relevant_source_files": [
+        "1076_Yedek Subaylar Kanunu.pdf"
+      ],
+      "notes": "auto article=33"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında UMUMİ HIFZISSIHHA KANUNU12 Kanun Numarası : 1593 Kabul Tarihi : 24/4/1930 Yayımlandığı Resmî Gazete : Tarihi: 6/5/1930 Sayı: 1489 Yayımlandığı Düstur  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 1 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_1_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 1 – Memleketin sıhhi şartlarını ıslah ve milletin sıhhatine zarar veren bütün hastalıklar veya sair muzır amiller le mücadele etmek ve müstak be ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_1_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=1"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 2 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_2_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 2 – Umumi sıhhat ve içtimai muavenet hizmetlerine ait Devlet vazaifi Sıhhat ve İçtimai Muavenet Vekaleti taraf ından ifa ve hususi idarelerle be ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_2_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=2"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_3_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 3 – Sıhhat ve İçtimai Muavenet Vekaleti bütçeleriyle muayyen hatlar dahilinde olarak aşağıda yazılı hizmetleri doğrudan doğruya ifa eder: 1 - Do ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_3_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_3_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında 5 - Tababet ve şubeleri sanatlarının icrasına nezaret.1 Bu Kanunda, il özel idaresinin sorumlu ve yetkili kılındığı görev ve hizmetlerle ilgili olarak ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_3_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 3 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_3_00002"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında 3 Bu bentteki \"doğumu tezyit\" hakkındak i hüküm 1/4/1965 tarih ve 557 sayılı Kanunun 8 inci maddesi ile ilga edilmiş olduğundan \"tezyit\" ibaresi metin ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_3_00002"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=3"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_1593_Umumi Hıfzıssıhha Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında 6 - (...)4 ilaçları ve bütün zehirli müessir ve uyuşturucu maddelerle yalnız hayvanlar için serumlar ve aşıları murakabe hariç olmak üzere her nevi se ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_1593_Umumi Hıfzıssıhha Kanunu_pdf"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında mahsus müesseseler küşat ve idaresi. 12 - Mesleki tedrisat müesseseleri küşat ve idare veya mümasili müe ssesatı murakabe ve bunlara müsaade itası. 13 ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 4 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_4_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 4 – Doğrudan doğruya şehir ve kasabalar, köyler hıfzıssıhhasına veya tıbbi ve içtimai muavenete mütaallik işlerin ifası belediyelere ve idarei h ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_4_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=4"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 5 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_5_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 5 – Sıhhat ve içtimai Muavenet Vekaleti 3 üncü maddede zikredilen hizmetleri ifa için hususi teşkilat kanununa tevfikan teşkil edilmiş fenni ve  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_5_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=5"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 6 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_6_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 6 – Her vilayette Sıhhat ve İçtimai Muavenet Vekaletine merbut olmak üzere bir Sıhhat ve İçtimai Muavenet Müdürü bulunur. Sıhhat müdürleri bulun ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_6_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=6"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_1"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında sıhhi mevzuata tevfikan sıhhiye müdürlerini istihdam ederler ve sıhhi hususlarda onların rey ve mütalealarını alırlar.6 ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_1"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 7 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_7_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 7 – Sıhhat ve İçtimai Muavenet müdürleri bulundukları vilayetin sı hhi umur ve muamelelerinden vali ile beraber mesul olup bütün sıhhi mevzuat v ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_7_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=7"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 8 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_8_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 8 – Her kazada ve icabı takdirinde nahiye merkezlerinde bir veya mütaaddit Hükümet tabipleri istihdam olunur. Hükümet tab ipleri doğrudan doğruy ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_8_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=8"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 9 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_9_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 9 – Sıhhat ve İçtimai Muavenet Vekaleti üçüncü ve dördüncü maddelerde zikredilen vazifeleri ifa ve müesseseleri idare etmek üzere tabipler, bayt ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_9_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=9"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 10 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_10_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 10 ilâ 15 - (Mülga: 11/10/2011-KHK-663/58 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_10_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=10"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 16 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_16_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=16"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 16 – Yüksek Sıhhat Şürası azasına her devrei içtimaiyeye mahsus olmak üzere her sene bütçesinde miktarı muharrer bir hakkı huzur verili r. Ankar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_16_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=16"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 17 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_17_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=17"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 17 – (Mülga: 11/10/2011-KHK-663/58 md.) DÖRDÜNCÜ FASIL Vilayet Hususi İdareleri ve Belediyeler ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_17_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=17"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 18 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_18_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=18"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 18 – Vilayet hususi idareleri bütçelerinde husu si kanuna tevfikan tefrik ve Sıhhat ve İçtimai Muavenet Vekaletinin tensibi ile sarfolunan sıhhi ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_18_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=18"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_2"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında istasyonları tesisine ve verem ve frengi ve çocuk vefiyatı mü cadelesine muhtas hıfzıssıhhai içtimaiye dispanserlerine ve sıtma ve frengi ilacı tedari ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_2"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 19 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_19_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=19"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 19 – Vilayetler hususi idarelerine ait sıhhi teşkilat ve tesisat mahalli Sıhhat ve İçtimai Muavenet müdürlerinin mu rakabesi altında bulunup bun ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_19_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=19"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 20 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_20_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 20 – Belediyelerin umum i hıfzıssıhha ve içtimai muavenete taallük eden mesailden ifasile mükellef oldukları vazifelere aşağıda zikredilmiştir.  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_20_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 20 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_20_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında - Sari hastalıklarla mücadale işlerine muavenet. 11 - Hususi eczane bulunmayan yerlerde eczane küşadı. 12 - İlk tıbbi imdat ve muavenet teşkilatı. 13  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_20_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=20"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 21 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_21_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=21"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 21 – Vilayet hususi idareleriyle belediyelerin 18 ve 20 inci maddel erde gösterilen hizmetlerini ifa için kanunu mahsuslarına tevfikan Vekaletçe ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_21_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=21"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 22 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_22_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 22 – Belediyeler ve vilayetler hususi idarelerince sıhhi ve içtimai hizmetlerden hangilerinin ifası mecburi ve hangilerinin ihtiyari olduğu husu ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_22_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=22"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_3"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında BEŞİNCİ FASIL Vilayetler ve kazalar umumi hıfzıssıhha meclisleri ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_3"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 23 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_23_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=23"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 23 – Her vilayet merkezinde bir umumi hıfzıssıhha meclisi toplanır. Bu meclis mahalli sıhhat ve iç timai muavenet müdürü, nafıa m ühendisi, maar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_23_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=23"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 24 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_24_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=24"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 24 – Kazalarda bu mecl isler kaymakamın riyaseti altı nda Hükümet tabibi, mevcut ise bir Hükümet baytarı ve askeri tabip, belediye tabibi ve ser ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_24_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=24"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 25 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_25_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 25 – Umumi hıfzıssıhha meclisleri müntehap azası her üç senede bir değişir. Eski azanın yeniden intihabı caizdir . Her defa tebeddülünde kaymaka ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_25_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=25"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 26 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_26_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 26 – Umumi hıfzıssıhha meclisleri alelade ayda bir kere içtima ederler. Ahvali fevkalâdede veya bir sari ve salgı n hastalık zuhurunda valinin d ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_26_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=26"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 27 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_27_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=27"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 27 – Umumi hıfzıssıhha meclisleri mahallin sıhhi ahvalini daima nazarı dikkat önünde bulundurarak şehir ve kasaba ve köy ler sıhhi vaziyetinin ı ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_27_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=27"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 28 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_28_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=28"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 28 – Umumi hıfzıssı hha meclislerinin mukarreratın dan mahalli vazifeler ve salahiyetler arasında bulunan işler vali veya kaymakam tarafından ic ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_28_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=28"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_4"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Hudutlar ve sahiller sıhhi müdafaası ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_4"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 29 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_29_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=29"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 29 – Beşinci maddede zikredilen Hudutlar ve Sahiller Sıhhat Umum Müdürlüğü b eynelmilel seyrüsefer ve ticar et seb epleriyle intikal eden beşeri ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_29_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=29"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 30 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_30_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=30"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 30 – Hudutlar ve Sahiller Umum Müdürlüğü mer'i ola n beynelmilel mukaveleler ve Devletçe mevz u mevzuat ile Sıhhat ve İçtima i Muavenet Vekaleti ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_30_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=30"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 31 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_31_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=31"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 31 – (Değişik: 15/6/1942 - 4255/1 md.) Bir Türk limanından diğer bir Türk liman ına veya ecnebi limanlarından bir Türk limanına gelen her gemi h ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_31_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=31"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 32 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_32_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=32"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 32 – (Mülga: 15/6/1942 - 4255/2 md.) ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_32_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=32"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 33 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_33_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=33"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 33 – (Değişik: 15/6/1942 - 4255/1 md. Türk gemilerinin patentaları üzerin de konsolosluk vizesinin bulun masını mecburi kılan memleketlere mensu ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_33_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=33"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 34 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_34_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=34"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 34 – (Değişik: 15/6/1942 - 4255/1 md.) Patentayı hamil olmaksızın boğazlara gelen transit gemilerin gösterecekleri sıhhi beyanname veyahut uğrad ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_34_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=34"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 35 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_35_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=35"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 35 – (Değişik: 15/6/1942 - 4255/1 md.) 33 üncü maddede zikredilen vizelere mukabil mahsus kanun mucibince alınaca k resimler konsolosluklar tara ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_35_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=35"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 36 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_36_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=36"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 36 – Sıhhat patentaları üzerinde yapılan her türlü tahrifler veya s alahiyettar makamatça tasdik edilmemiş tashihler patentayı hükümden düşürür. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_36_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=36"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 37 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_37_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=37"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 37 – Bir geminin hareket limanında kolera, veba, sarı hümma, lekelihümma ve çiçek vakaları ve ya hut Sıhhat ve İçtimai Muavenet Vekaletince tayi ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_37_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=37"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 38 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_38_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=38"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 38 – (Değişik: 15/6/1942 - 4255/1 md.) 37 nci maddede zikredilen hastalıklardan hariçten gelmiş olmadığı tahakkuk eden kolera, veba ve sarı humm ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_38_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=38"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 39 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_39_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=39"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 39 – Hiç bir patentayı hamil olmıyarak Türkiye limanlarına gelen gemiler bulaşık patenta ile gelmiş gemiler gibi muameleye tabi olurlar. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_39_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=39"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 40 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_40_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=40"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 40 – (Değişik: 15/6/1942 - 4255/1 md.) Ecnebi limanların dan gelen tekmil gemiler ilk vasıl old ukları Türk limanında ve munhasıran Türk limanla ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_40_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=40"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 40 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_40_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=40"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Muntazam seferler yapan vapurlar haricinde kalan diğer büyük ve küçük bütün gemiler sah il sıhhiye teşkilatı bulunan her Türk l imanında sıhhi muamele ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_40_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=40"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 41 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_41_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=41"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 41 – (Değişik: 15/6/1942 - 4255/1 md.) Ecnebi limanlardan ilk Türk limanına vasıl olan gemilerle Boğazlarda sıhhi muameleye tabi tutulan gemiler ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_41_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=41"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_5"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında verilmedikçe gemilere başkalarının girmesi ve gemilerden 47 nc i madde mezkür talimatname hükümleri haricinde kimsenin çıkması memnudur. Buharlı veya  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_5"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 42 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_42_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=42"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 42 – (Değişik: 15/6/1942 - 4255/1 md.) Kaza, fırtına veya ahvali fevkalade sebebiyle bir limana ilticaya mecbur olan gemiler dahi patentalarını  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_42_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=42"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 43 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_43_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=43"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 43 – (Değişik: 15/6/1942 - 4255/1 md.) Türk limanlarına gelen ecnebi harb gemileriyle ecnebi donanmalarına mensup muavin sefineler ve hüküm darl ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_43_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=43"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 44 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_44_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=44"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 44 – (Değişik: 15/6/1942 - 4255/1 md.) Türk harb sefineleri ve ticaret ile münasebeti olmayıp Hükümete ait bulunan sair gemiler munhasıran hizme ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_44_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=44"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 45 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_45_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=45"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 45 – (Değişik: 15/6/1942 - 4255/1 md.) Türk limanlarından birinde sari hastalık zuhur ederse Sıhhat ve İçtimai Muavenet Vekaletinin emriyle bu l ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_45_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=45"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 46 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_46_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=46"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 46 – (Değişik: 15/6/1942 - 4255/1 md.) 43 ve 44 üncü maddelerde zikredilen gemilerle ve küçük mesafelere gidip hiçbir yere uğramıyarak avdet ede ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_46_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=46"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_6"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında üzere Türkiye limanlarında n ihtilât ederek çıkan her Türk ve ecnebi gemisi bir sıhhat patentasını hamil olur. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_6"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 47 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_47_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=47"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 47 – Limanlarda gemilerin muvasalat ve hareketlerinde icrası icap eden sıhhi muamele, patentaların şekli, vasıf ve sureti itası, yolcu, müretteb ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_47_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=47"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 48 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_48_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=48"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 48 – Türkiye kon solosları bulundukları mahalde zuhur eden ve 37 nci maddede zikredilen hastalı k vakalarını ve bu nlar hakkında ittihaz edilen  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_48_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=48"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 49 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_49_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=49"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 49 – Türkiye limanlarına sari ve salgın hastalıkların duhulüne mani olmak için aşağıda zikredilen tedbirler ittihaz edilir: 1 - Gemilerin tıbbi  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_49_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=49"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 49 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_49_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=49"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında kabil olan ticaret eşyasiyle zati eşyanın ve gemi eşyasının fenni tathiri. 5 - Hastalık amilini nakle vasıta olan haşeratın ve hayvanların itlafı. 6 - ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_49_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=49"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 50 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_50_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=50"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 50 – Sari ve salgın hastalıkların nakline vasıta olup fenni tathiri mümkün veya faydalı olmıyan her nevi eşyanın gemilerden tahliye edilmesine v ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_50_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=50"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 51 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_51_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=51"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 51 – Türkiye ve ecnebi limanlarından bulaşık veya şüpheli olanlar Sıhhat ve İçtimai Muavenet Vekaletince ilan olunur. Bu takdirde bu limanlar mü ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_51_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=51"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 52 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_52_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=52"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 52 – (Değişik: 15/6/1942 - 4255/1 md.) Bütün Türkiye limanlarında sıhhi muamele ifası Hudut ve Sahiller Sıhhat Umum Müdürlüğü memurlarına aittir ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_52_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=52"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 53 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_53_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=53"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 53 – Hudutlar ve Sahiller Sıhhat Umum Müdürlüğü hizmetlerine ait olan resimler ve tathir, tephir, tahaffuzhane masrafları ve kanuna muhalif hare ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_53_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=53"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 54 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_54_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=54"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 54 – Komşu memleketlerden birinde 37 nci maddede zikredilen hastalıklar zuhur ettiği takdirde kara hudutlarında Sıhhat ve İçtimai Muavenet Vekal ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_54_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=54"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 55 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_55_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=55"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 55 – Komşu memleketlerdeki salgın hastalıkların memleket için tehlikey i mucip bir şekilde devam eyleyerek adi tedbirler ile bu tehlikenin izale ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_55_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=55"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 56 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_56_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=56"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 56 – 37 nci maddede zikredilen hastalıklardan birinin hüküm sürdüğü memleketlerden hava nakil vasıtalariyle vürut eden yolcu ve eşyalar hakkında ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_56_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=56"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_7"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında maddede yazılan tedbirler Sıhhat ve İçtimai Muavenet Vekaletinin münasip göreceği hallerde hudutlarda veya bu vasıtaların karaya indikleri mahallerde  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_7"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 57 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_57_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=57"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 57 – Kolera, veba (Bübon veya zatürree şekli), lekeli humma, karahumma (hummayi tiroidi) daimi surette basil çıkar an mikrop hamilleri dahi - pa ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_57_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=57"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 57 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_57_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=57"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Kudurmuş veya kuduz şüpheli bir hayvan tarafından ısırılmala rı, kuduza müptela hastaların veya kuduzdan ölenlerin ihbarı da mecburidir. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_57_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=57"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 58 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_58_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=58"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 58 – İcrayı sanat eder her tabip 57 nci maddede zikredilen vakaları kati v eya muhtemel teşhis vaz'ını mütaakıp ilk 24 saat zarfında sıhhiye dai ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_58_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=58"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 59 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_59_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=59"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 59 – Sari hastalıkların haber verilmesini kolaylaştırmak üzere Sıhhat ve İçtimai Muavenet Vekaletince hazırlanıp arzu eden tabiplere tevzi ed il ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_59_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=59"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 60 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_60_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=60"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 60 – 57 nci maddede yazılan hastalıklara u ğrayan birisinin ikametgahı değiştiğini, hastalığı haber vermekle mükellef olanlar öğrendikleri takdi ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_60_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=60"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 61 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_61_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=61"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 61 – Hastane baştabipleri, mektep, fabrika, imalathane, hayır müessesel eri, ticarethane ve mağaza, ot el, pansiyon, han, hamam, hapi sane s ahi ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_61_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=61"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_8"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında sanatlarını icra sebebiyle muttali oldu kları 57 nci maddede zikre dilen vakaları derakap alakadar makamlara tebliğ ve ihbara mecburdurlar. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_8"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 62 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_62_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=62"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 62 – Deniz veya nehirlerde seyrüsefer eden her nevi sefinelerde 57 nci maddedeki vakalardan biri zuhur etti ği takdirde geminin kaptan ve reisi  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_62_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=62"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 63 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_63_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=63"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 63 – (Değişik: 15/6/1942 - 4255/1 md.) Limanlarda gemilere sıhhat patentası vermekle mükellef sahil sıhhat memurları veya teşkilat bulunmıyan ma ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_63_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=63"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 64 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_64_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=64"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 64 – 57 nci maddede zikredilenlerden başka her hangi bir hastalık istilai şekil aldığı veya böyle bir tehlike baş gö sterdiği takdirde o hastalı ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_64_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=64"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 65 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_65_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=65"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 65 – Sari bir hastalık zuhur ettiği veya zuhurundan şüphelen ildiği veya sari ve salgın bir hastalıktan vefat vuku b ulduğu veyahut vefatın sari ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_65_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=65"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 66 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_66_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=66"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 66 – 65 inci maddede zikredilen tahkikat, sari ve istilai bir maraz zuhuru ihbar olunmadığı ve fakat Hükümetçe sari bir hastalık vukuundan şüphe ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_66_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=66"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 67 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_67_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=67"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 67 – 57 nci maddede zikrolunan sari ve salgın hastalıklar vakaları hakkında tetkikat yapan tabip bu tet kikatı kolaylaştırmak üzere hastanın yan ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_67_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=67"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_9"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında ve malumat talebine salahiyettardır. Bu hususta mümaneatı görülenler bu kanunda zikredilen ahkamı mahsusa mucibince cezalandırılır. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_9"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 68 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_68_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=68"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 68 – Tabip bulunmıyan mahallerde Sıhh at ve İçtimai Muavenet Vekal etinin emri ile sari ve salgın hastalıklar hakkında tetkikat yapmağa, bu husu ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_68_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=68"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 69 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_69_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=69"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 69 – Sari ve salgın bir hastalığın vukuu tahakkuk eylediği takdirde sıhhat memurları der akap lazımgelen tedbirl erin ittihazına ve bütün idari  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_69_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=69"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 70 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_70_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=70"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 70 – Sari ve salgın bir hastalıktan vefat eylediği zan ve şüphe edilen eşhas üzerinde, alakadar tabip tarafından lüzum gösterildiği takdirde, fe ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_70_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=70"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 71 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_71_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=71"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 71 – Sari ve salgın bir hastalığın hüküferma olduğu veya tehdit ey lediği mahallerde Sıhhat ve İçtimai Muavenet Vekaletince bütün cenazelerin d  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_71_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=71"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 72 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_72_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=72"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 72 – 57 nci maddede zikredilen hastalıklardan biri zuhur ettiği veya zuhurundan şüphelenildiği takdirde aşağıda gösterilen tedbirler tatbik olun ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_72_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=72"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 72 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_72_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=72"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Hastalık neşreden haşarat ve hayvanatın itlafı. 5 - Memleket dahilinde seyahat eden eşhasın icap eden mahallerde muayenesi ve eşyalarının tathiri. 6 - ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_72_00001"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=72"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 73 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_73_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=73"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 73 – Kolera ve veba ve ruam musaplarından gayrı hastaların evlerinde tecrit edilmelerine müsaade olunur. Yalnız alakadar sıhhi memurlar tarafınd ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_73_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=73"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde unknown ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_10"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında evlerine bir alameti mahsusa vazedilerek hariçle olan ihtilat menedilir. Kolera, veba, ruam musaplariyle bulunduğu mahallerde tecridi mümkün ve kafi g ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_preamble_00000_10"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=unknown"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 74 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_74_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=74"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 74 – Hastaların tecrit ve tedavisine mahsus vasıf ve şartları haiz hususi yerleri olmayan mektep, fabrika ve imalathanelerle mütaaddit kimseleri ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_74_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=74"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 75 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_75_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=75"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 75 – Kuduz olan veya kudurmuş olduğundan şüphe edilen hayvanlar tarafından ısırılmış olanların vakit kaybetmeden en yakın kuduz tedavi müesseses ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_75_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=75"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 76 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_76_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=76"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 76 – Etrafında b ulunanlara sari ve salgın hastalıklardan birini nakle vasıta olduğu muhakkak olan kimseler muvakkaten ve bu zail oluncaya kadar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_76_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=76"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 77 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_77_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=77"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 7 7 – Sari ve salgın hastalıklardan birinin hüküm sürdüğü veya tehdit ettiği mahallerde Sıhhat ve İçtimai Muavenet Vekaletinin tasvibiyle bütün  ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_77_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=77"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 78 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_78_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=78"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 78 – Hususi kanuna tevfikan açılmış olan şahıslara ait laboratuvarlarda ve Sıhhat Vekaletince tayin edilecek müessesatı resmiyenin gayrisinde ko ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_78_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=78"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 79 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_79_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=79"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 79 – Su ile sirayet ettiği fennen muhakkak olan hastalıklardan birinin salgın halinde hüküm sürdüğü mahallerde veya bu mevkilerin etraf ve civar ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_79_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=79"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 80 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_80_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=80"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 80 – Askeri kuvvetler arasında veya askeri müesseselerde 57 nci maddede mezkür sari ve salgın hastalıklardan biri zuhur ettiği takdirde bu kanun ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_80_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=80"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 81 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_81_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=81"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 81 – Sari ve salgın hastalıklar amilleriyle bulaştığı muhakkak veya şüpheli olupta tathiri ve tephiri masarifi kıymetinden ziyadeye baliğ olacağ ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_81_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=81"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 82 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_82_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=82"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 82 – Sari ve salgın hastalıklardan birinden vefat edip hususi tedabire tabi olarak defni iktiza ed en cenazeler ala kadar memurlar ın nezareti a ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_82_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=82"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 83 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_83_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=83"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 83 – Cebri tecride tabi olarak müessesatta veya evlerinde tecrit edilen kimselerle 76 ncı maddede zikredilen şahıslardan muhtaç olanlarının kend ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_83_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=83"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 84 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_84_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=84"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 84 – Sari hastalıkların zuhur ve intişarına mani olmak üzere münasip fasılalarla umumi mebaninin, nakil vasıtalarının, otel, han ve her nevi tem ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_84_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=84"
+    },
+    {
+      "query": "1593 sayılı 1593_Umumi Hıfzıssıhha Kanunu Madde 85 ne düzenler?",
+      "relevant_chunk_ids": [
+        "1593_85_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=85"
+    },
+    {
+      "query": "1593_Umumi Hıfzıssıhha Kanunu kapsamında Madde 85 – Müstamel elbise ev eşyası ve sairenin fennen tathir edilmeden satı lması memnudur. ... ile ilgili hükümler nelerdir?",
+      "relevant_chunk_ids": [
+        "1593_85_00000"
+      ],
+      "relevant_source_files": [
+        "1593_Umumi Hıfzıssıhha Kanunu.pdf"
+      ],
+      "notes": "auto article=85"
     }
   ]
 }
