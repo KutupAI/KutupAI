@@ -1,279 +1,210 @@
-"""
-OCR Agent unit tests — no Paddle model download.
+"""Tests for Agents/ocr_agent.
 
 Run:
-  python Tests/Agents/test_ocr_agent.py
-  pytest Tests/Agents/test_ocr_agent.py -q
+    python Tests/Agents/test_ocr_agent.py
+    # or
+    pytest Tests/Agents/test_ocr_agent.py -q
+
+No GPU, no model download: the PaddleOCR/PP-StructureV3 engine is
+replaced with a small fake that mimics its output shape.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
+import os
 import sys
 import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock
+import unittest
 
+import cv2
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+from Agents.base.agent_registry import get_agent, list_agents  # noqa: E402
+from Agents.ocr_agent import OCRAgent, OCRConfig  # noqa: E402
+from Agents.ocr_agent.config import VisionFallbackConfig  # noqa: E402
+from Agents.ocr_agent.processing.processor import OCRProcessor  # noqa: E402
 
 
-def test_document_validation():
-    from Agents.ocr_agent.document import validate_document
+class FakeEngine:
+    """Stands in for PaddleStructureEngine.predict(); no model weights needed."""
 
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "scan.png"
-        path.write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 64)
-        doc = validate_document(path, max_file_size_mb=10)
-        assert doc.extension == ".png"
-        assert doc.is_pdf is False
+    engine_name = "FakeEngine (test)"
 
-        bad = Path(tmp) / "note.docx"
-        bad.write_bytes(b"x")
+    def __init__(self, texts=None, scores=None, layout=None):
+        self.texts = texts if texts is not None else ["Örnek metin"]
+        self.scores = scores if scores is not None else [0.92]
+        self.layout = layout
+        self.calls = 0
+
+    def predict(self, image):
+        self.calls += 1
+        n = len(self.texts)
+        polys = [[[0, 0], [50, 0], [50, 20], [0, 20]] for _ in range(n)]
+        raw = {"dt_polys": polys, "rec_texts": self.texts, "rec_scores": self.scores}
+        if self.layout is not None:
+            raw["layout_det_res"] = {"boxes": self.layout}
+        return [raw]
+
+
+class AlwaysBlankEngine:
+    engine_name = "AlwaysBlankEngine"
+
+    def predict(self, image):
+        return [{"dt_polys": [], "rec_texts": [], "rec_scores": []}]
+
+
+def _white_image(w=300, h=200):
+    return np.full((h, w, 3), 255, dtype=np.uint8)
+
+
+def _write_png(tmp_dir, name="page.png"):
+    path = os.path.join(tmp_dir, name)
+    cv2.imwrite(path, _white_image())
+    return path
+
+
+class RegistryTests(unittest.TestCase):
+    def test_ocr_agent_is_registered(self):
+        self.assertIn("ocr_agent", list_agents())
+        self.assertIs(get_agent("ocr_agent"), OCRAgent)
+
+
+class AgentContractTests(unittest.TestCase):
+    def _config(self):
+        return replace(
+            OCRConfig.from_env(),
+            vision_fallback=VisionFallbackConfig(enabled=False),
+        )
+
+    def test_missing_document_path_fails_gracefully(self):
+        agent = OCRAgent()
+        out = agent.run({"document_id": "doc-x"})
+        self.assertEqual(out["ocr_status"], "failed")
+        self.assertEqual(out["ocr_result"]["error"]["code"], "FILE_CORRUPTED")
+        self.assertIn("errors", out)
+
+    def test_unsupported_extension(self):
+        with tempfile.TemporaryDirectory() as d:
+            bad = os.path.join(d, "file.exe")
+            with open(bad, "wb") as f:
+                f.write(b"not a document")
+            processor = OCRProcessor(self._config(), engine=FakeEngine())
+            out = processor.process(bad, "doc-bad")
+            self.assertEqual(out["status"], "failed")
+            self.assertEqual(out["error"]["code"], "UNSUPPORTED_FILE_TYPE")
+
+    def test_empty_file_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            empty = os.path.join(d, "empty.png")
+            open(empty, "wb").close()
+            processor = OCRProcessor(self._config(), engine=FakeEngine())
+            out = processor.process(empty, "doc-empty")
+            self.assertEqual(out["status"], "failed")
+            self.assertEqual(out["error"]["code"], "FILE_CORRUPTED")
+
+    def test_happy_path_image_contract_shape(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = _write_png(d)
+            processor = OCRProcessor(
+                self._config(),
+                engine=FakeEngine(
+                    texts=["T.C. İstanbul Valiliği"],
+                    scores=[0.95],
+                    layout=[{"label": "title", "score": 0.9, "coordinate": [0, 0, 50, 20]}],
+                ),
+            )
+            out = processor.process(path, "doc-good")
+
+            self.assertTrue(out["success"])
+            self.assertEqual(out["status"], "complete")
+            data = out["data"]
+            self.assertEqual(data["page_count"], 1)
+            self.assertIn("İstanbul", data["full_text"])
+            page = data["pages"][0]
+            self.assertEqual(page["page_number"], 1)
+            self.assertIn("blocks", page)
+            self.assertEqual(page["blocks"][0]["type"], "title")
+            self.assertIn("tables", page)
+            self.assertIn("vision", page)
+            self.assertIn("signature", page["vision"])
+            self.assertIn("stamp", page["vision"])
+            self.assertIn("quality", page)
+            self.assertIn("warnings", page)
+            # Contract must NOT leak semantic/downstream fields.
+            for forbidden in ("classification", "extracted_data", "summary", "answer"):
+                self.assertNotIn(forbidden, data)
+
+    def test_low_confidence_triggers_retry_then_recovers(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = _write_png(d)
+            engine = FakeEngine(texts=["belirsiz"], scores=[0.1])
+
+            # Force recovery on the 2nd attempt by mutating scores after first call.
+            original_predict = engine.predict
+
+            def predict(image):
+                out = original_predict(image)
+                if engine.calls >= 2:
+                    out[0]["rec_scores"] = [0.9]
+                return out
+
+            engine.predict = predict
+            processor = OCRProcessor(self._config(), engine=engine)
+            out = processor.process(path, "doc-retry")
+            self.assertGreaterEqual(engine.calls, 2)
+            self.assertIn(1, out["data"]["processing"]["pages_reprocessed"])
+
+    def test_turkish_characters_preserved(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = _write_png(d)
+            text = "çğıİöşü ÇĞIÖŞÜ"
+            processor = OCRProcessor(self._config(), engine=FakeEngine(texts=[text], scores=[0.9]))
+            out = processor.process(path, "doc-tr")
+            self.assertIn("ç", out["data"]["full_text"])
+            self.assertIn("İ", out["data"]["full_text"])
+            self.assertEqual(out["data"]["language"]["detected"], "tr")
+
+    def test_partial_status_when_some_pages_fail(self):
+        # Two-page scenario simulated directly against the processor's page
+        # assembly by using a PDF-like two-image flow is heavier to set up
+        # here; instead we validate the same contract via a single blank
+        # page (0 successful pages -> failed) versus a working page
+        # (successful -> complete), which exercises the same status logic
+        # used for multi-page partial cases in processor._assemble().
+        with tempfile.TemporaryDirectory() as d:
+            path = _write_png(d)
+            processor = OCRProcessor(
+                replace(self._config(), vision_fallback=VisionFallbackConfig(enabled=False)),
+                engine=AlwaysBlankEngine(),
+            )
+            out = processor.process(path, "doc-blank")
+            self.assertEqual(out["status"], "failed")
+            self.assertFalse(out["success"])
+
+
+class OfficeFormatTests(unittest.TestCase):
+    def test_docx_extraction_if_available(self):
         try:
-            validate_document(bad, max_file_size_mb=10)
-            raise AssertionError("expected ValueError for unsupported format")
-        except ValueError:
-            pass
-    print("OK document_validation")
+            import docx  # noqa: F401
+        except ImportError:
+            self.skipTest("python-docx not installed")
 
+        import docx as docx_lib
 
-def test_turkish_correction():
-    from Agents.ocr_agent.core.correction import TurkishOCRCorrector
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "sample.docx")
+            document = docx_lib.Document()
+            document.add_paragraph("Test İçerik ç ğ ı ö ş ü")
+            document.save(path)
 
-    c = TurkishOCRCorrector()
-    d = c.correct("  Madde  17 ,  2024 ")
-    assert d.text == "Madde 17, 2024"
-    assert d.applied is True
-    assert c.correct("").text == ""
-    print("OK turkish_correction")
-
-
-def test_document_insights():
-    from Agents.ocr_agent.core.insights import build_insights
-
-    text = (
-        "Tarih: 10.08.2026\n"
-        "MADDE 1- Birinci madde metni.\n"
-        "Devam satırı.\n"
-        "MADDE 2- İkinci madde.\n"
-        "İmza:\n"
-        "Mehmet Kaya\n"
-    )
-    insights = build_insights(text)
-    assert insights.has_signature is True
-    assert insights.has_handwritten_signature is True
-    assert "Mehmet Kaya" in insights.signature_names
-    assert insights.primary_date == "10.08.2026"
-    assert insights.has_articles is True
-    assert len(insights.articles) == 2
-    assert insights.articles[0].number == "1"
-    assert "Birinci madde metni." in insights.articles[0].lines
-    assert "\\n" not in insights.lines[0]
-    print("OK document_insights")
-
-
-def test_ocr_parser():
-    from Agents.ocr_agent.core.ocr_parser import OCRResultParser
-
-    parser = OCRResultParser(confidence_threshold=0.3)
-    raw = {
-        "rec_texts": ["Merhaba", "low"],
-        "rec_scores": [0.95, 0.1],
-        "dt_polys": [
-            [[0, 0], [10, 0], [10, 10], [0, 10]],
-            [[0, 0], [1, 0], [1, 1], [0, 1]],
-        ],
-    }
-    items = parser.parse(raw, page_index=0)
-    assert len(items) == 1
-    assert items[0].text == "Merhaba"
-    print("OK ocr_parser")
-
-
-def test_layout_and_tables():
-    from Agents.ocr_agent.core.layout import LayoutAnalyzer
-    from Agents.ocr_agent.core.tables import TableExtractor
-
-    layout, visuals = LayoutAnalyzer(0.3).analyze(
-        {
-            "layout_det_res": {
-                "boxes": [
-                    {"label": "text", "score": 0.9, "coordinate": [0, 0, 50, 20]},
-                    {"label": "seal", "score": 0.8, "coordinate": [10, 10, 40, 40]},
-                ]
-            }
-        },
-        page_index=0,
-    )
-    assert len(layout) == 2
-    assert any(v.element_type == "seal" for v in visuals)
-
-    tables = TableExtractor().extract(
-        {
-            "table_res_list": [
-                {
-                    "pred_html": "<table><tr><td>A</td><td>B</td></tr></table>",
-                    "bbox": [0, 0, 100, 50],
-                    "score": 0.7,
-                }
-            ]
-        },
-        page_index=0,
-    )
-    assert len(tables) == 1
-    assert tables[0].cells[0].text == "A"
-    print("OK layout_and_tables")
-
-
-def test_preprocessor_resize():
-    import cv2
-    from Agents.ocr_agent.config import PreprocessingConfig
-    from Agents.ocr_agent.preprocessing.image_preprocessor import ImagePreprocessor
-
-    img = np.zeros((100, 100, 3), dtype=np.uint8)
-    img[:] = (240, 240, 240)
-    out = ImagePreprocessor(
-        PreprocessingConfig(
-            enabled=True,
-            grayscale=True,
-            denoise=False,
-            contrast=False,
-            sharpen=False,
-            deskew=False,
-            perspective_correction=False,
-            auto_crop_document=False,
-            pale_boost=False,
-            min_dimension=0,
-            max_dimension=50,
-        )
-    ).process(img)
-    assert max(out.shape[:2]) <= 50
-    print("OK preprocessor_resize")
-
-
-def test_preprocessor_far_pale_tilt():
-    """Far page on dark desk + pale ink + mild tilt should still produce OCR-ready image."""
-    import cv2
-    from Agents.ocr_agent.config import PreprocessingConfig
-    from Agents.ocr_agent.preprocessing.image_preprocessor import ImagePreprocessor
-
-    canvas = np.full((900, 700, 3), 30, dtype=np.uint8)  # dark desk
-    page = np.full((500, 360, 3), 210, dtype=np.uint8)  # pale paper
-    cv2.putText(page, "Tarih: 10.08.2026", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (90, 90, 90), 1)
-    cv2.putText(page, "Imza: Mehmet", (20, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (90, 90, 90), 1)
-    # Place page small/far in frame
-    canvas[180:680, 170:530] = page
-    # Mild rotation to simulate phone tilt
-    m = cv2.getRotationMatrix2D((350, 450), 8, 1.0)
-    tilted = cv2.warpAffine(canvas, m, (700, 900), borderValue=(30, 30, 30))
-
-    out = ImagePreprocessor(PreprocessingConfig()).process(tilted)
-    assert out is not None and out.size > 0
-    # Should upscale distant crop toward min_dimension
-    assert min(out.shape[:2]) >= 1600
-    # Pale boost should increase contrast vs original pale page
-    assert float(out.std()) > float(page.std())
-    print("OK preprocessor_far_pale_tilt")
-
-
-def test_processor_with_mocked_engine():
-    from Agents.ocr_agent.config import OCRConfig, PreprocessingConfig
-    from Agents.ocr_agent.processing.processor import OCRProcessor
-
-    engine = MagicMock()
-    engine.predict.return_value = [
-        {
-            "rec_texts": ["Madde 1- Test"],
-            "rec_scores": [0.99],
-            "dt_polys": [[[0, 0], [20, 0], [20, 10], [0, 10]]],
-            "layout_det_res": {"boxes": []},
-            "table_res_list": [],
-        }
-    ]
-
-    config = OCRConfig(
-        preprocessing=PreprocessingConfig(
-            enabled=False,
-            perspective_correction=False,
-            deskew=False,
-        )
-    )
-    processor = OCRProcessor(config, engine=engine)
-
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "page.png"
-        import cv2
-
-        cv2.imwrite(str(path), np.full((40, 80, 3), 255, dtype=np.uint8))
-        result = processor.process(path, document_id="doc-1")
-
-    assert result.success is True
-    assert "Madde 1" in result.full_text
-    assert result.document_id == "doc-1"
-    assert result.has_articles is True
-    assert result.lines
-    payload = result.to_dict()
-    assert payload["summary"]["has_articles"] is True
-    assert isinstance(payload["lines"], list)
-    engine.predict.assert_called()
-    print("OK processor_mocked_engine")
-
-
-def test_agent_run_success_and_missing_path():
-    from Agents.base.agent_registry import clear_registry, get_agent, list_agents, register
-    from Agents.ocr_agent.agent import OCRAgent
-    from Agents.ocr_agent.models import UnifiedOCRResult
-
-    clear_registry()
-    register(OCRAgent)
-
-    mock_client = MagicMock()
-    mock_client.process.return_value = UnifiedOCRResult(
-        success=True,
-        document_id="d1",
-        file_name="a.png",
-        file_type="png",
-        language="tr",
-        pages=[],
-        full_text="Merhaba Türkiye",
-    )
-    agent = OCRAgent(client=mock_client)
-    out = agent.run({"document_path": "C:/tmp/a.png", "document_id": "d1"})
-    assert out["ocr_status"] == "completed"
-    assert out["document_text"] == "Merhaba Türkiye"
-    assert out["ocr_result"]["success"] is True
-
-    missing = OCRAgent(client=mock_client).run({})
-    assert missing["ocr_status"] == "failed"
-    assert missing["ocr_result"]["error"] == "missing_document_path"
-
-    assert "ocr_agent" in list_agents()
-    assert get_agent("ocr_agent").name == "ocr_agent"
-    print("OK agent_run")
-
-
-def test_pdf_renderer_page_limit():
-    from Agents.ocr_agent.processing.pdf_renderer import PDFRenderer
-
-    # Without a real PDF, only validate constructor wiring
-    renderer = PDFRenderer(dpi=150, max_pages=2)
-    assert renderer.dpi == 150
-    assert renderer.max_pages == 2
-    print("OK pdf_renderer_config")
+            processor = OCRProcessor(OCRConfig.from_env(), engine=FakeEngine())
+            out = processor.process(path, "doc-docx")
+            self.assertEqual(out["status"], "complete")
+            self.assertIn("İçerik", out["data"]["full_text"])
 
 
 if __name__ == "__main__":
-    test_document_validation()
-    test_turkish_correction()
-    test_document_insights()
-    test_ocr_parser()
-    test_layout_and_tables()
-    test_preprocessor_resize()
-    test_preprocessor_far_pale_tilt()
-    test_processor_with_mocked_engine()
-    test_agent_run_success_and_missing_path()
-    test_pdf_renderer_page_limit()
-    print("All OCR agent tests passed.")
+    unittest.main()

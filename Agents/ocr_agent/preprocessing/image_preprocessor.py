@@ -13,13 +13,21 @@ class ImagePreprocessor:
     def __init__(self, config: PreprocessingConfig):
         self.config = config
 
-    def process(self, image: np.ndarray) -> np.ndarray:
+    def process(self, image: np.ndarray, strength: str = "full") -> np.ndarray:
         if image is None or image.size == 0:
             raise PreprocessingError("Empty image received.")
         try:
             out = image.copy()
             if out.ndim == 2:
                 out = cv2.cvtColor(out, cv2.COLOR_GRAY2BGR)
+
+            if strength == "light":
+                out = self._ensure_min_dimension(out)
+                if self.config.max_dimension > 0:
+                    out = self._resize_max(out)
+                if self.config.deskew:
+                    out = self._deskew(out)
+                return out
 
             # 1) Far photo: pull the page out of a busy background
             if self.config.auto_crop_document:
@@ -114,11 +122,11 @@ class ImagePreprocessor:
 
         contour = max(contours, key=cv2.contourArea)
         area_ratio = cv2.contourArea(contour) / float(h * w)
-        if area_ratio < 0.12 or area_ratio > 0.98:
+        if area_ratio < 0.12 or area_ratio > 0.85:
             return image
 
         x, y, bw, bh = cv2.boundingRect(contour)
-        pad = int(0.02 * max(h, w))
+        pad = int(0.05 * max(h, w))
         x0 = max(0, x - pad)
         y0 = max(0, y - pad)
         x1 = min(w, x + bw + pad)

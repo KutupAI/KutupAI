@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
 from typing import Any
 
 import numpy as np
 
 from Agents.ocr_agent.config import OCRConfig
+from Agents.ocr_agent.device import resolve_device
 from Agents.ocr_agent.exceptions import OCREngineError
 
 # Paddle 3.x + oneDNN on Windows often crashes at inference; force flags early.
 os.environ.setdefault("FLAGS_use_mkldnn", "0")
 os.environ.setdefault("FLAGS_use_onednn", "0")
+
+logger = logging.getLogger(__name__)
 
 
 class PaddleStructureEngine:
@@ -28,46 +33,84 @@ class PaddleStructureEngine:
         self._mode = "structure"  # structure | ocr | rapid
         self.engine_name = "PaddleOCR + PP-StructureV3"
         self._rapid = None
+        self._resolved_device = resolve_device(config.device)
+        self.last_engine_name = self.engine_name
 
     def _ensure_pipeline(self) -> Any:
         if self._pipeline is not None:
             return self._pipeline
+
+        device = self._resolved_device
+        language = _paddle_language(self.config.language)
+        logger.info(
+            "Initializing OCR engine (lang=%s, device=%s, profile=%s)",
+            language, device, self.config.performance_profile,
+        )
 
         structure_error: Exception | None = None
         try:
             from paddleocr import PPStructureV3
 
             kwargs: dict[str, Any] = {
-                "lang": self.config.language,
-                "device": self.config.device,
+                "lang": language,
+                "device": device,
+                "ocr_version": (
+                    self.config.ocr_version
+                    if str(self.config.ocr_version).startswith("PP-OCR")
+                    else "PP-OCRv5"
+                ),
                 "use_doc_orientation_classify": self.config.enable_doc_orientation,
                 "use_doc_unwarping": self.config.enable_doc_unwarping,
                 "use_textline_orientation": self.config.enable_textline_orientation,
+                "use_seal_recognition": self.config.enable_seal_recognition,
+                "use_table_recognition": self.config.enable_tables,
+                "use_formula_recognition": False,
+                "use_chart_recognition": False,
             }
+            if language == "tr":
+                # PaddleOCR's Latin recognizer includes Turkish glyphs. Pin
+                # it so an environment alias or a future default cannot
+                # silently select an English-only recognition dictionary.
+                kwargs["text_recognition_model_name"] = "latin_PP-OCRv5_mobile_rec"
             if self.config.pipeline_config:
                 kwargs["paddlex_config"] = self.config.pipeline_config
             self._pipeline = PPStructureV3(**kwargs)
             self._mode = "structure"
             self.engine_name = "PaddleOCR + PP-StructureV3"
+            self.last_engine_name = self.engine_name
             return self._pipeline
         except Exception as exc:
             structure_error = exc
+            logger.warning("PP-StructureV3 init failed, falling back to PaddleOCR: %s", exc)
 
         try:
             from paddleocr import PaddleOCR
 
             self._pipeline = PaddleOCR(
-                lang=self.config.language,
-                device=self.config.device,
+                lang=language,
+                device=device,
+                ocr_version=(
+                    self.config.ocr_version
+                    if self.config.ocr_version in {"PP-OCRv3", "PP-OCRv4", "PP-OCRv5", "PP-OCRv6"}
+                    else "PP-OCRv5"
+                ),
                 use_doc_orientation_classify=self.config.enable_doc_orientation,
                 use_doc_unwarping=self.config.enable_doc_unwarping,
                 use_textline_orientation=self.config.enable_textline_orientation,
+                **(
+                    {"text_recognition_model_name": "latin_PP-OCRv5_mobile_rec"}
+                    if language == "tr" else {}
+                ),
             )
             self._mode = "ocr"
             self.engine_name = "PaddleOCR (fallback)"
+            self.last_engine_name = self.engine_name
             return self._pipeline
         except Exception as paddle_exc:
             if self.config.enable_rapid_fallback:
+                logger.warning(
+                    "PaddleOCR init failed, falling back to RapidOCR (ONNX): %s", paddle_exc
+                )
                 self._pipeline = self._ensure_rapid()
                 self._mode = "rapid"
                 self.engine_name = "RapidOCR (ONNX fallback)"
@@ -91,10 +134,11 @@ class PaddleStructureEngine:
 
     def predict(self, image: np.ndarray) -> list[Any]:
         pipeline = self._ensure_pipeline()
+        self.last_engine_name = self.engine_name
         try:
             if self._mode == "rapid":
+                self.last_engine_name = "RapidOCR (ONNX fallback)"
                 return [self._rapid_predict(image)]
-
             if self._mode == "structure":
                 try:
                     output = pipeline.predict(
@@ -102,23 +146,29 @@ class PaddleStructureEngine:
                         use_doc_orientation_classify=self.config.enable_doc_orientation,
                         use_doc_unwarping=self.config.enable_doc_unwarping,
                         use_textline_orientation=self.config.enable_textline_orientation,
+                        use_seal_recognition=self.config.enable_seal_recognition,
+                        use_table_recognition=self.config.enable_tables,
+                        use_formula_recognition=False,
+                        use_chart_recognition=False,
                     )
                 except TypeError:
                     output = pipeline.predict(input=image)
+                self.last_engine_name = self.engine_name
                 return list(output)
 
             try:
                 output = pipeline.predict(image)
             except TypeError:
                 output = pipeline.ocr(image)
+            self.last_engine_name = self.engine_name
             return list(output or [])
         except Exception as exc:
-            # Paddle often loads but dies at inference on Windows oneDNN.
             if self._mode != "rapid" and self.config.enable_rapid_fallback:
                 try:
-                    self._pipeline = self._ensure_rapid()
-                    self._mode = "rapid"
-                    self.engine_name = "RapidOCR (ONNX fallback)"
+                    logger.warning(
+                        "Paddle predict failed (%s); RapidOCR for this page only.", exc
+                    )
+                    self.last_engine_name = "RapidOCR (ONNX fallback)"
                     return [self._rapid_predict(image)]
                 except Exception as rapid_exc:
                     raise OCREngineError(
@@ -175,6 +225,34 @@ class PaddleStructureEngine:
         return {}
 
 
+_ENGINE_CACHE: dict[tuple[Any, ...], "PaddleStructureEngine"] = {}
+_ENGINE_CACHE_LOCK = threading.Lock()
+
+
+def _cache_key(config: OCRConfig) -> tuple[Any, ...]:
+    return (
+        config.language, config.device, config.pipeline_name,
+        config.enable_doc_orientation, config.enable_doc_unwarping,
+        config.enable_textline_orientation, config.model_dir, config.pipeline_config,
+    )
+
+
+def get_shared_engine(config: OCRConfig) -> "PaddleStructureEngine":
+    """Return a process-wide cached engine for this config.
+
+    Model weights are expensive to load; Orchestration may instantiate a new
+    OCRAgent per request, so the heavy engine must be cached independently
+    of the (cheap, per-request) Agent/Client/Processor objects.
+    """
+    key = _cache_key(config)
+    with _ENGINE_CACHE_LOCK:
+        engine = _ENGINE_CACHE.get(key)
+        if engine is None:
+            engine = PaddleStructureEngine(config)
+            _ENGINE_CACHE[key] = engine
+        return engine
+
+
 def _normalize_classic_ocr_list(rows: list[Any]) -> dict[str, Any]:
     texts: list[str] = []
     scores: list[float] = []
@@ -188,3 +266,12 @@ def _normalize_classic_ocr_list(rows: list[Any]) -> dict[str, Any]:
             scores.append(float(pair[1]))
             polys.append(box)
     return {"rec_texts": texts, "rec_scores": scores, "dt_polys": polys}
+
+
+def _paddle_language(language: str) -> str:
+    """Normalize Turkish aliases to PaddleOCR's supported ``tr`` code."""
+
+    value = (language or "").strip().casefold().replace("_", "-")
+    if value in {"tr", "tr-tr", "turkish", "türkçe", "turkce"}:
+        return "tr"
+    return value or "tr"

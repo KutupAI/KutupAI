@@ -17,4 +17,4 @@ def run_ocr(
 ) -> dict[str, Any]:
     """Run OCR and return a plain dict for graph_state['ocr_result']."""
     active = client or OCRClient(config)
-    return active.process(OCRRequest(file_path, document_id)).to_dict()
+    return active.process(OCRRequest(file_path, document_id))
