@@ -172,3 +172,9 @@ rag_*.err.log
 final_report_qa.pdf
 rag_final_report_render/
 rag_report_render/
+
+llama/
+llama.zip
+llama-ui.tar.gz
+*.tar.gz
+Inference/models/.cache/
