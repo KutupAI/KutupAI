@@ -48,7 +48,7 @@ class ClassificationAgent(BaseAgent):
         started = time.monotonic()
 
         try:
-            normalized_text, ocr_confidence, layout, image_bytes, document_id = _extract_inputs(state)
+            normalized_text, ocr_confidence, layout, ocr_pages, image_bytes, document_id = _extract_inputs(state)
         except MissingInputError as exc:
             result = ClassificationResult(
                 success=False,
@@ -68,6 +68,7 @@ class ClassificationAgent(BaseAgent):
                 normalized_text=normalized_text,
                 ocr_confidence=ocr_confidence,
                 layout=layout,
+                ocr_pages=ocr_pages,
                 image_bytes=image_bytes,
             )
         except ClassificationAgentError as exc:
@@ -92,6 +93,7 @@ class ClassificationAgent(BaseAgent):
         normalized_text: str,
         ocr_confidence: float | None,
         layout: Any,
+        ocr_pages: Any,
         image_bytes: bytes | None,
     ) -> ClassificationResult:
         # Step 1: fast path (Optimization / ONNX)
@@ -113,6 +115,7 @@ class ClassificationAgent(BaseAgent):
             normalized_text=normalized_text,
             ocr_confidence=ocr_confidence,
             layout=layout,
+            ocr_pages=ocr_pages,
             image_bytes=image_bytes,
             config=self.config,
         )
@@ -155,15 +158,34 @@ class ClassificationAgent(BaseAgent):
 
 def _extract_inputs(
     state: Dict[str, Any],
-) -> tuple[str, float | None, Any, bytes | None, str | None]:
+) -> tuple[str, float | None, Any, Any, bytes | None, str | None]:
     """Pull classification_agent's inputs out of graph_state, produced
     upstream by ocr_agent. Raises MissingInputError only when there is
-    truly nothing to classify from (no text AND no image)."""
+    truly nothing to classify from (no text AND no image).
+
+    IMPORTANT: `state["ocr_result"]` is expected to be the `data` object
+    from ocr_agent's response (i.e. `ocr_response["data"]`), not the full
+    wrapper with `success`/`status` -- confirmed against real ocr_agent
+    output samples. Real shape:
+        {"document_id", "file_name", "file_type", "page_count", "language",
+         "pages": [{"page_number", "text", "vision": {"signature": {...}, "stamp": {...}}}],
+         "full_text"}
+    Note ocr_agent does not emit a `text_items`/`confidence` or `layout`
+    key per page -- earlier versions of this function assumed those and
+    would have silently always gotten ocr_confidence=None / no layout.
+    `vision` (signature/stamp detection) is real signal and is threaded
+    through separately as `ocr_pages` for prompts.py to use.
+    """
     ocr_result = state.get("ocr_result") or {}
+    ocr_pages = ocr_result.get("pages") or []
 
     normalized_text = state.get("normalized_text") or ocr_result.get("full_text") or state.get("document_text") or ""
     ocr_confidence = _extract_ocr_confidence(ocr_result)
-    layout = ocr_result.get("pages") and [p.get("layout") for p in ocr_result["pages"] if p.get("layout")]
+    # No `layout` key exists in real ocr_agent output today -- kept as a
+    # separate extraction point (rather than deleted) so a future ocr_agent
+    # version that does add structured layout info only needs a one-line
+    # change here, not a change to the Qwen prompt plumbing.
+    layout = [p.get("layout") for p in ocr_pages if isinstance(p, dict) and p.get("layout")] or None
     document_id = state.get("document_id") or ocr_result.get("document_id")
 
     image_bytes = _extract_image_bytes(state)
@@ -171,12 +193,19 @@ def _extract_inputs(
     if not normalized_text.strip() and image_bytes is None:
         raise MissingInputError("classification_agent: no OCR text and no document image available in state")
 
-    return normalized_text, ocr_confidence, layout, image_bytes, document_id
+    return normalized_text, ocr_confidence, layout, ocr_pages, image_bytes, document_id
 
 
 def _extract_ocr_confidence(ocr_result: Dict[str, Any]) -> float | None:
+    """Real ocr_agent output has no per-item confidence score today (see
+    docstring on _extract_inputs) -- this returns None in that case rather
+    than guessing. Kept as its own function (not deleted) so a future
+    ocr_agent version that does add confidence only needs this function
+    updated, not every caller."""
     text_items = []
     for page in ocr_result.get("pages") or []:
+        if not isinstance(page, dict):
+            continue
         text_items.extend(page.get("text_items") or [])
     confidences = [ti.get("confidence") for ti in text_items if isinstance(ti, dict) and ti.get("confidence") is not None]
     if not confidences:

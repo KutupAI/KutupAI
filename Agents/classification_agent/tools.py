@@ -5,6 +5,9 @@ External integrations needed by classification_agent:
 - Optimization layer (fast ONNX pre-classification)
 - Qwen VLM (multimodal classification via Inference/client/qwen_vl_client.py)
 
+Kept separate from agent.py so the control-flow/decision logic in agent.py
+stays readable, matching the OCR agent's split between agent.py and
+client.py/tools.py.
 """
 
 from __future__ import annotations
@@ -43,6 +46,7 @@ def run_qwen_classification(
     normalized_text: str,
     ocr_confidence: float | None,
     layout: Any,
+    ocr_pages: Any = None,
     image_bytes: bytes | None,
     config: ClassificationConfig,
 ) -> dict[str, Any]:
@@ -52,12 +56,16 @@ def run_qwen_classification(
     Raises QwenVLMError on transport failure, InvalidClassificationOutputError
     if the model's response isn't the strict JSON the prompt requires (§7).
     """
+    from Agents.classification_agent.prompts import build_vision_signal_summary
+
     layout_summary = build_layout_summary(layout) if config.use_layout_when_available else None
+    vision_summary = build_vision_signal_summary(ocr_pages) if config.use_layout_when_available else None
 
     user_prompt = build_user_prompt(
         normalized_text=normalized_text,
         ocr_confidence=ocr_confidence,
         layout_summary=layout_summary,
+        vision_summary=vision_summary,
         top_k_alternatives=config.top_k_alternatives,
     )
 

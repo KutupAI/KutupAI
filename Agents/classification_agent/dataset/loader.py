@@ -32,7 +32,89 @@ import json
 from pathlib import Path
 
 from Agents.classification_agent.dataset.schema import MANIFEST_COLUMNS, LabeledDocument
-from Agents.classification_agent.taxonomy import VALID_CODES
+from Agents.classification_agent.taxonomy import DOCUMENT_CLASSES, VALID_CODES
+
+# Real-world folder names -> taxonomy code. Keys are normalized (lowercased,
+# stripped) before lookup, so trailing spaces / casing in folder names
+# (e.g. "onay belgesi " with a trailing space) don't break the match.
+FOLDER_NAME_TO_CODE: dict[str, str] = {
+    "dilekçe": "dilekce",
+    "başvuru belgesi": "basvuru_belgesi",
+    "talep yazısı": "talep_yazisi",
+    "şikayet": "sikayet_basvurusu",
+    "şikâyet başvurusu": "sikayet_basvurusu",
+    "itiraz başvurusu": "itiraz_basvurusu",
+    "bilgi edinme başvurusu": "bilgi_edinme_basvurusu",
+    "resmi yazı": "resmi_yazi",
+    "üst yazı": "ust_yazi",
+    "izin belgesi": "izin_belgesi",
+    "onay belgesi": "onay_belgesi",
+    "tutanak": "tutanak",
+    "form": "form",
+    "beyan - beyanname": "beyan_beyanname",
+    "beyan": "beyan_beyanname",
+    "bildirim - tebligat": "bildirim_tebligat",
+    "rapor": "rapor",
+    "kararlar": "karar_karar_yazisi",
+    "karar": "karar_karar_yazisi",
+    "sözleşme - protokol": "sozlesme_protokol",
+    "sözleşme": "sozlesme_protokol",
+    "diğer": "diger_belirsiz",
+}
+
+_DOCUMENT_EXTENSIONS = {".pdf", ".jpg", ".jpeg", ".png", ".webp"}
+
+# Filenames matching these patterns are AI-generated/synthetic images, not
+# real document scans/photos -- auto-flagged so §6's "synthetic docs never
+# go in the test split" rule applies without a human re-tagging every row.
+_SYNTHETIC_FILENAME_MARKERS = ("generated_image", "code_generated")
+
+
+def normalize_folder_name(name: str) -> str:
+    return name.strip().lower()
+
+
+def folder_to_taxonomy_code(folder_name: str) -> str | None:
+    return FOLDER_NAME_TO_CODE.get(normalize_folder_name(folder_name))
+
+
+def discover_from_class_folders(root_dir: str | Path) -> list[LabeledDocument]:
+    """Read a `<class_folder>/<file>` layout -- the label comes from the
+    folder name itself, per the real dataset structure the team collected
+    (one subfolder per taxonomy class). No manual labeling needed for this
+    layout; only synthetic-vs-real still needs the filename heuristic
+    below, since that can't be inferred from the folder.
+    """
+    root_dir = Path(root_dir)
+    records: list[LabeledDocument] = []
+    unmapped_folders: set[str] = set()
+
+    for folder in sorted(p for p in root_dir.iterdir() if p.is_dir()):
+        code = folder_to_taxonomy_code(folder.name)
+        if code is None:
+            unmapped_folders.add(folder.name)
+            continue
+
+        for file_path in sorted(folder.iterdir()):
+            if not file_path.is_file() or file_path.suffix.lower() not in _DOCUMENT_EXTENSIONS:
+                continue
+            is_synthetic = any(marker in file_path.name.lower() for marker in _SYNTHETIC_FILENAME_MARKERS)
+            document_id = f"{code}__{file_path.stem}"
+            records.append(
+                LabeledDocument(
+                    document_id=document_id,
+                    pdf_path=str(file_path),
+                    ocr_json_path=None,
+                    label=code,
+                    is_synthetic=is_synthetic,
+                )
+            )
+
+    if unmapped_folders:
+        print(f"[loader] WARNING: {len(unmapped_folders)} folder(s) did not match any taxonomy class and were skipped: {sorted(unmapped_folders)}")
+        print("  -> add them to FOLDER_NAME_TO_CODE in loader.py if they should map to an existing class.")
+
+    return records
 
 
 def discover_pairs(pdf_dir: str | Path, ocr_json_dir: str | Path | None = None) -> list[LabeledDocument]:
@@ -104,20 +186,36 @@ def _cli() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Discover PDF(+OCR JSON) pairs and write a labeling manifest.")
-    parser.add_argument("--pdf-dir", required=True)
+    parser.add_argument("--pdf-dir", default=None, help="Flat folder of PDFs (unlabeled) -- old flow.")
     parser.add_argument("--ocr-dir", default=None)
+    parser.add_argument(
+        "--class-folders-dir",
+        default=None,
+        help="Folder containing one subfolder per class (e.g. 'dilekçe/', 'form/', ...). "
+        "Label is taken from the folder name automatically -- see FOLDER_NAME_TO_CODE.",
+    )
     parser.add_argument(
         "--output",
         default="Agents/classification_agent/dataset/manifest_template.csv",
     )
     args = parser.parse_args()
 
-    records = discover_pairs(args.pdf_dir, args.ocr_dir)
+    if args.class_folders_dir:
+        records = discover_from_class_folders(args.class_folders_dir)
+    elif args.pdf_dir:
+        records = discover_pairs(args.pdf_dir, args.ocr_dir)
+    else:
+        parser.error("Provide either --class-folders-dir or --pdf-dir.")
+        return
+
     out = write_manifest_template(records, args.output)
 
-    print(f"Found {len(records)} document(s). Manifest template written to: {out}")
-    print("Fill the 'label' column with one of these codes, then re-run distribution.py / splitter.py:")
-    print(json.dumps(sorted(VALID_CODES), ensure_ascii=False, indent=2))
+    n_labeled = sum(1 for r in records if r.label)
+    n_synthetic = sum(1 for r in records if r.is_synthetic)
+    print(f"Found {len(records)} document(s) ({n_labeled} labeled, {n_synthetic} flagged synthetic). Manifest written to: {out}")
+    if not args.class_folders_dir:
+        print("Fill the 'label' column with one of these codes, then re-run distribution.py / splitter.py:")
+        print(json.dumps(sorted(VALID_CODES), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
