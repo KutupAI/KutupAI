@@ -45,6 +45,7 @@ def retrieve(
     use_reranker: Optional[bool] = None,
     expansion_strategy: Optional[str] = None,
     use_graph: Optional[bool | str] = None,
+    use_query_transform_llm: Optional[bool] = None,
     where: Optional[dict] = None,
     vector_store: Optional[VectorStoreInterface] = None,
 ) -> List[SearchResult]:
@@ -62,7 +63,7 @@ def retrieve(
     # oluşmadan aynı aramayı iki kez yapmak anlamına gelir.
     q = query.strip() if strategy == "prf" else (apply_strategy(query.strip(), strategy) if strategy else query.strip())
 
-    transformed = transform_query(q)
+    transformed = transform_query(q, use_llm=use_query_transform_llm)
     variant_hits = [
         hybrid_search(
             variant,

@@ -5,7 +5,7 @@ KutupAI - RAG Client Package Initialization
 """
 
 from RAG.client.rag_client import get_legal_context
-from RAG.client.contract_adapter import handle_rag_request
+from RAG.client.contract_adapter import handle_layer_state, handle_rag_request
 from RAG.client.retrieval_request import RetrievalRequest
 from RAG.client.retrieval_response import RetrievalResponse
 
@@ -13,6 +13,7 @@ from RAG.client.retrieval_response import RetrievalResponse
 __all__ = [
     "get_legal_context",
     "handle_rag_request",
+    "handle_layer_state",
     "RetrievalRequest",
     "RetrievalResponse",
 ]

@@ -249,45 +249,58 @@ Benchmark çıktıları `RAG/evaluation/experiments/` altında yerel kalır ve G
 
 Agent/Application katmanı doğrudan Chroma veya retriever import etmemelidir.
 
-### Ekipler arası JSON sözleşmesi (önerilen entegrasyon)
+### Ekipler arası JSON sözleşmesi (ana entegrasyon)
 
-Resmî input/output alanları [`Layers_contracts/RAG-contract.md`](../Layers_contracts/RAG-contract.md)
-dosyasında tanımlıdır. Application katmanı sözleşmeye uygun JSON nesnesini tek
-giriş fonksiyonuna verir:
+Resmî input/output alanları
+[`Layers_contracts/Layers_contracts/RAG-contract.md`](../Layers_contracts/Layers_contracts/RAG-contract.md)
+dosyasında tanımlıdır. Application/Orchestration katmanı tüm state nesnesini
+tek giriş fonksiyonuna verir. RAG yalnız `rag` alanını doldurur; diğer katman
+alanlarını değiştirmez ve bu akışta hiçbir LLM çağrısı yapmaz:
 
 ```python
 from RAG.client import handle_rag_request
 
 result = handle_rag_request({
-    "success": True,
-    "data": {
-        "operation": "query",
-        "session_id": "chat-001",
-        "question": "CMK 100. maddede tutuklama şartları nelerdir?",
-        "top_k": 5,
-        "filters": {"law_number": "5271", "article_no": "100"},
-        "conversation_memory": [],
+    "request": {
+        "success": True,
+        "question": "bu ne sözleşmesi",
+        "document": {"document_id": "DOC-001", "file_name": "Elektrik sözleşmesi.pdf", "file_type": "pdf"},
     },
+    "ocr": {"success": True, "ocr_data": {"full_text": "..."}},
+    "classification": {"success": True, "document_type": "Elektrik sözleşmesi"},
+    "extraction": {}, "validation": {}, "rag": {}, "summary": {}, "routing": {}, "writing": {},
 })
 ```
 
-`operation: "index"` çağrısında RAG; `document_id`, `file_name`, `pages`
-veya `full_text` ile metadata'yı alır. Sayfalar verilirse sayfa numarası
-chunk'lara korunarak yazılır. Aynı `document_id` tekrar indekslendiğinde eski
-chunk'lar silinir; duplicate oluşmaz.
-
-`operation: "query"` çağrısı; `answer`, `grounded`, `retrieval_plan`,
-`context_for_llm`, kaynaklar ve süre metriklerini döndürür. Her kaynakta
-`label`, `chunk_id`, `document_id`, kanun/madde, sayfa aralığı, kanıt metni
-ve skor bulunur. Hata durumunda sonuç her zaman şu üst yapıyı korur:
+RAG'ın eklediği alan yalnızca aşağıdaki biçimdedir:
 
 ```json
 {
-  "success": false,
-  "data": null,
-  "error": {"code": "validation_error", "message": "...", "details": {}}
+  "rag": {
+    "success": true,
+    "rag_data": {
+      "operation": "retrieve",
+      "query": "kullanıcı sorusu + belge sinyalleri",
+      "results": [
+        {
+          "chunk_id": "...",
+          "law_number": "...",
+          "law_name": "...",
+          "article_no": "...",
+          "page_start": 1,
+          "page_end": 1,
+          "text": "...",
+          "score": 0.0
+        }
+      ]
+    }
+  }
 }
 ```
+
+Retrieval için soru, belge türü ve OCR metninin sınırlı bir kesiti kullanılır.
+Kural tabanlı yazım düzeltmesi açıktır; Query Transform LLM'i ve cevap üretim
+LLM'i bu sözleşme akışında kapalıdır.
 
 ### Eski iç Python retrieval arayüzü
 

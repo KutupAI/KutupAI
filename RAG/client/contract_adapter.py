@@ -7,6 +7,7 @@ Bu modül HTTP sunucusu değildir. Application katmanı gelen JSON nesnesini
 
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from time import perf_counter
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
@@ -15,6 +16,8 @@ from langchain_core.documents import Document
 
 from RAG.agent.legal_agent import LegalRagAgent
 from RAG.ingestion.pipeline import IngestionReport, ingest_contract_document
+from RAG.retriever.query_router import choose_query_plan
+from RAG.retriever.retriever import retrieve
 
 
 ContractPayload = Mapping[str, Any]
@@ -179,6 +182,101 @@ def _public_source(source: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _contract_result(result: Mapping[str, Any]) -> Dict[str, Any]:
+    """Retriever sonucunu yeni katman sözleşmesinin sade kaynak biçimine çevirir."""
+    metadata = dict(result.get("metadata") or {})
+    return {
+        "chunk_id": str(metadata.get("chunk_id") or result.get("id") or ""),
+        "law_number": str(metadata.get("law_number") or "unknown"),
+        "law_name": str(metadata.get("law_name") or metadata.get("source_file") or "Bilinmeyen kaynak"),
+        "article_no": str(metadata.get("article_no") or metadata.get("article_number") or "unknown"),
+        "page_start": metadata.get("page_start") or metadata.get("page"),
+        "page_end": metadata.get("page_end") or metadata.get("page"),
+        "text": str(result.get("text") or ""),
+        "score": float(result.get("score") or 0.0),
+    }
+
+
+def _state_query(state: Mapping[str, Any]) -> str:
+    """State içindeki soru ve belge sinyallerinden LLM'siz retrieval sorgusu kurar."""
+    request = state.get("request")
+    question = _clean_text(request.get("question")) if isinstance(request, Mapping) else ""
+    classification = state.get("classification")
+    document_type = ""
+    if isinstance(classification, Mapping) and classification.get("success"):
+        document_type = _clean_text(classification.get("document_type"))
+    ocr = state.get("ocr")
+    full_text = ""
+    if isinstance(ocr, Mapping) and ocr.get("success"):
+        ocr_data = ocr.get("ocr_data")
+        if isinstance(ocr_data, Mapping):
+            # Belge metninin tümünü sorguya koymak yerine sınırlı bir kesit kullanılır;
+            # bu, OCR içeriğinin retrieval'a katkı sağlamasını ve gecikmenin sabit kalmasını sağlar.
+            full_text = _clean_text(ocr_data.get("full_text"))[:1200]
+    parts = [question]
+    if document_type:
+        parts.append(f"Belge türü: {document_type}")
+    if full_text:
+        parts.append(f"Belge metni: {full_text}")
+    return "\n".join(part for part in parts if part)
+
+
+def handle_layer_state(state: Mapping[str, Any]) -> Dict[str, Any]:
+    """Yeni Layers_contracts state'ini LLM çağırmadan işler.
+
+    Girdi state'i korunur; yalnız ``rag`` alanı doldurulur. Sonuçta answer,
+    context_for_llm veya LLM çağrısı yoktur. RAG'in sorumluluğu yalnız ilgili
+    hukukî pasajları sıralı olarak bulup sonraki katmana aktarmaktır.
+    """
+    output = deepcopy(dict(state))
+    request = output.get("request")
+    if not isinstance(request, Mapping) or not request.get("success"):
+        output["rag"] = {
+            "success": False,
+            "rag_data": {"operation": "retrieve", "query": "", "results": []},
+            "error": {"code": "invalid_request", "message": "request.success ve request.question zorunludur."},
+        }
+        return output
+
+    query = _state_query(output)
+    if not query:
+        output["rag"] = {
+            "success": False,
+            "rag_data": {"operation": "retrieve", "query": "", "results": []},
+            "error": {"code": "empty_question", "message": "request.question boş olamaz."},
+        }
+        return output
+
+    try:
+        plan = choose_query_plan(query)
+        results = retrieve(
+            query,
+            top_k=5,
+            mode=plan.mode,
+            use_prf=plan.use_prf,
+            use_reranker=plan.use_reranker,
+            use_graph=plan.use_graph,
+            # Bu katman sözleşmesinde hiçbir LLM kullanılmaz. Sadece hızlı,
+            # deterministik yazım düzeltmesi ve retrieval modelleri çalışır.
+            use_query_transform_llm=False,
+        )
+        output["rag"] = {
+            "success": True,
+            "rag_data": {
+                "operation": "retrieve",
+                "query": query,
+                "results": [_contract_result(result) for result in results],
+            },
+        }
+    except Exception as exc:
+        output["rag"] = {
+            "success": False,
+            "rag_data": {"operation": "retrieve", "query": query, "results": []},
+            "error": {"code": "retrieval_failed", "message": "RAG retrieval tamamlanamadı.", "type": type(exc).__name__},
+        }
+    return output
+
+
 def _query(data: Dict[str, Any], agent_factory: Callable[[], LegalRagAgent]) -> Dict[str, Any]:
     question = _clean_text(data.get("question"))
     if not question:
@@ -229,7 +327,11 @@ def handle_rag_request(
     *,
     agent_factory: Callable[[], LegalRagAgent] = LegalRagAgent,
 ) -> Dict[str, Any]:
-    """INDEX veya QUERY JSON isteğini ekip sözleşmesine uygun olarak işler."""
+    """Eski JSON sözleşmesini işler; state sözleşmesini otomatik yönlendirir."""
+    # Yeni Layers_contracts formatı üst seviyede request/ocr/classification
+    # alanlarını taşır ve kesinlikle LLM çağırmaz.
+    if isinstance(payload, Mapping) and "request" in payload:
+        return handle_layer_state(payload)
     try:
         data = _require_data(payload)
         operation = _clean_text(data.get("operation")).casefold()
