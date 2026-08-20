@@ -139,6 +139,34 @@ def ingest_documents(documents: List[Document], *, rebuild_bm25: bool = True) ->
     )
 
 
+def ingest_contract_document(document: Document) -> tuple[IngestionReport, List[Document]]:
+    """Katman sözleşmesinden gelen tek belgeyi dosyaya kopyalamadan indeksler.
+
+    Application/PDF katmanı metni zaten çıkarmış olduğunda RAG'in PDF'yi tekrar
+    okumasına gerek kalmaz. Aynı ``document_id`` yeniden gönderilirse eski
+    chunk'lar silinir; bu nedenle güncelleme duplicate üretmez.
+    """
+    document_id = str((document.metadata or {}).get("document_id") or "").strip()
+    if not document_id:
+        raise ValueError("Contract indexing requires document_id metadata.")
+
+    store = get_vector_store()
+    store.delete(where={"document_id": document_id})
+    chunks = _unique_chunks(_prepare([document]))
+    invalid = _upsert(chunks)
+    rebuild_bm25_from_chunks(store.export_all())
+    _invalidate_answer_cache()
+    return (
+        IngestionReport(
+            files_indexed={str(document.metadata.get("source_file", "unknown")): len(chunks)},
+            total_chunks=len(chunks),
+            vector_count=store.count(),
+            invalid_metadata=invalid,
+        ),
+        chunks,
+    )
+
+
 def ingest_directory(directory: Path, *, rebuild_bm25: bool = True) -> IngestionReport:
     return ingest_documents(load_directory(directory), rebuild_bm25=rebuild_bm25)
 

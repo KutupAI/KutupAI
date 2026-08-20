@@ -247,7 +247,51 @@ Benchmark çıktıları `RAG/evaluation/experiments/` altında yerel kalır ve G
 
 ## Diğer takım modülleri için istemci sözleşmesi
 
-Agent/Application katmanı doğrudan Chroma veya retriever import etmemelidir. RAG'a giriş noktası:
+Agent/Application katmanı doğrudan Chroma veya retriever import etmemelidir.
+
+### Ekipler arası JSON sözleşmesi (önerilen entegrasyon)
+
+Resmî input/output alanları [`Layers_contracts/RAG-contract.md`](../Layers_contracts/RAG-contract.md)
+dosyasında tanımlıdır. Application katmanı sözleşmeye uygun JSON nesnesini tek
+giriş fonksiyonuna verir:
+
+```python
+from RAG.client import handle_rag_request
+
+result = handle_rag_request({
+    "success": True,
+    "data": {
+        "operation": "query",
+        "session_id": "chat-001",
+        "question": "CMK 100. maddede tutuklama şartları nelerdir?",
+        "top_k": 5,
+        "filters": {"law_number": "5271", "article_no": "100"},
+        "conversation_memory": [],
+    },
+})
+```
+
+`operation: "index"` çağrısında RAG; `document_id`, `file_name`, `pages`
+veya `full_text` ile metadata'yı alır. Sayfalar verilirse sayfa numarası
+chunk'lara korunarak yazılır. Aynı `document_id` tekrar indekslendiğinde eski
+chunk'lar silinir; duplicate oluşmaz.
+
+`operation: "query"` çağrısı; `answer`, `grounded`, `retrieval_plan`,
+`context_for_llm`, kaynaklar ve süre metriklerini döndürür. Her kaynakta
+`label`, `chunk_id`, `document_id`, kanun/madde, sayfa aralığı, kanıt metni
+ve skor bulunur. Hata durumunda sonuç her zaman şu üst yapıyı korur:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {"code": "validation_error", "message": "...", "details": {}}
+}
+```
+
+### Eski iç Python retrieval arayüzü
+
+RAG içindeki Agent'lar için düşük seviyeli, geriye uyumlu giriş noktası:
 
 ```python
 from RAG.client import RetrievalRequest, get_legal_context

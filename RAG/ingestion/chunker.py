@@ -486,13 +486,20 @@ def _resolve_law_number(metadata: Dict[str, Any], text: str = "") -> str:
 
 
 def _build_chunk_id(metadata: Dict[str, Any], article_no: Any, chunk_index: int, content: str) -> str:
-    """Create a stable ID that cannot collide across PDF pages or re-ingests."""
+    """Create a stable ID that cannot collide across PDF pages or re-ingests.
+
+    Katman sözleşmesiyle gelen belgelerde aynı ``file_name`` farklı bir
+    ``document_id`` için yeniden kullanılabilir. Bu durumda document_id hash
+    girdisine eklenir; klasörden indekslenen eski corpus davranışı değişmez.
+    """
     law_no = _resolve_law_number(metadata)
         
     article_id = "preamble" if article_no is None else re.sub(r"\s+", "_", str(article_no))
     source = str(metadata.get("source_file") or metadata.get("source") or "unknown")
     normalized = " ".join(content.split())
-    digest = hashlib.sha256(f"{source}|{article_id}|{normalized}".encode("utf-8")).hexdigest()[:12]
+    document_id = str(metadata.get("document_id") or "").strip()
+    identity = f"{source}|{document_id}" if document_id else source
+    digest = hashlib.sha256(f"{identity}|{article_id}|{normalized}".encode("utf-8")).hexdigest()[:12]
     return f"{law_no}_{article_id}_{chunk_index:05d}_{digest}"
 
 def split_documents(documents: List[Document]) -> List[Document]:
