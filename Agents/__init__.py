@@ -15,5 +15,6 @@ No Agent writes to Storage — results return through graph_state only.
 from Agents.rag_agent import agent as _rag_agent  # noqa: F401
 from Agents.ocr_agent import agent as _ocr_agent  # noqa: F401
 from Agents.classification_agent import agent as _classification_agent  # noqa: F401
+from Agents.validation_agent import agent as _validation_agent  # noqa: F401
 
 __all__ = ["_rag_agent", "_ocr_agent", "_classification_agent"]
