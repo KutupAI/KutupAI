@@ -31,6 +31,10 @@ def _source_record(result: SearchResult, label: str) -> Dict[str, object]:
     law_name = meta.get("law_name") or str(meta.get("source_file", "Bilinmeyen kaynak")).replace(".pdf", "").replace("_", " ")
     return {
         "label": label,
+        # Katman sözleşmesinde kaynak pasajın kendisi de istenir. Bu alan,
+        # kullanıcıya gösterilen kaynak ile LLM'e gönderilen kanıtın aynı
+        # olmasını sağlar.
+        "text": _article_scoped_text(result),
         "law_name": str(law_name),
         "law_number": str(meta.get("law_number") or "unknown"),
         "article_number": str(meta.get("article_no") or meta.get("article_number") or "unknown"),
@@ -38,6 +42,7 @@ def _source_record(result: SearchResult, label: str) -> Dict[str, object]:
         "page_start": meta.get("page_start") or meta.get("page"),
         "page_end": meta.get("page_end") or meta.get("page"),
         "chunk_id": str(meta.get("chunk_id") or result["id"]),
+        "document_id": str(meta.get("document_id") or ""),
         "score": float(result["score"]),
     }
 

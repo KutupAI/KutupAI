@@ -168,9 +168,21 @@ def _transform_cached(original: str) -> QueryTransform:
         return QueryTransform(original=original, queries=deterministic, intent="deterministic_fallback")
 
 
-def transform_query(query: str) -> QueryTransform:
-    """Return diversified searches; never make the LLM a retrieval dependency."""
+def transform_query(query: str, *, use_llm: bool | None = None) -> QueryTransform:
+    """Return diversified searches; optionally force the non-LLM path.
+
+    Katman sözleşmesiyle çalışan retrieval çağrılarında soru dönüştürme modeli
+    de çalıştırılmaz. Kural tabanlı yazım düzeltmesi yine korunur.
+    """
     original = " ".join((query or "").split()).strip()
     if not original or not query_transform_config.enabled:
         return QueryTransform(original=original, queries=[original] if original else [])
+    if use_llm is False:
+        deterministic = _deterministic_queries(original)
+        return QueryTransform(
+            original=original,
+            queries=deterministic,
+            intent="deterministic_rewrite" if len(deterministic) > 1 else "original",
+            llm_queries=[],
+        )
     return _transform_cached(original)

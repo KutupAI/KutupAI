@@ -55,6 +55,16 @@ retrieval:
   vector_weight: 0.55
   bm25_weight: 0.45
 
+observability:
+  # Sorgu ekranındaki tanı bilgileri. false yapıldığında yalnız nihai kaynaklar gösterilir.
+  retrieval_debug: true
+  show_stage_timings: true
+  # Yalnız Query Transform özgün soruyu değiştirdiğinde yeni sorgu gösterilir.
+  show_query_details: false
+  # Ayrıntılı aday/filtresi bilgisi normal kullanıcı ekranı için kapalıdır.
+  show_candidate_details: false
+  show_result_metadata: true
+
 prf:
   # Pseudo Relevance Feedback: ilk sonuçlardan ek terim çıkarır; geniş sorularda recall artırır.
   enabled: true

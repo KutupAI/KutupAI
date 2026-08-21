@@ -59,6 +59,7 @@ def build_user_prompt(
     normalized_text: str,
     ocr_confidence: float | None,
     layout_summary: str | None,
+    vision_summary: str | None = None,
     top_k_alternatives: int,
 ) -> str:
     """Assemble the text portion of the Qwen VLM user message.
@@ -88,6 +89,16 @@ def build_user_prompt(
     if layout_summary:
         parts.append("LAYOUT BILGISI:")
         parts.append(layout_summary.strip())
+        parts.append("")
+
+    if vision_summary:
+        parts.append("GORSEL TESPIT SONUCLARI (OCR katmanindan):")
+        parts.append(vision_summary.strip())
+        parts.append(
+            "(Bu bilgiyi karar verirken dikkate al -- ornegin el yazisi imza "
+            "'dilekce' gibi elle yazilan turlerle, muhur/kase ise resmi "
+            "kurum belgeleriyle daha cok orusur.)"
+        )
         parts.append("")
 
     parts.append(f"En fazla {top_k_alternatives} alternatif sinif bildir.")
@@ -125,3 +136,37 @@ def build_layout_summary(layout: Any) -> str | None:
         return "\n".join(lines) if lines else None
 
     return None
+
+
+def build_vision_signal_summary(pages: Any) -> str | None:
+    """Turn ocr_agent's per-page `vision` block (signature/stamp detection)
+    into a short prompt-ready line. This is real signal ocr_agent already
+    produces (see Documentation / ocr_agent output samples) -- distinct
+    from `layout`, since ocr_agent's actual output has no `layout` key per
+    page, only `vision`. Feeding this in matters most for the §9 hard case
+    "el yazısı/ıslak imza bulunan belge" and for telling apart classes that
+    hinge on whether a document is hand-signed vs. stamped/official.
+    """
+    if not isinstance(pages, list):
+        return None
+
+    lines: list[str] = []
+    for page in pages:
+        if not isinstance(page, dict):
+            continue
+        vision = page.get("vision")
+        if not isinstance(vision, dict):
+            continue
+
+        signature = vision.get("signature") or {}
+        stamp = vision.get("stamp") or {}
+        page_no = page.get("page_number")
+        prefix = f"Sayfa {page_no}: " if page_no is not None else ""
+
+        if signature.get("detected"):
+            kind = "el yazısı imza" if signature.get("handwritten") else "imza"
+            lines.append(f"{prefix}{kind} tespit edildi.")
+        if stamp.get("detected"):
+            lines.append(f"{prefix}mühür/kaşe tespit edildi.")
+
+    return "\n".join(lines) if lines else None

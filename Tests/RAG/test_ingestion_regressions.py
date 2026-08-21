@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from RAG.ingestion.loader import _merge_pdf_pages
-from RAG.ingestion.chunker import _resolve_law_number
+from RAG.ingestion.chunker import split_articles, split_documents, _resolve_law_number
 from RAG.ingestion.pipeline import _unique_chunks
 from RAG.retriever.text_utils import tokenize
 
@@ -59,6 +59,48 @@ class IngestionRegressionTests(unittest.TestCase):
             "[[RAG_PAGE:2]]\nMadde 2- Başlangıç\n\n[[RAG_PAGE:3]]\nDevam eden hüküm.",
         )
         self.assertEqual((law.metadata["page_start"], law.metadata["page_end"]), (2, 3))
+
+    def test_structurally_rejoined_chunk_keeps_its_real_pdf_page(self) -> None:
+        """Satır sonu değişse bile sayfa, belge başındaki 1'e düşmemelidir."""
+        clause_a = "a) " + ("Birinci bent hükmü. " * 18)
+        clause_b = "b) " + ("İkinci bent hükmü. " * 18)
+        clause_c = "c) " + ("Üçüncü bent hükmü. " * 18)
+        document = Document(
+            page_content=(
+                "[[RAG_PAGE:1]]\nMadde 1- İlk sayfadaki kısa hüküm.\n\n"
+                "[[RAG_PAGE:2]]\nMadde 2- İkinci sayfadaki uzun hüküm.\n"
+                f"{clause_a}\n{clause_b}\n{clause_c}"
+            ),
+            metadata={"source_file": "9000_Ornek_Kanun.pdf", "page_start": 1},
+        )
+
+        chunks = split_documents([document])
+        second_article_chunks = [
+            chunk for chunk in chunks if chunk.metadata.get("article_no") == "2"
+        ]
+
+        self.assertTrue(second_article_chunks)
+        self.assertTrue(all(chunk.metadata["page_start"] == 2 for chunk in second_article_chunks))
+
+    def test_section_heading_and_additional_article_keep_correct_owner(self) -> None:
+        """Başlık sonraki maddeye, EK MADDE ise normal maddeye değil kendine bağlanır."""
+        document = Document(
+            page_content=(
+                "MADDE 121 – Önceki maddenin hükmü.\n\n"
+                "Atıf yapılan hükümler\n"
+                "MADDE 122 – Eski kanuna yapılan atıflar bu Kanuna yapılmış sayılır.\n\n"
+                "Göçmen kaçakçılığı suçunda kullanılan araca elkoyma\n"
+                "EK MADDE 1 – Araçlara ilgili hükme göre elkonulur."
+            ),
+            metadata={"source_file": "6458_Ornek.pdf"},
+        )
+
+        articles = split_articles(document)
+
+        self.assertEqual([article["article_no"] for article in articles], ["121", "122", "Ek Madde 1"])
+        self.assertNotIn("Atıf yapılan hükümler", articles[0]["content"])
+        self.assertTrue(articles[1]["content"].startswith("Atıf yapılan hükümler"))
+        self.assertTrue(articles[2]["content"].startswith("Göçmen kaçakçılığı"))
 
     def test_deduplication_keeps_the_first_stable_chunk_id(self) -> None:
         chunks = [

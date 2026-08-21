@@ -13,6 +13,7 @@ arama uzayını daraltarak sadece ilgili kanun ve maddede arama yapar.
 from __future__ import annotations
 
 import logging
+from time import perf_counter
 from typing import Dict, List, Optional
 
 from RAG.configuration.rag_config_loader import retrieval_config
@@ -150,6 +151,7 @@ def hybrid_search(
     mode: Optional[str] = None,
     vector_store: Optional[VectorStoreInterface] = None,
     metadata_query: Optional[str] = None,
+    trace: Optional[Dict[str, object]] = None,
 ) -> List[SearchResult]:
     """
     Ana hibrit arama fonksiyonu.
@@ -178,6 +180,8 @@ def hybrid_search(
         logger.debug("Automatic metadata filter applied: %s", where)
     else:
         where = explicit_where or None
+    if trace is not None:
+        trace.update({"mode": mode, "metadata_filter": where or {}, "auto_filter": auto_filter})
 
     # 🚀 CHROMADB FIX: Birden fazla filtre varsa $and operatörü ile sarmala
     # ChromaDB tek bir dict içinde birden fazla key kabul etmez, $and gerektirir.
@@ -190,28 +194,47 @@ def hybrid_search(
 
     if mode == "vector":
         # Sadece Vektörel Arama
+        started = perf_counter()
         results = _vector_search(store, query, k, where=chroma_where, auto_filter=auto_filter, fallback_where=fallback_chroma_where)
+        if trace is not None:
+            trace.update({"vector_ms": round((perf_counter() - started) * 1000, 3), "vector_candidates": len(results), "result_count": min(len(results), top_k)})
         return results[:top_k]
 
     if mode == "bm25":
         # Sadece BM25 Arama
         # BM25 kendi _filter fonksiyonumuzu kullanır, o düz dict kabul eder
-        return get_bm25_index().search(query, k, where=where)[:top_k]
+        started = perf_counter()
+        results = get_bm25_index().search(query, k, where=where)
+        if trace is not None:
+            trace.update({"bm25_ms": round((perf_counter() - started) * 1000, 3), "bm25_candidates": len(results), "result_count": min(len(results), top_k)})
+        return results[:top_k]
 
     # --- HİBRİT MOD (VARSAYILAN) ---
     
     # 1. Vektörel Arama (Güvenli Wrapper ile)
+    started = perf_counter()
     vec_results = _vector_search(store, query, k, where=chroma_where, auto_filter=auto_filter, fallback_where=fallback_chroma_where)
+    vector_ms = (perf_counter() - started) * 1000
     
     # 2. BM25 Arama
+    started = perf_counter()
     lex_results = get_bm25_index().search(query, k, where=where)
+    bm25_ms = (perf_counter() - started) * 1000
     
     # 3. RRF ile Birleştirme
+    started = perf_counter()
     fused_results = _rrf_fuse(
         [vec_results, lex_results],
         [retrieval_config.vector_weight, retrieval_config.bm25_weight],
         retrieval_config.rrf_k,
         top_k,
     )
+    if trace is not None:
+        trace.update({
+            "vector_ms": round(vector_ms, 3), "vector_candidates": len(vec_results),
+            "bm25_ms": round(bm25_ms, 3), "bm25_candidates": len(lex_results),
+            "rrf_ms": round((perf_counter() - started) * 1000, 3),
+            "fused_candidates": len(fused_results), "result_count": len(fused_results),
+        })
     
     return fused_results
