@@ -1,36 +1,47 @@
 # Orchestration Layer
 
-**اللغة:** Python · **الإطار:** FastAPI (نقطة الدخول) + بنية Supervisor/LangGraph للخطوات اللاحقة  
-**المسؤولية:** استقبال مهمة المعالجة من Application، تهيئة الحالة، استدعاء Worker Agents داخل نفس العملية، وإرجاع العقد النهائي `{ Success, Data }`.
+**اللغة:** Python 3.11+ · **الإطار:** FastAPI (نقطة الدخول) + محرك Workflow داخلي (بدون LangGraph أو أي مكتبة graph خارجية)
+**المسؤولية:** استقبال مهمة المعالجة من Application، تهيئة الحالة المركزية، تشغيل الـ Workflow (Supervisor → Agent → Result → State Update → Decision → Next Agent)، وإرجاع العقد النهائي `{ Success, Data }`.
 
-الاتصال مع Agents هو **استدعاء دالة داخل العملية** (ليس شبكة). Orchestration فقط يكتب حالة/نتائج الـ Workflow إلى Storage لاحقًا؛ الـ Agents لا تتصل بـ Storage.
+الاتصال مع Agents هو **استدعاء دالة داخل العملية** (`agent.run(state)`)، وليس عبر الشبكة، وليس Agent-to-Agent مباشرة. كل استدعاء يمر عبر: **Orchestration → Agent → Result → State Update → Decision → Next Agent**.
 
-حاليًا خطوة OCR فقط: `run_ocr_pipeline` → `OCRAgent.run`.
+> **حالة تكامل الـ Agents اليوم:** فقط `OCRAgent` مربوط فعليًا. باقي المراحل (Classification, Extraction, Validation, RAG, Summary, Routing, Writing) معرّفة بالكامل في الـ Graph والـ Config لكنها `enabled: false` حتى يتم ربطها واحدة تلو الأخرى (انظر "نقاط التكامل المستقبلية" أسفل).
 
 ---
 
-## التدفق
+## التدفق الكامل
 
 ```text
-Application  POST /process
-  { document_id, document_path, question }
-      ↓
-main.py
-      ↓
-process_service.run_ocr_pipeline
-      ↓
-Agents/ocr_agent OCRAgent.run(state)     (in-process)
-      ↓
-إرجاع { Success, Data: [ document ] }
+Request
+  → StateManager.initialize()      (تهيئة الحالة المركزية GraphState)
+  → SupervisorAgent.decide_before  (هل المرحلة متاحة/مفعّلة؟)
+  → Agent adapter .run(state)      (تنفيذ الـ Agent، داخل العملية)
+  → StateManager.apply_result      (كتابة نتيجة المرحلة في قسمها فقط)
+  → SupervisorAgent.decide_after   (استمرار / إعادة محاولة / fallback / تخطي / إنهاء)
+  → ... حتى النهاية أو الإنهاء المبكر
+  → Final State + { Success, Data }
 ```
 
-`Success = true` إذا اكتملت معالجة الوثيقة. `false` إذا المسار ناقص أو OCR فشل تمامًا.
+التسلسل الافتراضي للمراحل (`graph/graph_definition.py`):
+
+```text
+OCR → Classification → Extraction → Validation → RAG → Summary → Routing → Writing
+```
+
+الانتقالات ليست ثابتة بالضرورة: `supervisor/routing_logic.py` قد يتخطى RAG إذا لم تتطلبه نتيجة Validation، ويعيد المحاولة أو يسقط إلى fallback أو ينهي الـ Workflow حسب `config.yaml`.
+
+### نقطتا الدخول في `process_service.py`
+
+| الدالة | الوصف |
+|---|---|
+| `run_ocr_pipeline(...)` | **بدون تغيير وظيفي.** خطوة OCR فقط، كما كانت. |
+| `run_full_workflow(...)` | تشغيل الـ Graph الكامل (8 مراحل) عبر محرك الـ Workflow. المراحل غير المفعّلة تُتخطى (لا تُصطنع نتائجها أبدًا)، لذا اليوم تُكافئ عمليًا `run_ocr_pipeline` + `final_decision` منظّم، وتتوسع تلقائيًا مع كل Agent جديد يُربط. |
+
+نفس التمييز في `main.py`: `POST /process` (كما كان) و `POST /process/full` (الجديد).
 
 ---
 
 ## تشغيل الطبقة
-
-المتطلبات في `requirements.txt` (هذه الطبقة) **و** `Agents/ocr_agent/requirements.txt` لأن الاستدعاء داخل العملية.
 
 ```powershell
 cd C:\Users\SSCPrgWeb\Desktop\SmartGovernmentAI
@@ -44,9 +55,28 @@ $env:QWEN_VL_TIMEOUT="240"
 python -m Orchestration.main
 ```
 
-المنفذ **8000**. يحتاج ملفًا على قرص مشترك كتبه Application، وخادم Qwen-VL على **8081** إن لزم الاسترداد البصري.
+المنفذ **8000**. تحقق: `http://127.0.0.1:8000/health` → `{"status":"ok"}`
 
-تحقق: `http://127.0.0.1:8000/health` → `{"status":"ok"}`
+## تشغيل الاختبارات
+
+```bash
+pip install -r Orchestration/requirements.txt pytest
+python -m pytest Orchestration/tests -v
+```
+
+31 اختبار، تغطي: تهيئة/تحديث الحالة، تنفيذ الـ Agent (نجاح/فشل/استثناء/نتيجة غير صالحة)، الانتقالات، قرارات الـ Supervisor، إعادة المحاولة/fallback/الإنهاء، الـ Workflow الكامل (mocked)، عقد الحالة النهائي، والاستيراد/عدم وجود circular imports. كل الـ Mocks داخل `Orchestration/tests/` فقط، ولا تُستخدم كتطبيقات Agent حقيقية.
+
+---
+
+## الإعدادات (`config.yaml`)
+
+لكل مرحلة: `enabled`, `module`, `class_name` (المسار للاستيراد الكسول عند التفعيل فقط), `retries`, `timeout_seconds`, `fallback` (`terminate` | `skip` | `fallback_stage`). ملف فارغ/غائب = القيم الافتراضية البرمجية (OCR فقط مفعّل). `supervisor.max_total_retries` هو حد أمان لكامل الـ Workflow.
+
+---
+
+## معالجة الأخطاء
+
+كل تنفيذ Agent يُعاد كأحد: `success | failure | invalid_result | missing_state | exception | skipped | not_integrated` (`messages/message_schema.py::ExecutionStatus`). لا يوجد ابتلاع صامت للأخطاء: كل حالة غير ناجحة تُسجَّل في `state["errors"]` وفي الـ logs (بدون محتوى المستند/الرسائل الحسّاسة - راجع `StateManager.snapshot`).
 
 ---
 
@@ -54,43 +84,60 @@ python -m Orchestration.main
 
 | الملف | الوظيفة |
 |---|---|
-| `main.py` | نقطة الدخول. FastAPI: `GET /health` و `POST /process`. يحوّل طلب Application إلى `run_ocr_pipeline`. |
-| `process_service.py` | تشغيل OCR بدون FastAPI (للاختبارات). يبني الحالة، يستدعي `OCRAgent`، يثبّت عقد `{ Success, Data }`. |
+| `main.py` | نقطة الدخول. FastAPI: `GET /health`, `POST /process` (OCR فقط), `POST /process/full` (الـ Workflow الكامل). |
+| `process_service.py` | `run_ocr_pipeline` (بدون تغيير) و `run_full_workflow` (جديد) بدون FastAPI، للاختبار المباشر. |
 | `__init__.py` | يجعل المجلد حزمة Python قابلة للاستيراد. |
-| `requirements.txt` | حزم FastAPI/Uvicorn. |
+| `requirements.txt` | fastapi/uvicorn/pydantic/pyyaml. |
 | `README.md` | هذا الملف. |
-| `config.yaml` | إن وُجد: إعدادات تشغيل إضافية. |
+| `config.yaml` | سياسات الـ Workflow: enabled/retries/timeouts/fallback لكل مرحلة. |
 
 ### `messages/`
 
 | الملف | الوظيفة |
 |---|---|
-| `message_schema.py` | عقد الرسائل الموحّد `{ Success, Data }` على جانب Orchestration (يمرّر نفس الـ schema من OCR Agent). |
+| `message_schema.py` | عقد `{ Success, Data }` (تمرير من `Agents.ocr_agent.models` مع fallback آمن للاختبار المعزول) + عقود داخلية: `AgentRequest`, `AgentResult`, `ExecutionStatus`. |
 
 ### `state/`
 
 | الملف | الوظيفة |
 |---|---|
-| `graph_state.py` | الحالة المشتركة بين Supervisor والـ Agents: `document_id`, `document_path`, `question`, `ocr_result` (`{ Success, Data }`), `ocr_status`. |
-| `state_manager.py` | هيكل حفظ/استرجاع checkpoint الحالة إلى Storage. |
+| `graph_state.py` | `GraphState`: الحالة المركزية الموحّدة (request/ocr/classification/extraction/validation/rag/summary/routing/writing + تحكم الـ Workflow). متوافقة خلفيًا مع مفاتيح OCR الأصلية. |
+| `state_manager.py` | **نقطة الكتابة الوحيدة** للحالة: تهيئة، تطبيق نتيجة مرحلة في قسمها فقط، تتبّع المحاولات/التاريخ، تسجيل الأخطاء المُهيكلة، snapshot آمن للـ logging. |
 
 ### `supervisor/`
 
 | الملف | الوظيفة |
 |---|---|
-| `supervisor_agent.py` | هيكل العقل المركزي: اختيار الـ Agent التالي من `agent_registry`. |
-| `routing_logic.py` | هيكل قواعد الانتقال (مثال: بعد OCR → Classification إلا إذا فشل OCR). |
-| `supervisor_prompts.py` | هيكل قوالب Prompts للـ Supervisor. |
+| `supervisor_agent.py` | العقل المركزي: يقرر بدء/استمرار كل مرحلة عبر `routing_logic`. الوضع الحالي `deterministic` فقط. |
+| `routing_logic.py` | قواعد انتقال حتمية: تخطٍّ/إعادة محاولة/fallback/إنهاء/اكتمال، بما فيها فروع عملية (تخطي RAG عند عدم الحاجة). |
+| `supervisor_prompts.py` | قوالب Prompts محجوزة لوضع Supervisor مستقبلي مبني على LLM (`supervisor.mode: llm`) - غير مستخدمة حاليًا. |
 
 ### `workflow/`
 
 | الملف | الوظيفة |
 |---|---|
-| `workflow_builder.py` | هيكل بناء LangGraph: أي Node يمثل أي Agent. |
-| `workflow_config.py` | هيكل إعدادات الـ Graph. |
+| `workflow_builder.py` | Adapter موحّد لأي Agent يطابق `run(state) -> state`، سجلّ الـ Agents (استيراد كسول حسب `config.yaml`، أو `agent_overrides` للاختبار)، ومحرك التنفيذ `Workflow.run(...)`. |
+| `workflow_config.py` | تحميل `config.yaml` إلى إعدادات مكتوبة (typed) مع قيم افتراضية آمنة. |
 
 ### `graph/`
 
 | الملف | الوظيفة |
 |---|---|
-| `graph_definition.py` | هيكل تعريف StateGraph والـ Edges الشرطية. |
+| `graph_definition.py` | `Stage` enum، وصف كل عقدة (`GraphNode`)، والتسلسل الافتراضي `DEFAULT_SEQUENCE` + الحواف الخطية. لا تبعية لأي مكتبة graph خارجية. |
+
+### `tests/`
+
+اختبارات Orchestration المعزولة، مع `mock_agents.py` (Mocks للاختبار فقط، لا تُستخدم كتطبيق Agent حقيقي).
+
+---
+
+## نقاط التكامل المستقبلية (لكل Agent قادم)
+
+لربط Agent حقيقي جديد (مثال: `classification_agent`):
+
+1. تأكد أن الـ Agent يوفّر `run(self, state: dict) -> dict` ويكتب فقط `classification_result` (و`classification_status` اختياريًا) في الحالة التي يستقبلها.
+2. في `config.yaml`: عيّن `agents.classification.enabled: true`، وتأكد أن `module`/`class_name` يشيران للمسار الصحيح.
+3. لا حاجة لتعديل أي كود Orchestration آخر - `workflow_builder.build_agent_registry` سيستورد الـ Agent كسولًا عند أول تشغيل.
+4. أضف اختبارات في `Orchestration/tests/` باستخدام mock مطابق للواجهة الحقيقية قبل التفعيل في `config.yaml`، ثم فعّله.
+
+نفس الخطوات لبقية المراحل: `extraction`, `validation`, `rag`, `summary`, `routing` (routing_agent - وجهة العمل/القسم، مختلف عن Orchestration routing الذي يقرر "أي Agent التالي")، و`writing`.

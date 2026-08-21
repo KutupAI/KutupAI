@@ -1,0 +1,80 @@
+# Orchestration workflow policies.
+#
+# Everything here has an in-code default (workflow/workflow_config.py), so
+# this file only needs to list what differs from the default, but the full
+# shape is spelled out below for clarity and for one-by-one Agent
+# integration: to connect a new Agent, point `module`/`class_name` at it
+# and flip `enabled: true`.
+
+supervisor:
+  mode: deterministic     # deterministic | llm (llm is reserved, not implemented)
+  max_total_retries: 12   # safety net across the whole workflow run
+
+logging:
+  level: INFO
+  redact_content: true    # never log document_text/full_text/draft_letter etc.
+
+agents:
+  ocr:
+    enabled: true
+    module: Agents.ocr_agent
+    class_name: OCRAgent
+    retries: 1
+    timeout_seconds: 240
+    fallback: terminate    # OCR is required input for every later stage
+
+  classification:
+    enabled: false          # set true once Agents.classification_agent exists
+    module: Agents.classification_agent
+    class_name: ClassificationAgent
+    retries: 1
+    timeout_seconds: 60
+    fallback: skip
+
+  extraction:
+    enabled: false
+    module: Agents.extraction_agent
+    class_name: ExtractionAgent
+    retries: 1
+    timeout_seconds: 60
+    fallback: skip
+
+  validation:
+    enabled: false
+    module: Agents.validation_agent
+    class_name: ValidationAgent
+    retries: 1
+    timeout_seconds: 60
+    fallback: skip
+
+  rag:
+    enabled: false
+    module: Agents.rag_agent
+    class_name: RAGAgent
+    retries: 1
+    timeout_seconds: 120
+    fallback: skip          # RAG is optional; never blocks the workflow
+
+  summary:
+    enabled: false
+    module: Agents.summary_agent
+    class_name: SummaryAgent
+    retries: 1
+    timeout_seconds: 60
+    fallback: skip
+
+  routing:
+    enabled: false
+    module: Agents.routing_agent
+    class_name: RoutingAgent
+    retries: 1
+    timeout_seconds: 30
+    fallback: skip
+
+  writing:
+    enabled: false
+    module: Agents.writer_agent
+    class_name: WriterAgent
+    retries: 1
+    timeout_seconds: 60
+    fallback: skip

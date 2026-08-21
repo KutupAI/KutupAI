@@ -3,6 +3,7 @@
 fastapi>=0.110,<1
 uvicorn>=0.27,<1
 pydantic>=2,<3
+pyyaml>=6,<7
 
 # OCR Agent is called in-process from this layer. Also install:
 #   pip install -r Agents/ocr_agent/requirements.txt
