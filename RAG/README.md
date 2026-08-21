@@ -126,7 +126,41 @@ Bu ekran cevap, kaynaklar, retrieval planı, Query Transform varyantları, cache
 .\RAG\scripts\run_retrieval.ps1
 ```
 
-Bu mod LLM çağırmadan chunk, skor, kanun, madde ve sayfa bilgisini verir.
+Bu mod LLM ile cevap üretmeden chunk, skor, kanun, madde ve sayfa bilgisini verir.
+Varsayılan `--mode auto` ayarında Query Router soru türüne göre `exact_citation`,
+`article_lookup`, `lexical_legal_lookup`, `semantic_hybrid` veya
+`legal_relationship` planını seçer.
+
+İnteraktif ekranda kısa teknik özet varsayılan olarak açıktır:
+
+```text
+Seçilen retrieval yolu
+Kullanılan teknikler
+Query Transform'un soruyu değiştirip değiştirmediği
+Arama, reranker ve toplam süre
+```
+
+Geçici olarak kapatmak için:
+
+```powershell
+.\RAG\scripts\run_retrieval.ps1 --no-debug
+```
+
+Kalıcı olarak `RAG/configuration/rag_config.yaml` içindeki aşağıdaki alanları
+değiştirin:
+
+```yaml
+observability:
+  retrieval_debug: false
+  show_stage_timings: false
+  show_query_details: false
+  show_candidate_details: false
+  show_result_metadata: false
+```
+
+`--mode vector|bm25|hybrid`, `--prf`, `--no-prf`, `--reranker`,
+`--no-reranker` ve `--graph-rag` seçenekleri yalnız deney/karşılaştırma için
+Router kararını geçersiz kılar.
 
 ### Tek turlu legal-agent CLI
 
@@ -216,9 +250,39 @@ Ekran kural tabanlı düzeltmeleri ve LLM'in ürettiği alternatifleri ayrı gö
 |---|---|---|
 | Açık kanun + madde | `exact_citation` | Metadata filtresi + vector + reranker |
 | “Hangi maddede?” | `article_lookup` | Hibrit arama + deterministik madde seçimi |
-| Genel hukuk sorusu | `semantic_fast` | Dense retrieval + reranker |
-| Tebliğ/yönetmelik/terim | `lexical_legal_lookup` | Hybrid lexical + semantic arama |
+| Ceza, beyanname, usulsüzlük, tebliğ/yönetmelik veya terim | `lexical_legal_lookup` | Hybrid lexical + semantic arama + reranker |
+| Serbest biçimli / yeni hukuk sorusu | `semantic_hybrid` | Varsayılan güvenli yol: Hybrid + reranker |
 | Atıf/ilişki/karşılaştırma | `legal_relationship` | Hybrid + PRF + Graph-RAG FULL |
+
+## Query Router nasıl karar verir?
+
+Router, sabit bir konu sözlüğüne bağlı bir sınıflandırıcı değildir. Önce soru
+metninden kanun numarası, kanun adı ve madde numarası gibi metadata sinyallerini
+çıkarır; sadece açık bir sinyal varsa özel bir yol seçer. Hiçbir özel sinyal
+yoksa soru `semantic_fast` yerine varsayılan olarak `semantic_hybrid` yoluna
+gider. Böylece kullanıcının daha önce görülmemiş ifade biçimleri için hem BM25
+tam-terim eşleşmesi hem de embedding tabanlı anlam eşleşmesi kullanılır.
+
+```mermaid
+flowchart TD
+    A["Kullanıcı sorusu"] --> B["Kural tabanlı Query Transform\nyazım düzeltmesi / kısaltma açılımı"]
+    B --> C["Metadata çıkarımı\nkanun no, kanun adı, madde no"]
+    C --> D{"Açık kanun no\nve madde no var mı?"}
+    D -- Evet --> E["exact_citation\nMetadata filtresi + Vector + Reranker"]
+    D -- Hayır --> F{"‘Hangi maddede?’\nsorusu mu?"}
+    F -- Evet --> G["article_lookup\nHybrid + Reranker"]
+    F -- Hayır --> H{"Atıf, ilişki veya\nkarşılaştırma sorusu mu?"}
+    H -- Evet --> I["legal_relationship\nHybrid + PRF + Graph-RAG + Reranker"]
+    H -- Hayır --> J{"Belirgin hukukî terim,\nceza/tutar veya düzenleme sinyali var mı?"}
+    J -- Evet --> K["lexical_legal_lookup\nHybrid + Reranker"]
+    J -- Hayır --> L["semantic_hybrid\nVarsayılan: Hybrid + Reranker"]
+```
+
+`semantic_hybrid` kararı hata veya düşük seviye bir yol değildir; bilinmeyen
+veya serbest biçimli hukuk sorularında doğruluğu korumak için kullanılan
+varsayılan yoldur. PRF ve Graph-RAG ise her soruda zorla çalıştırılmaz; yalnız
+ilişki/atıf sorularında devreye girer, çünkü gereksiz genişletme bazen yanlış
+sonuç ve ek gecikme yaratabilir.
 
 ## Güvenilirlik ve konuşma belleği
 

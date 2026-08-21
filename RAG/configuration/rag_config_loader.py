@@ -118,6 +118,17 @@ class RetrievalConfig:
 
 
 @dataclass(frozen=True)
+class ObservabilityConfig:
+    """İnteraktif retrieval ekranındaki isteğe bağlı tanı çıktıları."""
+
+    retrieval_debug: bool
+    show_stage_timings: bool
+    show_query_details: bool
+    show_candidate_details: bool
+    show_result_metadata: bool
+
+
+@dataclass(frozen=True)
 class PrfConfig:
     enabled: bool
     top_n_docs: int
@@ -254,6 +265,15 @@ reranker_config = RerankerConfig(
     model_name=str(_rr.get("model_name", "cross-encoder/ms-marco-MiniLM-L-6-v2")),
     top_n=int(_rr.get("top_n", 15)),
     base_rank_weight=min(1.0, max(0.0, float(_rr.get("base_rank_weight", 0.0)))),
+)
+
+_obs = _raw.get("observability", {})
+observability_config = ObservabilityConfig(
+    retrieval_debug=bool(_obs.get("retrieval_debug", True)),
+    show_stage_timings=bool(_obs.get("show_stage_timings", True)),
+    show_query_details=bool(_obs.get("show_query_details", True)),
+    show_candidate_details=bool(_obs.get("show_candidate_details", True)),
+    show_result_metadata=bool(_obs.get("show_result_metadata", True)),
 )
 
 _qe = _raw.get("query_expansion", {})
