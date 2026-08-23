@@ -1,0 +1,25 @@
+# Routing Agent - requirements
+#
+# The core agent (Agents/routing_agent) has ZERO third-party dependencies.
+# It runs on the Python standard library only:
+#   dataclasses, enum, abc, typing, re, math, collections
+#
+# Tested on Python 3.9+.
+#
+# Nothing below is required to import or run Agents.routing_agent.
+# Uncomment only if you wire in the corresponding optional integration.
+
+# --- Optional: real LLM-in-the-loop scoring -------------------------------
+# Wire a real Claude call into tools.CallableLLMScorer (see prompts.py) and
+# set config.ENABLE_LLM_SCORING = True. Requires:
+# anthropic>=0.34.0
+
+# --- Optional: real embedding-based semantic scorer ------------------------
+# Implement tools.SemanticScorer with a real embedding model instead of the
+# default dependency-free TokenOverlapSemanticScorer, e.g.:
+# numpy>=1.24.0
+# sentence-transformers>=2.2.0   # or any embeddings client of your choice
+
+# --- Testing ----------------------------------------------------------------
+# The test suite (Agents/routing_agent/tests) uses only unittest, which is
+# part of the standard library. No test dependency is required.
