@@ -56,15 +56,15 @@ agents:
     fallback: skip          # RAG is optional; never blocks the workflow
 
   summary:
-    enabled: false
+    enabled: false          # set true once RAG stage feeds rag_result reliably
     module: Agents.summary_agent
     class_name: SummaryAgent
     retries: 1
-    timeout_seconds: 60
+    timeout_seconds: 120
     fallback: skip
 
   routing:
-    enabled: false
+    enabled: false          # set true once upstream stages feed usable text/summary
     module: Agents.routing_agent
     class_name: RoutingAgent
     retries: 1

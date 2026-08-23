@@ -98,7 +98,8 @@ class MockSummaryAgent:
 
 class MockRoutingAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        state["routing_decision"] = {"department": "finance"}
+        # Matches real RoutingAgent contract: state["routing"].
+        state["routing"] = {"success": True, "department": "finance"}
         return state
 
 

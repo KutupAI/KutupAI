@@ -66,7 +66,7 @@ def test_run_workflow_success_with_all_mocks():
         doc = envelope["Data"][0]
         assert doc["document_id"] == "doc-1"
         assert doc["writing"] == {"success": True, "answer": "Dear Sir, ..."}
-        assert doc["routing"] == {"department": "finance"}
+        assert doc["routing"] == {"success": True, "department": "finance"}
     finally:
         Path(path).unlink(missing_ok=True)
 

@@ -19,3 +19,15 @@ python Tests/Agents/manual_test.py
 # mocked Integration with Orchestration
 pytest Orchestration/tests/test_summary_integration.py -q
 ```
+
+## Routing Agent
+```bash
+# from repo root — offline demo (prints full envelope input/output)
+python Tests/Agents/manual_test_routing.py
+
+# unit + envelope contract
+pytest Tests/Agents/test_routing_agent.py Tests/Agents/test_envelope_contract.py -q
+
+# real RoutingAgent inside Orchestration workflow
+pytest Orchestration/tests/test_routing_integration.py -q
+```
