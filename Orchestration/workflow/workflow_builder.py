@@ -125,6 +125,10 @@ def _default_adapter(agent: AgentProtocol) -> AgentAdapter:
             return AgentResult.fail(
                 stage.value, ExecutionStatus.MISSING_STATE, f"{stage.value} agent returned no result section"
             )
+        if stage == Stage.SUMMARY and isinstance(data, dict) and data.get("success") is False:
+            return AgentResult.fail(
+                stage.value, ExecutionStatus.FAILURE, "summary agent returned success=false"
+            )
         if stage == Stage.WRITING and isinstance(data, dict) and data.get("success") is False:
             return AgentResult.fail(
                 stage.value, ExecutionStatus.FAILURE, "writer agent returned success=false"

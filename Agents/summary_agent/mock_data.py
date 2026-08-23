@@ -1,10 +1,5 @@
-"""
-Agents/summary_agent/mock_data.py
+"""Sample inputs for manual/unit checks (not used in production)."""
 
-Sample RAG retrieval result matching the RAG Layer's contract, for
-manually exercising summary_agent without a running RAG/Inference
-stack. Not used by production code paths.
-"""
 MOCK_QUESTION = "Yabancı bir kişi Türkiye'de ikamet izni başvurusunu nereden yapar?"
 
 MOCK_RAG_RESULT = {
@@ -46,4 +41,42 @@ MOCK_RAG_RESULT = {
         ],
     },
     "error": None,
+}
+
+# Full GraphState-shaped fixture for SummaryAgent.run (Orchestration contract).
+MOCK_STATE = {
+    "request": {
+        "success": True,
+        "question": MOCK_QUESTION,
+        "document": {
+            "document_id": "doc-6458-001",
+            "file_name": "ikamet_izni_basvurusu.pdf",
+            "file_type": "pdf",
+        },
+    },
+    "question": MOCK_QUESTION,
+    "ocr": {},
+    "classification": {},
+    "extraction": {},
+    "validation": {},
+    # Orchestration stores RAG under rag_result; also set rag for pipeline-slot tests.
+    "rag": {
+        "success": True,
+        "rag_data": {
+            "operation": "retrieve",
+            "query": MOCK_QUESTION,
+            "results": MOCK_RAG_RESULT["data"]["results"],
+        },
+    },
+    "rag_result": {
+        "success": True,
+        "data": {
+            "operation": "retrieve",
+            "query": MOCK_QUESTION,
+            "results": MOCK_RAG_RESULT["data"]["results"],
+        },
+    },
+    "summary": {},
+    "routing": {},
+    "writing": {},
 }

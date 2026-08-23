@@ -134,7 +134,7 @@ def _default_stages() -> Dict[Stage, StageConfig]:
             module="Agents.summary_agent",
             class_name="SummaryAgent",
             retries=1,
-            timeout_seconds=60,
+            timeout_seconds=120,
             fallback=FallbackPolicy.SKIP,
         ),
         Stage.ROUTING: StageConfig(

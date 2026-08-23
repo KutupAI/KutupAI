@@ -1,10 +1,5 @@
-"""
-Agents/summary_agent/schemas.py
+"""Input/output contracts for summary_agent (RAG in → summary out)."""
 
-Data contracts for summary_agent:
-- Input: the RAG Layer's retrieval result (rag_client output contract).
-- Output: the structured summary handed off to writer_agent.
-"""
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -34,7 +29,7 @@ class RAGData(BaseModel):
 
 
 class RAGResult(BaseModel):
-    """Mirrors RAG/client/rag_client.py's output contract exactly."""
+    """Matches RAG/client output; also accepted via state['rag_result']."""
 
     model_config = ConfigDict(extra="ignore")
 
@@ -60,8 +55,7 @@ class SummaryData(BaseModel):
 
 
 class SummaryAgentResult(BaseModel):
-    """The agent's output contract, mirroring the RAG contract shape
-    so downstream agents (writer_agent) handle both uniformly."""
+    """Standalone envelope; pipeline flattens this into state['summary']."""
 
     success: bool
     data: Optional[SummaryData] = None

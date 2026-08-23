@@ -1,8 +1,4 @@
-"""
-Deterministic prompt template for Gemma 3 (Inference/models/gemma3.gguf).
-
-Plain text output — no chain-of-thought — so writer_agent can consume it reliably.
-"""
+"""Deterministic Gemma 3 prompt for source-grounded summary notes."""
 
 from __future__ import annotations
 
@@ -45,6 +41,6 @@ def _format_chunk(index: int, item: RAGResultItem) -> str:
 
 
 def build_prompt(question: str, results: List[RAGResultItem]) -> str:
-    """Render the deterministic summary prompt from validated RAG chunks."""
+    """Build the user prompt from validated RAG chunks."""
     rag_results = "\n\n".join(_format_chunk(i, r) for i, r in enumerate(results, start=1))
     return SUMMARY_PROMPT_TEMPLATE.format(question=question.strip(), rag_results=rag_results)

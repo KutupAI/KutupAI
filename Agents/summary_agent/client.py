@@ -1,4 +1,4 @@
-"""Stable summary entry used by SummaryAgent / Orchestration."""
+"""Thin Inference wrapper used by SummaryAgent."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ class SummaryRequest:
 
 
 class SummaryClient:
-    """Thin wrapper over LlamaClient — routes prompts to Gemma 3 via llama-server."""
+    """Routes prompts to Gemma 3 via LlamaClient / llama-server."""
 
     def __init__(
         self,

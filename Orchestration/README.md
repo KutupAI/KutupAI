@@ -5,7 +5,7 @@
 
 الاتصال مع Agents هو **استدعاء دالة داخل العملية** (`agent.run(state)`)، وليس عبر الشبكة، وليس Agent-to-Agent مباشرة. كل استدعاء يمر عبر: **Orchestration → Agent → Result → State Update → Decision → Next Agent**.
 
-> **حالة تكامل الـ Agents اليوم:** فقط `OCRAgent` مربوط فعليًا. باقي المراحل (Classification, Extraction, Validation, RAG, Summary, Routing, Writing) معرّفة بالكامل في الـ Graph والـ Config لكنها `enabled: false` حتى يتم ربطها واحدة تلو الأخرى (انظر "نقاط التكامل المستقبلية" أسفل).
+> **حالة تكامل الـ Agents اليوم:** فقط `OCRAgent` مفعّل في `config.yaml`. `SummaryAgent` مربوط عقديًا (يقرأ `rag`/`rag_result` ويكتب `summary.rag_summary_text`) وجاهز للتفعيل عبر `agents.summary.enabled: true` مع باقي المراحل (Classification, Extraction, Validation, RAG, Routing, Writing).
 
 ---
 
