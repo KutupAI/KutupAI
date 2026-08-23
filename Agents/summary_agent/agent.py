@@ -1,9 +1,4 @@
-"""
-summary_agent — turns (question, rag_result) into a concise, source-grounded summary.
-
-Flow:
-    question + rag_result -> build_prompt -> SummaryClient -> Gemma 3 -> SummaryAgentResult
-"""
+"""Summary agent: question + RAG context → grounded notes for writer_agent."""
 
 from __future__ import annotations
 
@@ -26,10 +21,10 @@ def _error(code: str, message: str) -> SummaryAgentResult:
 
 @register
 class SummaryAgent(BaseAgent):
-    """Summarize RAG context for writer_agent. Calls Inference Layer only — no model loading."""
+    """Orchestration stage: read request/rag → write state['summary']."""
 
     name = "summary_agent"
-    description = "Summarize retrieved legal context into grounded bullet notes for writer_agent."
+    description = "Summarize retrieved legal context into grounded notes for writer_agent."
 
     def __init__(
         self,
@@ -40,8 +35,7 @@ class SummaryAgent(BaseAgent):
         self.client = client or SummaryClient(self.config)
 
     def summarize(self, question: Any, rag_result: Any) -> SummaryAgentResult:
-        """Core entry point — usable directly outside graph state."""
-
+        """Standalone entry: (question, RAGResult) → SummaryAgentResult."""
         if not isinstance(question, str) or not question.strip():
             return _error("invalid_input", "`question` must be a non-empty string.")
 
@@ -89,8 +83,90 @@ class SummaryAgent(BaseAgent):
         )
 
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Orchestration entry: reads question/rag_result, writes summary_result."""
+        """Orchestration entry: reads request/rag(_result), writes state['summary']."""
+        if not isinstance(state, dict):
+            raise TypeError("SummaryAgent.run expects GraphState as a dict")
+
         updated = dict(state)
-        result = self.summarize(updated.get("question"), updated.get("rag_result"))
-        updated["summary_result"] = result.model_dump()
+        question = self._resolve_question(updated)
+        rag_result = self._adapt_rag(updated)
+
+        # RAG stage skipped / absent → empty notes (non-blocking for the pipeline).
+        err = rag_result.get("error") if isinstance(rag_result.get("error"), dict) else {}
+        if err.get("code") == "missing_rag":
+            updated["summary"] = {"success": True, "rag_summary_text": ""}
+            return updated
+
+        result = self.summarize(question, rag_result)
+        updated["summary"] = self._to_state_summary(result)
         return updated
+
+    @staticmethod
+    def _resolve_question(state: Dict[str, Any]) -> str:
+        request = state.get("request") if isinstance(state.get("request"), dict) else {}
+        return (
+            request.get("question")
+            or state.get("question")
+            or state.get("accompanying_text")
+            or request.get("accompanying_text")
+            or ""
+        )
+
+    @staticmethod
+    def _adapt_rag(state: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize state['rag'] / state['rag_result'] into RAGResult shape."""
+        block = state.get("rag") if isinstance(state.get("rag"), dict) else None
+        if not block:
+            block = state.get("rag_result") if isinstance(state.get("rag_result"), dict) else {}
+        block = block or {}
+
+        # Pipeline slot: {success, rag_data, error?}
+        if "rag_data" in block:
+            return {
+                "success": block.get("success", False),
+                "data": block.get("rag_data"),
+                "error": block.get("error"),
+            }
+
+        # Bare retrieval payload: {operation, query, results}
+        if "results" in block:
+            return {"success": True, "data": block, "error": block.get("error")}
+
+        # rag_agent simplified: {context, sources, result_count}
+        context = (block.get("context") or "").strip()
+        if context:
+            query = state.get("rag_query") or SummaryAgent._resolve_question(state) or ""
+            return {
+                "success": True,
+                "data": {
+                    "operation": "retrieve",
+                    "query": query,
+                    "results": [{"chunk_id": "rag-context-0", "text": context}],
+                },
+                "error": block.get("error"),
+            }
+
+        # Already RAGResult: {success, data, error?}
+        if "data" in block or "success" in block:
+            return {
+                "success": block.get("success", bool(block.get("data"))),
+                "data": block.get("data"),
+                "error": block.get("error"),
+            }
+
+        return {
+            "success": False,
+            "data": None,
+            "error": block.get("error") or {"code": "missing_rag", "message": "No RAG context in state."},
+        }
+
+    @staticmethod
+    def _to_state_summary(result: SummaryAgentResult) -> Dict[str, Any]:
+        """Map SummaryAgentResult → state['summary'] for writer/routing."""
+        if result.success and result.data is not None:
+            return {"success": True, "rag_summary_text": result.data.summary}
+        return {
+            "success": False,
+            "rag_summary_text": None,
+            "error": result.error or {"code": "unknown_error", "message": "Summary generation failed."},
+        }

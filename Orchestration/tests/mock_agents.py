@@ -61,14 +61,38 @@ class MockValidationAgent:
 
 class MockRagAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        question = (state.get("request") or {}).get("question") or state.get("question") or ""
         state["rag_status"] = "completed"
-        state["rag_result"] = {"chunks": ["context A", "context B"]}
+        # Shape matches RAGResult / what SummaryAgent adapts from state["rag_result"].
+        state["rag_result"] = {
+            "success": True,
+            "data": {
+                "operation": "retrieve",
+                "query": question,
+                "results": [
+                    {
+                        "chunk_id": "chunk-a",
+                        "text": "context A",
+                        "law_number": "6458",
+                        "article_no": "31",
+                    },
+                    {
+                        "chunk_id": "chunk-b",
+                        "text": "context B",
+                        "law_number": "6458",
+                        "article_no": "32",
+                    },
+                ],
+            },
+            "error": None,
+        }
         return state
 
 
 class MockSummaryAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        state["summary"] = {"text": "summary text"}
+        # Matches real SummaryAgent → writer/routing contract.
+        state["summary"] = {"success": True, "rag_summary_text": "summary text"}
         return state
 
 

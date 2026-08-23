@@ -1,4 +1,4 @@
-"""Tools exposed to SummaryAgent (Inference integration stays behind SummaryClient)."""
+"""Standalone helpers; Orchestration uses SummaryAgent.run(state)."""
 
 from __future__ import annotations
 
@@ -16,6 +16,6 @@ def summarize_context(
     config: SummaryConfig | None = None,
     client: SummaryClient | None = None,
 ) -> dict[str, Any]:
-    """Run summarization and return a plain dict for graph_state['summary_result']."""
+    """(question, RAGResult) → plain dict. Prefer SummaryAgent.run for the pipeline."""
     agent = SummaryAgent(client=client, config=config)
     return agent.summarize(question, rag_result).model_dump()

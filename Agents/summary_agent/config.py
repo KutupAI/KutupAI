@@ -1,4 +1,4 @@
-"""Summary agent configuration — inference parameters and model registry hints."""
+"""Summary agent config (env + model registry)."""
 
 from __future__ import annotations
 
