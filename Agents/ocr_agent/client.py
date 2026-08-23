@@ -27,9 +27,6 @@ class OCRClient:
         processor: OCRProcessor | None = None,
     ) -> None:
         self.config = config or OCRConfig.from_env()
-        # Reuse a cached OCRProcessor (and therefore the cached, model-loaded
-        # engine) per distinct config so re-instantiating OCRAgent/OCRClient
-        # per Orchestration call does not reload models per request.
         self.processor = processor or self._shared_processor(self.config)
 
     @staticmethod

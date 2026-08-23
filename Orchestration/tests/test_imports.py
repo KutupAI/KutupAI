@@ -22,13 +22,11 @@ def test_every_orchestration_module_imports_cleanly():
 
 
 def test_process_service_does_not_require_agents_package_at_import_time():
-    # process_service.py must stay importable even when Agents/ isn't
-    # installed (it only imports Agents.ocr_agent lazily, inside
-    # run_ocr_pipeline, when no `agent` override is supplied).
+    # process_service stays importable without Agents/; real Agents load
+    # lazily inside the workflow when a stage runs without overrides.
     module = importlib.import_module("Orchestration.process_service")
-    assert hasattr(module, "run_ocr_pipeline")
-    assert hasattr(module, "run_full_workflow")
-
+    assert hasattr(module, "run_workflow")
+    assert hasattr(module, "run_full_workflow")  # alias
 
 def test_main_module_imports_cleanly():
     # main.py requires fastapi/uvicorn/pydantic to be installed, same as

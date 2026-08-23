@@ -1,13 +1,4 @@
-"""Decide what to do after an OCR attempt: accept, retry, or escalate.
-
-Implements the controlled multi-pass strategy from requirement #5:
-
-    Attempt 1 -> confidence check
-    Good      -> accept
-    Poor      -> preprocessing -> Attempt 2
-    Still poor-> stronger preprocessing -> Attempt 3
-    Still bad -> vision fallback (if enabled) -> mark uncertain otherwise
-"""
+"""Accept / retry / vision-fallback decisions after an OCR attempt."""
 
 from __future__ import annotations
 
@@ -61,7 +52,7 @@ def page_looks_incomplete(
     items: Sequence[OCRTextItem],
     quality: QualityScore | None = None,
 ) -> bool:
-    """Detect truncated / obviously missing OCR without calling Qwen yet."""
+    """Detect truncated / obviously missing OCR without calling vision yet."""
 
     if not items:
         return True
@@ -206,7 +197,7 @@ def decide(
         )
 
     # Coverage / corruption will not be fixed by another RapidOCR pass when
-    # the current mean confidence is already high — go to Qwen.
+    # the current mean confidence is already high — go to vision fallback.
     if coverage_bad and fallback_enabled and mean_conf >= low_confidence_threshold:
         return ConfidenceDecision(
             NextAction.FALLBACK, mean_conf, low_ratio, incomplete, quality_poor, corrupted

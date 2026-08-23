@@ -5,6 +5,57 @@ from datetime import datetime, timezone
 from typing import Any
 
 
+# ---------------------------------------------------------------------------
+# Application / Orchestration wire contract: { Success, Data: [document, ...] }
+# Re-exported by Orchestration.messages.message_schema when Agents is present.
+# ---------------------------------------------------------------------------
+DOCUMENT_CONTRACT_KEYS = (
+    "document_id",
+    "file_name",
+    "file_type",
+    "full_text",
+    "pages",
+    "question",
+    "answer",
+)
+
+
+def empty_document(
+    *,
+    document_id: str = "",
+    file_name: str = "",
+    file_type: str = "",
+    question: str = "",
+) -> dict[str, Any]:
+    return {
+        "document_id": document_id,
+        "file_name": file_name,
+        "file_type": file_type,
+        "full_text": "",
+        "pages": [],
+        "question": question,
+        "answer": "",
+    }
+
+
+def normalize_document(item: dict[str, Any]) -> dict[str, Any]:
+    doc = empty_document()
+    doc.update({k: v for k, v in item.items() if k in DOCUMENT_CONTRACT_KEYS})
+    return doc
+
+
+def contract_envelope(success: bool, data: list[dict[str, Any]]) -> dict[str, Any]:
+    return {"Success": bool(success), "Data": list(data)}
+
+
+def is_contract_envelope(payload: Any) -> bool:
+    return (
+        isinstance(payload, dict)
+        and "Success" in payload
+        and isinstance(payload.get("Data"), list)
+    )
+
+
 @dataclass
 class BoundingBox:
     points: list[list[float]]

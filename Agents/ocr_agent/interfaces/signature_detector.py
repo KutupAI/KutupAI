@@ -1,9 +1,4 @@
-"""Signature + seal/stamp detection, behind an interface.
-
-Detection is visual. Printed words such as "imza" / "signature" are NOT
-enough on their own. Qwen-VL hints are used only as extra visual evidence
-when the caller already inspected the page image.
-"""
+"""Signature / seal detection (visual + optional VL hints)."""
 
 from __future__ import annotations
 
@@ -34,7 +29,7 @@ class SealDetection:
 
 @dataclass(frozen=True)
 class VisionHints:
-    """Visual cues produced by Qwen-VL (image inspected, not text keywords)."""
+    """Visual cues produced by PaddleOCR-VL (image inspected, not text keywords)."""
 
     signature_detected: bool = False
     signature_handwritten: bool = False

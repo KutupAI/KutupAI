@@ -11,7 +11,7 @@ their own result section (enforced by StateManager, not by this module).
 Backwards compatibility:
     The original OCR-only fields (document_id, document_path, question,
     ocr_result, ocr_status, ...) are preserved unchanged so the existing
-    `process_service.run_ocr_pipeline` keeps working without modification.
+    `process_service.run_workflow` keeps working without modification.
 """
 
 from __future__ import annotations
@@ -85,7 +85,7 @@ class GraphState(TypedDict, total=False):
     routing_status: str
 
     writing: Dict[str, Any]
-    draft_letter: str
+    draft_letter: str  # legacy compatibility; new writers use ``writing``.
     writing_status: str
 
     # --- Workflow control ----------------------------------------------------------
@@ -109,7 +109,7 @@ STATE_SECTION_BY_STAGE: Dict[str, str] = {
     "rag": "rag_result",
     "summary": "summary",
     "routing": "routing_decision",
-    "writing": "draft_letter",
+    "writing": "writing",
 }
 """Maps a workflow stage name to the GraphState key that stage is allowed
 to write. Used by StateManager to enforce "agents only write their own

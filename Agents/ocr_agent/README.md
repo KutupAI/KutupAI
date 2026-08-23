@@ -1,171 +1,228 @@
-# OCR Agent — دليل الطبقة الكامل
+# OCR Agent
 
-وكيل OCR يحوّل **صورة/PDF/DOCX/PPTX/XLSX** إلى **نتيجة OCR منظّمة** للـ Orchestration.
-لا يصنّف، لا يستخرج كيانات أعمال، لا يستدعي RAG/Inference (عدا Vision Fallback عند الحاجة فقط)، ولا يكتب إلى Storage.
+Converts **image / PDF / DOCX / PPTX / XLSX** into a structured OCR result for Orchestration.
+Does **not** classify, extract business entities, call RAG, or write to Storage.
+Vision (PaddleOCR-VL) is used only as a last-resort page fallback.
 
 ---
 
-## أين أضع الملف؟
+## مخطط عمل الطبقة
 
-الـ OCR Agent **ما عنده مجلد رفع خاص**. يقرأ الملف من مسار موجود على القرص يصله عبر `graph_state`
-(عادة `Storage/files/uploads/...`، حسب `README.md`/`architecture.md` للمشروع).
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ Orchestration (أو الاختبار المستقل)                              │
+│   state["request"]["document"]  +  مسار الملف                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ OCRAgent.run(state)                                             │
+│   resolve path → OCRClient → OCRProcessor                       │
+└────────────────────────────┬────────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Per document                                                    │
+│   validate → normalize (PDF / image / office)                   │
+└────────────────────────────┬────────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Per page                                                        │
+│   quality_analyzer                                              │
+│        │                                                        │
+│        ▼                                                        │
+│   preprocessing (light / full)                                  │
+│        │                                                        │
+│        ▼                                                        │
+│   OCR engine                                                    │
+│     1) PP-StructureV3                                           │
+│     2) PaddleOCR          (إذا فشل init)                        │
+│     3) RapidOCR ONNX      (إذا فشل init أو predict)             │
+│        │                                                        │
+│        ▼                                                        │
+│   confidence_analyzer                                           │
+│     ACCEPT  → انتهى                                             │
+│     RETRY   → preprocessing أقوى (حتى OCR_MAX_ATTEMPTS)         │
+│     FALLBACK→ PaddleOCR-VL (صفحة واحدة، إن كان مفعّلاً)           │
+│     GIVE_UP → أفضل نتيجة متاحة                                  │
+└────────────────────────────┬────────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ result_builder                                                  │
+│   state["ocr"]           ← العقد الموحّد للطبقات                 │
+│   state["ocr_result"]    ← { Success, Data } لـ Orchestration    │
+│   state["ocr_status"]    ← completed | partial | failed         │
+│   state["document_text"] ← full_text عند النجاح                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-Orchestration يمرّر أحد هذه المفاتيح في الـ state:
+**ملاحظة:** صفحات PDF ذات طبقة نص أصلية قابلة للاستخدام تتخطى raster OCR.
 
-| المفتاح | مثال |
-|---|---|
-| `document_path` | `"Storage/files/uploads/basvuru_001.pdf"` |
-| `file_path` | نفس الفكرة |
-| `input_path` | نفس الفكرة |
-| `document.path` أو `document.file_path` | داخل كائن `document` |
+---
+
+## التكامل مع Orchestration
+
+الطبقة **مربوطة فعلياً** ومفعّلة في المشروع الكامل:
+
+| المكان | التفاصيل |
+|--------|----------|
+| `Orchestration/config.yaml` | `agents.ocr.enabled: true` → `Agents.ocr_agent.OCRAgent` |
+| `Orchestration/workflow/workflow_config.py` | مرحلة `Stage.OCR` افتراضياً مفعّلة |
+| `Orchestration/process_service.py` | `run_workflow` يشغّل الـ Graph؛ OCR مرحلة أولى مثل باقي الـ Agents |
+| `Orchestration/graph` | المراحل التالية تقرأ `ocr_result` كمدخل مطلوب |
+
+عند تشغيل المشروع كاملاً:
+
+```text
+Application / API
+    → POST /process
+    → Orchestration.run_workflow
+        → Stage.OCR → OCRAgent().run(state)
+            → state["ocr"] + state["ocr_result"] + state["ocr_status"]
+        → مراحل لاحقة إن كانت enabled
+```
+
+- اليوم: OCR هو الـ Agent الوحيد المفعّل؛ باقي المراحل `enabled: false` وتُتخطى بأمان.
+- لا يوجد مسار OCR منفصل خارج الـ Graph.
+- الاختبار المستقل لطبقة OCR يستخدم نفس شكل الـ state بدون تشغيل بقية الـ Graph.
+
+عقد Orchestration السلكي من `OCRAgent`:
+
+- `ocr_result` → `{ Success, Data: [document, ...] }`
+- `ocr_status` → `completed` | `partial` | `failed`
+- `document_text` → النص الكامل عند النجاح
+- `ocr` → العقد الموحّد التفصيلي للطبقات
+
+---
+
+## أوامر التشغيل والاختبار
+
+شغّل الأوامر من **جذر المشروع** (`SmartGovernmentAI/`):
+
+### 1) مسار OCR الكامل (الملف الذي كنا نجرّب عليه)
+
+```powershell
+python Tests/Agents/test_ocr_agent_standalone.py --file "Storage/files/uploads/clear.jpg"
+```
+
+أمثلة أخرى:
+
+```powershell
+python Tests/Agents/test_ocr_agent_standalone.py --file "Storage/files/uploads/Elektrik sozlesmesi.pdf"
+python Tests/Agents/test_ocr_agent_standalone.py --document-id DOC-001 --file-name "Elektrik sozlesmesi.pdf"
+```
+
+### 2) فحص PaddleOCR-VL فقط (منفذ 8111)
+
+أولاً شغّل السيرفر المحلي:
+
+```powershell
+Inference\start_paddleocr_vl.bat
+```
+
+ثم:
+
+```powershell
+python Tests/Agents/test_ocr_agent_standalone.py --file "Storage/files/uploads/scan.pdf" --force-vision-fallback
+```
+
+### ماذا يطبع الاختبار؟
+
+- `state` الموحّد دخلاً وخرجاً
+- ملخص: `success` / `status` / `page_count` / مقطع من `full_text`
+- يتحقق أن أقسام Orchestration الأخرى (`classification`, `extraction`, …) لم تُمس
+
+---
+
+## Unified I/O
+
+يقرأ `state["request"]` فقط؛ يكتب `state["ocr"]` (+ مفاتيح الـ wire أعلاه). بقية الأقسام تمر كما هي.
 
 ```python
 from Agents.ocr_agent import OCRAgent
 
-state = {"document_id": "doc-001", "document_path": "Storage/files/uploads/basvuru_001.pdf"}
+state = {
+    "request": {
+        "success": True,
+        "question": "bu ne sozlesmesi",
+        "document": {
+            "document_id": "DOC-001",
+            "file_name": "Elektrik sozlesmesi.pdf",
+            "file_type": "pdf",
+        },
+    },
+    "ocr": {}, "classification": {}, "extraction": {}, "validation": {},
+    "rag": {}, "summary": {}, "routing": {}, "writing": {},
+}
 result_state = OCRAgent().run(state)
+print(result_state["ocr"])
 ```
 
-الصيغ المدعومة:
-- صور: `.jpg .jpeg .png .webp .tiff .tif .bmp .gif`
-- مستندات: `.pdf`
-- مكتبية (نص فقط، بدون OCR للصور المضمّنة داخلها): `.docx .pptx .xlsx`
+### حل مسار الملف
+
+1. مسار مباشر: `document_path` / `file_path` / `input_path` أو `document.path`
+2. وإلا `Storage.file_locator.resolve_upload_path(...)` إن وُجد
+3. وإلا `<OCR_STORAGE_UPLOADS_DIR>/<file_name>` (افتراضي `Storage/files/uploads/`)
+
+**الصيغ:** صور (jpg/png/webp/tiff/bmp/gif)، PDF، نصوص مكتبية (docx/pptx/xlsx — الصور المضمّنة لا تُقرأ بـ OCR).
 
 ---
 
-## عقد الإخراج (Output Contract)
-
-النتيجة ترجع داخل `state["ocr_result"]` (و`state["ocr_status"]` = `complete|partial|failed`).
-الشكل ثابت ولا يحتوي أي حقول دلالية (`classification`, `extracted_data`, `summary`, `answer`, ...) — تلك تخص طبقات لاحقة.
+## Output (`state["ocr"]`)
 
 ```json
 {
   "success": true,
   "status": "complete",
-  "data": {
-    "document_id": "doc-001",
-    "file_name": "basvuru_001.pdf",
-    "file_type": "pdf",
-    "page_count": 2,
-    "language": {"detected": "tr", "confidence": 0.94},
+  "ocr_data": {
+    "page_count": 1,
+    "language": "tr",
     "pages": [
       {
         "page_number": 1,
         "text": "...",
-        "blocks": [
-          {"type": "title", "text": "T.C. İstanbul Valiliği", "bbox": [100,80,700,150], "confidence": 0.98, "uncertain": false}
-        ],
-        "tables": [{"bbox": [0,0,0,0], "confidence": 0.94, "rows": [["Sütun 1","Sütun 2"], ["Değer 1","Değer 2"]]}],
         "vision": {
-          "signature": {"detected": true, "handwritten": true, "confidence": 0.94, "bbox": [0,0,0,0]},
-          "stamp": {"detected": true, "confidence": 0.97, "bbox": [0,0,0,0], "text": null}
-        },
-        "quality": {"score": 0.88, "ocr_confidence": 0.95, "readable": true},
-        "warnings": []
+          "signature": {"detected": true, "handwritten": true},
+          "stamp": {"detected": false}
+        }
       }
     ],
     "full_text": "...",
-    "processing": {
-      "ocr_engine": "PP-OCRv5",
-      "structure_engine": "PP-StructureV3",
-      "engines_used": ["PaddleOCR + PP-StructureV3"],
-      "fallback_used": false,
-      "pages_reprocessed": [],
-      "duration_ms": 812.3
+    "vision": {
+      "signature": {"detected": true, "handwritten": true},
+      "stamp": {"detected": false}
     }
   }
 }
 ```
 
-On failure (bad path, unsupported type, corrupted file):
+`status`: `complete` | `partial` | `failed`
 
-```json
-{"success": false, "status": "failed", "error": {"code": "UNSUPPORTED_FILE_TYPE", "message": "..."}, "data": {"...": "empty shell"}}
-```
+**Error codes:** `UNSUPPORTED_FILE_TYPE`, `FILE_CORRUPTED`, `PAGE_EXTRACTION_FAILED`, `OCR_FAILED`, `LOW_IMAGE_QUALITY`, `LOW_OCR_CONFIDENCE`, `VISION_FALLBACK_FAILED`, `SIGNATURE_DETECTION_FAILED`, `SEAL_DETECTION_FAILED`.
 
-`status`:
-- `complete` — every page produced text.
-- `partial` — some pages succeeded, some didn't (never discards the good pages).
-- `failed` — document could not be meaningfully processed.
+### متى يُستدعى PaddleOCR-VL؟
 
-Downstream agents should read `state["document_text"]` (plain `full_text`, set only on success) or walk `state["ocr_result"]["data"]["pages"]` for structure.
-
-### Error codes
-`UNSUPPORTED_FILE_TYPE`, `FILE_CORRUPTED`, `PAGE_EXTRACTION_FAILED`, `OCR_FAILED`,
-`LOW_IMAGE_QUALITY`, `LOW_OCR_CONFIDENCE`, `VISION_FALLBACK_FAILED`,
-`SIGNATURE_DETECTION_FAILED`, `SEAL_DETECTION_FAILED`.
+فقط إذا كان مفعّلاً وبعد استنفاد محاولات OCR وبقيت الصفحة ضعيفة الثقة / ناقصة / تالفة (تحت `OCR_VISION_FALLBACK_THRESHOLD`). الصفحات الواضحة لا تستدعيه.
 
 ---
 
-## التدفق التكيّفي (Adaptive pipeline)
+## Engines & device
 
+| الترتيب | المحرك | الدور |
+|---------|--------|--------|
+| 1 | PP-StructureV3 | أساسي |
+| 2 | PaddleOCR | fallback عند فشل init |
+| 3 | RapidOCR (ONNX) | fallback عند فشل init أو predict (`OCR_RAPID_FALLBACK`) |
+
+- `OCR_DEVICE=auto`: GPU إن وُجد (مثل RTX 4090)، وإلا CPU
+- المحرك **singleton** على مستوى العملية (`get_shared_engine`)
+- MKLDNN/oneDNN معطّل في الكود لاستقرار CPU
+
+```bash
+pip install -r Agents/ocr_agent/requirements.txt
 ```
-input → validate → normalize (pdf/image/office) → per-page:
-  quality_analyzer (blur/brightness/contrast)
-     good → light/no preprocessing → OCR attempt 1
-     poor → full adaptive preprocessing → OCR attempt 1
-  confidence_analyzer decides:
-     ACCEPT   → done
-     RETRY    → stronger preprocessing → OCR attempt N (up to OCR_MAX_ATTEMPTS)
-     FALLBACK → Qwen-VL vision fallback (only if enabled, only for that page)
-     GIVE_UP  → best-effort result, flagged uncertain
-→ result_builder → output contract above
-```
 
-For PDFs, the native-text-vs-OCR decision is **per page**, not per document —
-a cover letter with real text plus a scanned attachment in the same PDF gets
-both pages handled correctly.
-
-### بالعربي — متى يُستدعى Qwen-VL بالضبط؟
-
-**الصورة واضحة (جودة جيدة + ثقة OCR عالية):**
-`quality_analyzer` يقيس الوضوح قبل أي OCR، فإذا كانت النتيجة فوق `OCR_QUALITY_THRESHOLD`
-يتخطى المعالجة المسبقة الثقيلة. وبعد أول محاولة OCR، إذا كانت الثقة فوق
-`OCR_LOW_CONFIDENCE_THRESHOLD` يقبل النتيجة فوراً (`ACCEPT`) — **لا يُستدعى Qwen-VL إطلاقاً**، لا داعي له.
-
-**الصورة غير واضحة:**
-1. تُطبَّق معالجة مسبقة كاملة (deskew, perspective correction, تباين, إزالة تشويش...) ثم محاولة OCR ثانية (`RETRY`)، إلى أن يصل عدد المحاولات لـ `OCR_MAX_ATTEMPTS` (افتراضياً 3).
-2. إذا استُنفدت كل المحاولات وبقيت الثقة **تحت** `OCR_VISION_FALLBACK_THRESHOLD` (افتراضياً 0.45)، **و**كان `OCR_VISION_FALLBACK_ENABLED=true` في الإعدادات → عندها فقط يُستدعى Qwen-VL، لصفحة واحدة فقط، وليس للمستند كله.
-3. إذا كان الفallback **معطّلاً** (وهذا هو الوضع الافتراضي حالياً) → يُقبل أفضل نتيجة OCR متاحة مع `uncertain: true` وتحذير في `warnings`، بدل الفشل الكامل.
-
-باختصار: **واضحة → قبول مباشر بدون أي fallback. غير واضحة → إعادة محاولة أولاً، و Qwen-VL هو آخر خيار فقط بعد فشل كل المحاولات وبشرط تفعيله في الإعدادات.**
-
-⚠️ **ملاحظة مهمة**: كما ذكرت بالتقرير، الفallback مُفعّل بنياً في الكود (الواجهة `interfaces/vision_fallback.py` جاهزة) لكنه **معطّل افتراضياً** (`OCR_VISION_FALLBACK_ENABLED=false`) لأنه يحتاج عميل Qwen-VL حقيقي متصل بخادم غير موجود عندك بعد في طبقة Inference. لتفعيله فعلياً تحتاج تشغّل خادم Qwen-VL وتربطه، وإلا سيبقى يُرجع خطأ `VISION_FALLBACK_FAILED` لو فعّلته بدون خادم حقيقي.
-
----
-
-## الجهاز (Device) والأداء
-
-`OCR_DEVICE=auto` (default) probes for a CUDA GPU at process start
-(`device.py`) and falls back to CPU automatically; no CUDA id, GPU model or
-path is hard-coded anywhere in the Agent. `OCR_PERFORMANCE_PROFILE`
-(`development|production|high_performance`) is metadata only for now — it's
-threaded through so behavior can be tuned via config later without code
-changes.
-
-The heavy PaddleOCR/PP-StructureV3 engine is a **process-wide singleton**
-(`engines/paddle_engine.py::get_shared_engine`), cached by config. Re-creating
-`OCRAgent()`/`OCRClient()` per Orchestration call (normal Supervisor
-behavior) does **not** reload model weights.
-
----
-
-## Vision Fallback (Qwen-VL)
-
-Disabled by default (`OCR_VISION_FALLBACK_ENABLED=false`). When enabled, it's
-called only for a page that is still low-confidence after all OCR retries,
-capped at `OCR_VISION_FALLBACK_MAX_PAGES` pages per document. It never runs
-on every page and it's lazy-loaded (no client/model handle is created until
-first use).
-
-`Agents/ocr_agent/interfaces/vision_fallback.py` defines
-`VisionFallbackInterface` (swap providers without touching the pipeline) and
-a `QwenVLVisionFallback` adapter that expects a
-`Inference.client.llama_client.VisionInferenceClient` with a
-`generate_vision(image_base64, instructions, timeout_s)` method. **That
-client does not exist yet in this repository's Inference layer** (which
-currently serves Gemma 3 via llama-server, not a vision-language model) —
-see the final report for what's required to wire it up.
+- **CPU:** `paddlepaddle>=3.1,<3.3` (يفضّل `3.2.2`)
+- **GPU:** ثبّت `paddlepaddle-gpu` المطابق لـ CUDA بدل عجلة CPU
+- ادمج `config.example.env` في `.env` المشروع
 
 ---
 
@@ -173,62 +230,31 @@ see the final report for what's required to wire it up.
 
 ```text
 Agents/ocr_agent/
-├── agent.py                   # BaseAgent + @register — Orchestration entry point
-├── client.py                  # OCRClient / OCRRequest (cached processor)
-├── config.py                  # OCRConfig (env-driven, incl. device/quality/retry/fallback)
-├── device.py                  # GPU auto-detect / device resolution
-├── document.py                # path validation, supported extensions
-├── exceptions.py              # OCRAgentError hierarchy with stable `code`s
-├── models.py                  # BoundingBox / OCRTextItem / LayoutElement / TableResult / ...
-├── engines/
-│   └── paddle_engine.py       # PP-StructureV3 → PaddleOCR → RapidOCR, cached singleton
+├── agent.py                 # BaseAgent — نقطة دخول Orchestration
+├── client.py
+├── config.py
+├── device.py
+├── document.py
+├── exceptions.py
+├── models.py
+├── engines/paddle_engine.py
 ├── preprocessing/
-│   └── image_preprocessor.py  # adaptive preprocessing (crop/deskew/contrast/...)
 ├── pipeline/
-│   ├── quality_analyzer.py    # pre-OCR image quality scoring
-│   └── confidence_analyzer.py # accept / retry / fallback decision
 ├── interfaces/
-│   ├── vision_fallback.py     # VisionFallbackInterface + Qwen-VL adapter
-│   └── signature_detector.py  # SignatureSealDetectorInterface + heuristic default
 ├── processing/
-│   ├── processor.py           # orchestrates the whole pipeline
-│   ├── pdf_renderer.py        # PyMuPDF: native text + rasterization
-│   ├── office_renderer.py     # DOCX/PPTX/XLSX text extraction
-│   └── result_builder.py      # builds the stable output contract
 ├── core/
-│   └── ocr_parser.py, layout.py, tables.py, correction.py, insights.py
 ├── requirements.txt
+├── config.example.env
 └── README.md
 ```
 
 ---
 
-## إعداد التشغيل
-
-```bash
-pip install -r Agents/ocr_agent/requirements.txt
-cp Agents/ocr_agent/config.example.env .env   # or merge into project .env
-```
-
-## الاختبارات (بدون تحميل نماذج)
-
-```bash
-python Tests/Agents/test_ocr_agent.py
-# or
-pytest Tests/Agents/test_ocr_agent.py -q
-```
-
-The engine is mocked (`FakeEngine`), so tests run on any machine with no GPU
-and no PaddleOCR model download.
-
----
-
-## حدود الطبقة (مهم)
+## حدود الطبقة
 
 | يفعل | لا يفعل |
-|---|---|
-| قراءة PDF/صورة/DOCX/PPTX/XLSX من مسار | استقبال رفع HTTP مباشرة |
-| OCR تكيّفي + جداول + تخطيط + توقيع/ختم | تصنيف نوع الوثيقة أو استخراج حقول عمل |
-| Vision fallback عند الحاجة فقط | تشغيل Qwen-VL على كل صفحة |
-| إرجاع `ocr_result` (العقد أعلاه) في state | كتابة نتائج إلى Storage |
-| OCR للصور داخل PDF/الصور | OCR للصور المُضمّنة داخل DOCX/PPTX/XLSX (نص فقط حالياً) |
+|------|----------|
+| OCR + تخطيط/جداول/إشارات توقيع | تصنيف الوثيقة / استخراج حقول عمل |
+| معالجة مسبقة + إعادة محاولة | تشغيل VL على كل صفحة |
+| VL اختياري عند الحاجة | استقبال رفع HTTP مباشرة |
+| إرجاع `state["ocr"]` + wire keys | الكتابة إلى Storage |

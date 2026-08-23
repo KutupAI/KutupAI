@@ -34,13 +34,15 @@ class DocumentInput:
         return self.extension in OFFICE_EXTENSIONS
 
 
-def validate_document(path: str | Path, max_file_size_mb: int) -> DocumentInput:
+def validate_document(path: str | Path, max_file_size_mb: int | None = None) -> DocumentInput:
     """Validate a document path is safe and supported.
 
     Security: this only ever *reads* the path that Orchestration already
     resolved (Application writes uploads under `Storage/files/uploads/`);
     it never executes the file and never trusts extension alone for a
     security decision beyond "which reader to use".
+
+    ``max_file_size_mb=None`` means no size rejection (extract everything).
     """
     p = Path(path)
     try:
@@ -58,7 +60,7 @@ def validate_document(path: str | Path, max_file_size_mb: int) -> DocumentInput:
     size = resolved.stat().st_size
     if size <= 0:
         raise DocumentReadError(f"Document is empty: {resolved}")
-    if size > max_file_size_mb * 1024 * 1024:
+    if max_file_size_mb is not None and size > max_file_size_mb * 1024 * 1024:
         raise UnsupportedDocumentError(
             f"Document exceeds configured limit of {max_file_size_mb} MB."
         )

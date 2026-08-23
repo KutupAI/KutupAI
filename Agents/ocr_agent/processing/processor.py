@@ -1,10 +1,4 @@
-"""OCR processing pipeline.
-
-Input -> validation -> normalization -> page extraction -> quality
-analysis -> orientation/perspective correction -> PaddleOCR/PP-StructureV3
--> confidence analysis -> accept/retry/fallback -> structured result
-(see README "Adaptive OCR pipeline").
-"""
+"""OCR pipeline: validate → pages → quality → OCR → confidence → result."""
 
 from __future__ import annotations
 
@@ -345,8 +339,12 @@ class OCRProcessor:
                 work.warnings.append(f"vision_fallback_failed: {exc}")
 
         # Visual signature/stamp detection runs independently during assembly.
-        # Qwen is reserved for the quality-driven text fallback above.
+        # PaddleOCR-VL is reserved for the quality-driven text fallback above.
         return work
+
+    def _vision_page_budget_exhausted(self) -> bool:
+        cap = self.config.vision_fallback.max_pages_per_document
+        return cap is not None and self._fallback_pages_used >= cap
 
     def _try_vision_fallback(
         self,
@@ -357,9 +355,13 @@ class OCRProcessor:
         incomplete: bool,
         corrupted: bool,
     ) -> None:
-        if self._fallback_pages_used >= self.config.vision_fallback.max_pages_per_document:
+        if self._vision_page_budget_exhausted():
             work.warnings.append("vision_fallback_skipped_max_pages")
             return
+        logger.info(
+            "[OCR] Vision fallback triggered page=%s incomplete=%s corrupted=%s",
+            page_index + 1, incomplete, corrupted,
+        )
         try:
             result = self.vision_fallback.read_page(image)
         except OCRAgentError as exc:
@@ -376,7 +378,7 @@ class OCRProcessor:
             stamp_detected=result.stamp_detected,
         )
         ocr_text = join_page_text(work.text_items)
-        chosen, used_qwen = merge_ocr_and_vision(
+        chosen, used_vision = merge_ocr_and_vision(
             ocr_text, result.text, incomplete=incomplete, corrupted=corrupted,
         )
         if result.text.strip() or result.signature_detected or result.stamp_detected:
@@ -385,7 +387,7 @@ class OCRProcessor:
         if not result.text.strip():
             work.warnings.append("vision_fallback_returned_no_text")
             return
-        if not used_qwen:
+        if not used_vision:
             work.warnings.append("vision_fallback_kept_ocr_text")
             return
         if chosen.strip() == ocr_text.strip():
@@ -400,14 +402,14 @@ class OCRProcessor:
         work.warnings.append("vision_fallback_recovered_regions")
 
     def _maybe_verify_visuals(self, work: _PageWork, image: np.ndarray | None) -> None:
-        """Qwen visual check only when OCR didn't already inspect the page."""
+        """PaddleOCR-VL visual check only when OCR didn't already inspect the page."""
         if image is None or work.vision_hints is not None:
             return
         if not self.config.enable_signature_detection:
             return
         if not self.config.vision_fallback.enabled:
             return
-        # Cheap CV first; ask Qwen only if ink analysis is inconclusive on a
+        # Cheap CV first; ask vision only if ink analysis is inconclusive on a
         # page that still looks like it may contain a mark.
         sig, seal = self.signature_detector.detect("", work.visuals, image=image)
         if sig.detected or seal.detected:
@@ -418,7 +420,7 @@ class OCRProcessor:
         )
         if not layout_marks:
             return
-        if self._fallback_pages_used >= self.config.vision_fallback.max_pages_per_document:
+        if self._vision_page_budget_exhausted():
             return
         try:
             result = self.vision_fallback.inspect_visuals(image)
@@ -433,7 +435,6 @@ class OCRProcessor:
             stamp_detected=result.stamp_detected,
         )
         work.warnings.append("vision_verify_used")
-
     # ------------------------------------------------------------------
     # Assembly into the stable output contract
     # ------------------------------------------------------------------

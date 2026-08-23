@@ -2,7 +2,7 @@
 Orchestration entry point.
 
 Exposes POST /process for Application (ChatService → OrchestrationClient).
-Runs OCRAgent in-process via existing OCRClient → OCRProcessor pipeline.
+Runs the full workflow graph in-process; OCR is stage 1 like every other Agent.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ if str(_ROOT) not in sys.path:
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from Orchestration.process_service import run_full_workflow, run_ocr_pipeline
+from Orchestration.process_service import run_workflow
 
 logging.basicConfig(
     level=os.getenv("ORCHESTRATION_LOG_LEVEL", "INFO"),
@@ -55,21 +55,8 @@ def health() -> dict[str, str]:
 
 @app.post("/process")
 def process(payload: ProcessRequest) -> dict[str, Any]:
-    """Legacy, OCR-only entry point. Unchanged behavior."""
-    return run_ocr_pipeline(
-        document_id=payload.document_id,
-        document_path=payload.document_path,
-        accompanying_text=_resolve_accompanying_text(payload),
-    )
-
-
-@app.post("/process/full")
-def process_full(payload: ProcessRequest) -> dict[str, Any]:
-    """Runs the complete OCR -> ... -> Writing workflow graph. Stages whose
-    Agent is not yet enabled in config.yaml are skipped (never faked), so
-    today this behaves like /process plus a structured workflow outcome,
-    and gains stages automatically as Agents are connected."""
-    return run_full_workflow(
+    """Full workflow graph (OCR → … → Writing). Disabled stages are skipped."""
+    return run_workflow(
         document_id=payload.document_id,
         document_path=payload.document_path,
         accompanying_text=_resolve_accompanying_text(payload),

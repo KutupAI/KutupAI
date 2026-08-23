@@ -1,4 +1,4 @@
-"""Tools exposed to OCRAgent (external integrations stay here)."""
+"""Thin helpers for direct OCRClient use (not the Orchestration state contract)."""
 
 from __future__ import annotations
 
@@ -15,6 +15,6 @@ def run_ocr(
     config: OCRConfig | None = None,
     client: OCRClient | None = None,
 ) -> dict[str, Any]:
-    """Run OCR and return a plain dict for graph_state['ocr_result']."""
+    """Return the internal OCRProcessor result dict."""
     active = client or OCRClient(config)
     return active.process(OCRRequest(file_path, document_id))

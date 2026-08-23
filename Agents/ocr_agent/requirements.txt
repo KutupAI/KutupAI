@@ -1,26 +1,25 @@
-# Core OCR stack
+# Core OCR (PP-StructureV3 / PaddleOCR)
 paddleocr>=3.1,<4
-paddlepaddle>=3.1,<4          # CPU build; swap for paddlepaddle-gpu (see README) on a CUDA host
-# Required by PP-StructureV3; PaddleOCR's base install does not include it.
 paddlex[ocr]>=3.1,<4
-opencv-python-headless>=4.10,<5
-PyMuPDF>=1.24,<2               # PDF text-layer + rasterization
-numpy>=1.26,<3
-Pillow>=10,<12                 # WEBP/TIFF/GIF decode fallback when OpenCV's codec can't
+# CPU: paddlepaddle>=3.1,<3.3 (avoid 3.3.x PIR/oneDNN crash). Prefer ==3.2.2.
+# GPU (e.g. RTX 4090): install paddlepaddle-gpu matching your CUDA instead.
+paddlepaddle>=3.1,<3.3
 
-# Windows/oneDNN-safe fallback chain
+opencv-python-headless>=4.10,<5
+PyMuPDF>=1.24,<2
+numpy>=1.26,<3
+Pillow>=10,<12
+
+# Runtime fallback when Paddle init/predict fails (ONNX, light)
 rapidocr-onnxruntime>=1.3,<2
 onnxruntime>=1.16,<2
 
-# Office document formats (DOCX/PPTX/XLSX text layers)
+# Office text layers (DOCX / PPTX / XLSX)
 python-docx>=1.1,<2
 python-pptx>=0.6.23,<1
 openpyxl>=3.1,<4
 
-# Tests
 pytest>=8,<9
 
-# Optional / manual — see README "Vision fallback (Qwen-VL)":
-# a Qwen-VL-capable client is NOT pinned here because it depends on how
-# your Inference layer chooses to serve it (local vLLM/SGLang server,
-# DashScope API, etc.). Install whichever client that server needs.
+# Vision fallback (PaddleOCR-VL GGUF): no pip package — uses local llama-server
+# (Inference/start_paddleocr_vl.bat → http://127.0.0.1:8111).

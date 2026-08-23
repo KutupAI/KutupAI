@@ -1,7 +1,8 @@
-"""OCR engines: PP-StructureV3 → PaddleOCR → RapidOCR (Windows-safe fallback)."""
+"""OCR engines: PP-StructureV3 → PaddleOCR → RapidOCR (runtime fallback)."""
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import threading
@@ -13,28 +14,25 @@ from Agents.ocr_agent.config import OCRConfig
 from Agents.ocr_agent.device import resolve_device
 from Agents.ocr_agent.exceptions import OCREngineError
 
-# Paddle 3.x + oneDNN on Windows often crashes at inference; force flags early.
+# Disable oneDNN/MKLDNN early (PaddleX may enable them on CPU otherwise).
 os.environ.setdefault("FLAGS_use_mkldnn", "0")
 os.environ.setdefault("FLAGS_use_onednn", "0")
+os.environ.setdefault("PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT", "0")
 
 logger = logging.getLogger(__name__)
 
 
 class PaddleStructureEngine:
-    """Long-lived OCR engine with layered fallbacks.
-
-    Prefer PP-StructureV3, then plain PaddleOCR, then RapidOCR (ONNX) when
-    Paddle inference fails (common on Windows oneDNN builds).
-    """
+    """Cached OCR engine: StructureV3, then PaddleOCR, then RapidOCR."""
 
     def __init__(self, config: OCRConfig) -> None:
         self.config = config
-        self._pipeline = None
+        self._pipeline: Any = None
         self._mode = "structure"  # structure | ocr | rapid
+        self._rapid: Any = None
         self.engine_name = "PaddleOCR + PP-StructureV3"
-        self._rapid = None
-        self._resolved_device = resolve_device(config.device)
         self.last_engine_name = self.engine_name
+        self._resolved_device = resolve_device(config.device)
 
     def _ensure_pipeline(self) -> Any:
         if self._pipeline is not None:
@@ -44,7 +42,9 @@ class PaddleStructureEngine:
         language = _paddle_language(self.config.language)
         logger.info(
             "Initializing OCR engine (lang=%s, device=%s, profile=%s)",
-            language, device, self.config.performance_profile,
+            language,
+            device,
+            self.config.performance_profile,
         )
 
         structure_error: Exception | None = None
@@ -54,6 +54,7 @@ class PaddleStructureEngine:
             kwargs: dict[str, Any] = {
                 "lang": language,
                 "device": device,
+                "enable_mkldnn": False,
                 "ocr_version": (
                     self.config.ocr_version
                     if str(self.config.ocr_version).startswith("PP-OCR")
@@ -68,16 +69,15 @@ class PaddleStructureEngine:
                 "use_chart_recognition": False,
             }
             if language == "tr":
-                # PaddleOCR's Latin recognizer includes Turkish glyphs. Pin
-                # it so an environment alias or a future default cannot
-                # silently select an English-only recognition dictionary.
                 kwargs["text_recognition_model_name"] = "latin_PP-OCRv5_mobile_rec"
             if self.config.pipeline_config:
                 kwargs["paddlex_config"] = self.config.pipeline_config
+
             self._pipeline = PPStructureV3(**kwargs)
             self._mode = "structure"
             self.engine_name = "PaddleOCR + PP-StructureV3"
             self.last_engine_name = self.engine_name
+            logger.info("PP-StructureV3 initialized")
             return self._pipeline
         except Exception as exc:
             structure_error = exc
@@ -86,34 +86,41 @@ class PaddleStructureEngine:
         try:
             from paddleocr import PaddleOCR
 
-            self._pipeline = PaddleOCR(
-                lang=language,
-                device=device,
-                ocr_version=(
+            paddle_kwargs: dict[str, Any] = {
+                "lang": language,
+                "device": device,
+                "enable_mkldnn": False,
+                "ocr_version": (
                     self.config.ocr_version
-                    if self.config.ocr_version in {"PP-OCRv3", "PP-OCRv4", "PP-OCRv5", "PP-OCRv6"}
+                    if self.config.ocr_version
+                    in {"PP-OCRv3", "PP-OCRv4", "PP-OCRv5", "PP-OCRv6"}
                     else "PP-OCRv5"
                 ),
-                use_doc_orientation_classify=self.config.enable_doc_orientation,
-                use_doc_unwarping=self.config.enable_doc_unwarping,
-                use_textline_orientation=self.config.enable_textline_orientation,
-                **(
-                    {"text_recognition_model_name": "latin_PP-OCRv5_mobile_rec"}
-                    if language == "tr" else {}
-                ),
-            )
+                "use_doc_orientation_classify": self.config.enable_doc_orientation,
+                "use_doc_unwarping": self.config.enable_doc_unwarping,
+                "use_textline_orientation": self.config.enable_textline_orientation,
+            }
+            if language == "tr":
+                paddle_kwargs["text_recognition_model_name"] = (
+                    "latin_PP-OCRv5_mobile_rec"
+                )
+
+            self._pipeline = PaddleOCR(**paddle_kwargs)
             self._mode = "ocr"
             self.engine_name = "PaddleOCR (fallback)"
             self.last_engine_name = self.engine_name
+            logger.info("PaddleOCR initialized")
             return self._pipeline
         except Exception as paddle_exc:
             if self.config.enable_rapid_fallback:
                 logger.warning(
-                    "PaddleOCR init failed, falling back to RapidOCR (ONNX): %s", paddle_exc
+                    "PaddleOCR init failed, falling back to RapidOCR: %s",
+                    paddle_exc,
                 )
                 self._pipeline = self._ensure_rapid()
                 self._mode = "rapid"
                 self.engine_name = "RapidOCR (ONNX fallback)"
+                self.last_engine_name = self.engine_name
                 return self._pipeline
             raise OCREngineError(
                 "Failed to initialize OCR engines. "
@@ -139,6 +146,7 @@ class PaddleStructureEngine:
             if self._mode == "rapid":
                 self.last_engine_name = "RapidOCR (ONNX fallback)"
                 return [self._rapid_predict(image)]
+
             if self._mode == "structure":
                 try:
                     output = pipeline.predict(
@@ -166,7 +174,8 @@ class PaddleStructureEngine:
             if self._mode != "rapid" and self.config.enable_rapid_fallback:
                 try:
                     logger.warning(
-                        "Paddle predict failed (%s); RapidOCR for this page only.", exc
+                        "Paddle predict failed (%s); using RapidOCR for this page.",
+                        exc,
                     )
                     self.last_engine_name = "RapidOCR (ONNX fallback)"
                     return [self._rapid_predict(image)]
@@ -183,7 +192,6 @@ class PaddleStructureEngine:
         scores: list[float] = []
         polys: list[Any] = []
         for row in result or []:
-            # row: [box, text, score]
             if not row or len(row) < 3:
                 continue
             box, text, score = row[0], row[1], row[2]
@@ -205,8 +213,6 @@ class PaddleStructureEngine:
                 try:
                     value = method()
                     if isinstance(value, str):
-                        import json
-
                         value = json.loads(value)
                     if isinstance(value, dict):
                         return value
@@ -216,34 +222,35 @@ class PaddleStructureEngine:
         value = getattr(result, "res", None)
         if isinstance(value, dict):
             return value
-
         if isinstance(result, list):
             return _normalize_classic_ocr_list(result)
-
         if hasattr(result, "__dict__"):
             return {k: v for k, v in vars(result).items() if not k.startswith("_")}
         return {}
 
 
-_ENGINE_CACHE: dict[tuple[Any, ...], "PaddleStructureEngine"] = {}
+_ENGINE_CACHE: dict[tuple[Any, ...], PaddleStructureEngine] = {}
 _ENGINE_CACHE_LOCK = threading.Lock()
 
 
 def _cache_key(config: OCRConfig) -> tuple[Any, ...]:
     return (
-        config.language, config.device, config.pipeline_name,
-        config.enable_doc_orientation, config.enable_doc_unwarping,
-        config.enable_textline_orientation, config.model_dir, config.pipeline_config,
+        config.language,
+        config.device,
+        config.pipeline_name,
+        config.enable_doc_orientation,
+        config.enable_doc_unwarping,
+        config.enable_textline_orientation,
+        config.model_dir,
+        config.pipeline_config,
+        config.enable_seal_recognition,
+        config.enable_tables,
+        config.enable_rapid_fallback,
     )
 
 
-def get_shared_engine(config: OCRConfig) -> "PaddleStructureEngine":
-    """Return a process-wide cached engine for this config.
-
-    Model weights are expensive to load; Orchestration may instantiate a new
-    OCRAgent per request, so the heavy engine must be cached independently
-    of the (cheap, per-request) Agent/Client/Processor objects.
-    """
+def get_shared_engine(config: OCRConfig) -> PaddleStructureEngine:
+    """Process-wide cached engine (weights load once per config)."""
     key = _cache_key(config)
     with _ENGINE_CACHE_LOCK:
         engine = _ENGINE_CACHE.get(key)
@@ -269,8 +276,6 @@ def _normalize_classic_ocr_list(rows: list[Any]) -> dict[str, Any]:
 
 
 def _paddle_language(language: str) -> str:
-    """Normalize Turkish aliases to PaddleOCR's supported ``tr`` code."""
-
     value = (language or "").strip().casefold().replace("_", "-")
     if value in {"tr", "tr-tr", "turkish", "türkçe", "turkce"}:
         return "tr"
