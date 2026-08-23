@@ -1,0 +1,13 @@
+# Writer Agent layer has no external dependencies of its own.
+#
+# It only uses the Python standard library (dataclasses, typing) plus
+# the project's existing Agents.base and Inference.client modules.
+#
+# The HTTP dependency (`requests`) required to talk to the llama-server
+# is already declared by the Inference layer, since LlamaClient owns
+# that call -- it is intentionally NOT re-declared here to avoid
+# duplicate/unrelated dependencies.
+#
+# tools.py's optional fetch_citation_context() depends on the existing
+# RAG package, already a project dependency elsewhere; not repeated
+# here since it is not on the default WriterAgent.run() path.
