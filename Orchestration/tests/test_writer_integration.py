@@ -48,4 +48,4 @@ def test_real_writer_is_integrated_with_orchestration_state():
     assert "draft_letter" not in result.state
     prompt = client.request.messages[1].content
     assert "invoice" in prompt
-    assert "summary text" in prompt
+    assert "summary text" in prompt  # from MockSummaryAgent.rag_summary_text

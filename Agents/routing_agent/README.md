@@ -127,6 +127,26 @@ agent = RoutingAgent(knowledge_base=default_knowledge_base())
 envelope = agent.process(envelope)
 ```
 
+### Orchestration / GraphState
+
+The workflow adapter calls `agent.run(state)`. That method adapts GraphState
+(`ocr_result`, `classification_result`, `rag_result`, `summary`, …) into the
+pipeline envelope, then writes only:
+
+```python
+state["routing"] = {"success": True, "department": "..."}
+```
+
+```bash
+# real agent + mocked upstream stages
+pytest Orchestration/tests/test_routing_integration.py -q
+```
+
+Enable in `Orchestration/config.yaml` (`agents.routing.enabled: true`) once
+upstream stages provide usable document text / summary. Until then, pass
+`RoutingAgent()` via `agent_overrides` in tests (see
+`Orchestration/tests/test_routing_integration.py`).
+
 ### Working with the rich internal result
 
 If you need more than `{success, department}` — confidence, evidence,

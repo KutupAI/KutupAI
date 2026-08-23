@@ -106,10 +106,13 @@ def run_workflow(
         ("validation", "validation_result"),
         ("rag", "rag_result"),
         ("summary", "summary"),
-        ("routing", "routing_decision"),
+        ("routing", "routing"),
         ("writing", "writing"),
     ):
         value = state.get(state_key)
+        # Legacy mirror while older mocks still wrote routing_decision.
+        if extra_key == "routing" and not value:
+            value = state.get("routing_decision")
         if value:
             doc[extra_key] = value
 

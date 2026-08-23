@@ -108,7 +108,7 @@ STATE_SECTION_BY_STAGE: Dict[str, str] = {
     "validation": "validation_result",
     "rag": "rag_result",
     "summary": "summary",
-    "routing": "routing_decision",
+    "routing": "routing",
     "writing": "writing",
 }
 """Maps a workflow stage name to the GraphState key that stage is allowed

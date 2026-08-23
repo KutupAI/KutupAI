@@ -192,12 +192,135 @@ class RoutingAgent:
                 replaced with:
                     {"success": bool, "department": string}
 
-        This is the method the orchestrator should call.
+        Prefer ``run`` when calling from Orchestration (GraphState); use
+        ``process`` for the standalone pipeline envelope.
         """
         result = self.route_envelope(envelope)
         updated_envelope = dict(envelope)
         updated_envelope["routing"] = result.as_contract_dict()
         return updated_envelope
+
+    def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        """Orchestration entry: adapt GraphState → envelope, write ``routing``.
+
+        Reads upstream sections in either pipeline shape (``ocr``,
+        ``classification``, …) or GraphState legacy shape (``ocr_result``,
+        ``classification_result``, ``rag_result``, …). Writes only:
+
+            state["routing"] = {"success": bool, "department": str}
+        """
+        if not isinstance(state, dict):
+            raise TypeError("RoutingAgent.run expects GraphState as a dict")
+
+        updated = dict(state)
+        routed = self.process(self._graph_state_to_envelope(updated))
+        updated["routing"] = routed.get("routing") or {
+            "success": False,
+            "department": "",
+        }
+        return updated
+
+    @staticmethod
+    def _graph_state_to_envelope(state: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize Orchestration GraphState into the pipeline envelope."""
+
+        def _as_dict(value: Any) -> Dict[str, Any]:
+            return value if isinstance(value, dict) else {}
+
+        request = dict(_as_dict(state.get("request")))
+        question = (
+            request.get("question")
+            or state.get("question")
+            or state.get("accompanying_text")
+            or ""
+        )
+        document = _as_dict(request.get("document"))
+        if not document:
+            document = {
+                "document_id": state.get("document_id") or request.get("document_id") or "",
+                "file_name": request.get("file_name") or "",
+                "file_type": request.get("file_type") or "",
+            }
+        request = {
+            **request,
+            "success": request.get("success", True),
+            "question": question,
+            "document": document,
+        }
+
+        ocr = _as_dict(state.get("ocr"))
+        if not _as_dict(ocr.get("ocr_data")).get("full_text"):
+            ocr_result = _as_dict(state.get("ocr_result"))
+            full_text = ""
+            data = ocr_result.get("Data") or ocr_result.get("data") or []
+            if isinstance(data, list) and data and isinstance(data[0], dict):
+                full_text = data[0].get("full_text") or ""
+            full_text = (
+                full_text
+                or state.get("document_text")
+                or state.get("text")
+                or ""
+            )
+            ocr = {
+                "success": bool(full_text) or bool(ocr_result.get("Success")),
+                "ocr_data": {
+                    "page_count": _as_dict(ocr.get("ocr_data")).get("page_count") or 1,
+                    "language": _as_dict(ocr.get("ocr_data")).get("language") or "tr",
+                    "pages": _as_dict(ocr.get("ocr_data")).get("pages") or [],
+                    "full_text": full_text,
+                    "vision": _as_dict(ocr.get("ocr_data")).get("vision")
+                    or {
+                        "signature": {"detected": False, "handwritten": False},
+                        "stamp": {"detected": False},
+                    },
+                },
+            }
+
+        classification = _as_dict(state.get("classification"))
+        if not classification.get("document_type"):
+            cr = _as_dict(state.get("classification_result"))
+            classification = {
+                "success": True,
+                "document_type": cr.get("document_type") or cr.get("doc_type") or "",
+                "classification_confidence": cr.get(
+                    "classification_confidence", classification.get("classification_confidence", 0.0)
+                ),
+            }
+
+        extraction = _as_dict(state.get("extraction")) or _as_dict(
+            state.get("extraction_result")
+        )
+        validation = _as_dict(state.get("validation")) or _as_dict(
+            state.get("validation_result")
+        )
+
+        rag = _as_dict(state.get("rag"))
+        if not _as_dict(rag.get("rag_data")):
+            rag_result = _as_dict(state.get("rag_result"))
+            data = _as_dict(rag_result.get("data"))
+            if data or rag_result:
+                rag = {
+                    "success": rag_result.get("success", True),
+                    "rag_data": {
+                        "operation": data.get("operation", "retrieve"),
+                        "query": data.get("query") or question,
+                        "results": data.get("results") or [],
+                    },
+                }
+
+        summary = _as_dict(state.get("summary"))
+
+        return {
+            "request": request,
+            "ocr": ocr,
+            "classification": classification,
+            "extraction": extraction,
+            "validation": validation,
+            "rag": rag,
+            "summary": summary,
+            "routing": _as_dict(state.get("routing")),
+            "writing": _as_dict(state.get("writing")),
+        }
 
     # ------------------------------------------------------------------
     # Pipeline steps

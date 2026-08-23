@@ -141,4 +141,6 @@ python -m pytest Orchestration/tests -v
 3. لا حاجة لتعديل أي كود Orchestration آخر - `workflow_builder.build_agent_registry` سيستورد الـ Agent كسولًا عند أول تشغيل.
 4. أضف اختبارات في `Orchestration/tests/` باستخدام mock مطابق للواجهة الحقيقية قبل التفعيل في `config.yaml`، ثم فعّله.
 
-نفس الخطوات لبقية المراحل: `extraction`, `validation`, `rag`, `summary`, `routing` (routing_agent - وجهة العمل/القسم، مختلف عن Orchestration routing الذي يقرر "أي Agent التالي")، و`writing`.
+نفس الخطوات لبقية المراحل: `extraction`, `validation`, `rag`, `summary`, و`writing`.
+
+**جاهز للربط:** `routing` — `RoutingAgent.run` يكتب `state["routing"] = {success, department}` (مفعّل عبر `agent_overrides` في الاختبارات؛ عيّن `agents.routing.enabled: true` في `config.yaml` عند جاهزية المراحل السابقة). انظر `Orchestration/tests/test_routing_integration.py`.

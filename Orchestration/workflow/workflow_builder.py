@@ -88,8 +88,12 @@ def _extract_result_data(stage: Stage, updated_state: Dict[str, Any], before: Di
         # Supports older agent implementations during the migration.
         if "draft_letter" in updated_state:
             return updated_state["draft_letter"]
-    if stage == Stage.ROUTING and isinstance(updated_state, dict) and "routing_decision" in updated_state:
-        return updated_state["routing_decision"]
+    if stage == Stage.ROUTING and isinstance(updated_state, dict):
+        if "routing" in updated_state:
+            return updated_state["routing"]
+        # Legacy key during migration from routing_decision → routing.
+        if "routing_decision" in updated_state:
+            return updated_state["routing_decision"]
     # Fall back to "whatever new top-level keys the agent added" so a
     # differently-shaped (but well-behaved) Agent still produces a result
     # instead of silently losing its output.
@@ -128,6 +132,10 @@ def _default_adapter(agent: AgentProtocol) -> AgentAdapter:
         if stage == Stage.SUMMARY and isinstance(data, dict) and data.get("success") is False:
             return AgentResult.fail(
                 stage.value, ExecutionStatus.FAILURE, "summary agent returned success=false"
+            )
+        if stage == Stage.ROUTING and isinstance(data, dict) and data.get("success") is False:
+            return AgentResult.fail(
+                stage.value, ExecutionStatus.FAILURE, "routing agent returned success=false"
             )
         if stage == Stage.WRITING and isinstance(data, dict) and data.get("success") is False:
             return AgentResult.fail(
