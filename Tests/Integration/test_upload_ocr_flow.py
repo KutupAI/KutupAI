@@ -33,28 +33,32 @@ def _png(path: Path) -> Path:
 
 
 def _good_unified(text: str = "Clear document text content here." * 3):
-    from Agents.ocr_agent.models import (
-        ContentInfo,
-        DocumentInfo,
-        PageContent,
-        UnifiedOCRResult,
-    )
+    from Agents.ocr_agent.models import contract_envelope, empty_document
 
-    return UnifiedOCRResult(
-        success=True,
-        document_info=DocumentInfo("doc-1", "doc.png", "png", 1, "tr"),
-        content=ContentInfo(
-            text=text,
-            pages=[PageContent(page_number=1, text=text)],
-            tables=[],
-        ),
-        quality_passed=True,
-        qwen_used=False,
+    doc = empty_document(
+        document_id="doc-1",
+        file_name="doc.png",
+        file_type="png",
+        question="",
     )
+    doc["full_text"] = text
+    doc["pages"] = [
+        {
+            "page_number": 1,
+            "text": text,
+            "tables": [],
+            "vision": {
+                "signature": {"detected": False, "handwritten": False},
+                "stamp": {"detected": False},
+            },
+        }
+    ]
+    return contract_envelope(True, [doc])
 
 
 def test_temp_file_handoff_and_cleanup_without_text():
-    from Orchestration.process_service import run_ocr_pipeline
+    from Orchestration.graph.graph_definition import Stage
+    from Orchestration.process_service import run_workflow
 
     temp_root = Path(tempfile.mkdtemp(prefix="sgai_upload_"))
     request_id = "req-no-text"
@@ -69,19 +73,18 @@ def test_temp_file_handoff_and_cleanup_without_text():
             **state,
             "ocr_status": "completed",
             "document_text": "hello",
-            "ocr_result": _good_unified("hello").to_dict(),
+            "ocr_result": _good_unified("hello"),
         }
 
-        out = run_ocr_pipeline(
+        out = run_workflow(
             document_id=request_id,
             document_path=str(file_path),
             accompanying_text=None,
-            agent=agent,
+            agent_overrides={Stage.OCR: agent},
         )
-        assert out["success"] is True
+        assert out["Success"] is True
         assert agent.run.call_args[0][0]["document_path"] == str(file_path)
 
-        # Application cleanup contract
         shutil.rmtree(dest)
         assert not dest.exists()
     finally:
@@ -90,7 +93,8 @@ def test_temp_file_handoff_and_cleanup_without_text():
 
 
 def test_temp_file_with_accompanying_text():
-    from Orchestration.process_service import run_ocr_pipeline
+    from Orchestration.graph.graph_definition import Stage
+    from Orchestration.process_service import run_workflow
 
     temp_root = Path(tempfile.mkdtemp(prefix="sgai_upload_"))
     request_id = "req-with-text"
@@ -104,16 +108,17 @@ def test_temp_file_with_accompanying_text():
             **state,
             "ocr_status": "completed",
             "document_text": "x",
-            "ocr_result": _good_unified("x").to_dict(),
+            "ocr_result": _good_unified("x"),
         }
-        out = run_ocr_pipeline(
+        out = run_workflow(
             document_id=request_id,
             document_path=str(file_path),
             accompanying_text="ek açıklama",
-            agent=agent,
+            agent_overrides={Stage.OCR: agent},
         )
-        assert out["success"] is True
-        assert agent.run.call_args[0][0]["accompanying_text"] == "ek açıklama"
+        assert out["Success"] is True
+        state = agent.run.call_args[0][0]
+        assert state.get("accompanying_text") == "ek açıklama" or state.get("question") == "ek açıklama"
         shutil.rmtree(dest)
         assert not file_path.exists()
     finally:

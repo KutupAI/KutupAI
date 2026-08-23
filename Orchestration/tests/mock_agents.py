@@ -80,7 +80,7 @@ class MockRoutingAgent:
 
 class MockWriterAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        state["draft_letter"] = "Dear Sir, ..."
+        state["writing"] = {"success": True, "answer": "Dear Sir, ..."}
         return state
 
 

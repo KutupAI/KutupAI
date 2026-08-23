@@ -30,14 +30,15 @@ OCR → Classification → Extraction → Validation → RAG → Summary → Rou
 
 الانتقالات ليست ثابتة بالضرورة: `supervisor/routing_logic.py` قد يتخطى RAG إذا لم تتطلبه نتيجة Validation، ويعيد المحاولة أو يسقط إلى fallback أو ينهي الـ Workflow حسب `config.yaml`.
 
-### نقطتا الدخول في `process_service.py`
+### نقطة الدخول في `process_service.py`
 
 | الدالة | الوصف |
 |---|---|
-| `run_ocr_pipeline(...)` | **بدون تغيير وظيفي.** خطوة OCR فقط، كما كانت. |
-| `run_full_workflow(...)` | تشغيل الـ Graph الكامل (8 مراحل) عبر محرك الـ Workflow. المراحل غير المفعّلة تُتخطى (لا تُصطنع نتائجها أبدًا)، لذا اليوم تُكافئ عمليًا `run_ocr_pipeline` + `final_decision` منظّم، وتتوسع تلقائيًا مع كل Agent جديد يُربط. |
+| `run_workflow(...)` | المسار الوحيد: تشغيل Graph المراحل (OCR → … → Writing). المراحل غير المفعّلة تُتخطى. اليوم OCR فقط مفعّل، فيعمل كمرحلة أولى مثل أي Agent. |
 
-نفس التمييز في `main.py`: `POST /process` (كما كان) و `POST /process/full` (الجديد).
+`POST /process` في `main.py` يستدعي `run_workflow` فقط (لا مسار OCR منفصل، ولا `/process/full`).
+
+`run_full_workflow` يبقى اسماً مرادفاً للتوافق مع الاستيرادات القديمة.
 
 ---
 
@@ -84,8 +85,8 @@ python -m pytest Orchestration/tests -v
 
 | الملف | الوظيفة |
 |---|---|
-| `main.py` | نقطة الدخول. FastAPI: `GET /health`, `POST /process` (OCR فقط), `POST /process/full` (الـ Workflow الكامل). |
-| `process_service.py` | `run_ocr_pipeline` (بدون تغيير) و `run_full_workflow` (جديد) بدون FastAPI، للاختبار المباشر. |
+| `main.py` | نقطة الدخول. FastAPI: `GET /health`, `POST /process` (الـ Workflow الكامل). |
+| `process_service.py` | `run_workflow` بدون FastAPI؛ OCR مرحلة داخل الـ Graph مثل بقية الـ Agents. |
 | `__init__.py` | يجعل المجلد حزمة Python قابلة للاستيراد. |
 | `requirements.txt` | fastapi/uvicorn/pydantic/pyyaml. |
 | `README.md` | هذا الملف. |

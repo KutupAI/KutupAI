@@ -51,7 +51,7 @@ def test_full_happy_path_runs_every_stage_in_order():
         "writing",
     ]
     assert all(h["status"] == "success" for h in result.state["history"])
-    assert result.state["draft_letter"] == "Dear Sir, ..."
+    assert result.state["writing"] == {"success": True, "answer": "Dear Sir, ..."}
     assert result.state["final_decision"]["completed"] is True
 
 

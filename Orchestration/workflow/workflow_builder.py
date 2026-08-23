@@ -82,8 +82,12 @@ def _extract_result_data(stage: Stage, updated_state: Dict[str, Any], before: Di
         return updated_state[result_key]
     if stage == Stage.SUMMARY and isinstance(updated_state, dict) and "summary" in updated_state:
         return updated_state["summary"]
-    if stage == Stage.WRITING and isinstance(updated_state, dict) and "draft_letter" in updated_state:
-        return updated_state["draft_letter"]
+    if stage == Stage.WRITING and isinstance(updated_state, dict):
+        if "writing" in updated_state:
+            return updated_state["writing"]
+        # Supports older agent implementations during the migration.
+        if "draft_letter" in updated_state:
+            return updated_state["draft_letter"]
     if stage == Stage.ROUTING and isinstance(updated_state, dict) and "routing_decision" in updated_state:
         return updated_state["routing_decision"]
     # Fall back to "whatever new top-level keys the agent added" so a
@@ -120,6 +124,10 @@ def _default_adapter(agent: AgentProtocol) -> AgentAdapter:
         if data is None:
             return AgentResult.fail(
                 stage.value, ExecutionStatus.MISSING_STATE, f"{stage.value} agent returned no result section"
+            )
+        if stage == Stage.WRITING and isinstance(data, dict) and data.get("success") is False:
+            return AgentResult.fail(
+                stage.value, ExecutionStatus.FAILURE, "writer agent returned success=false"
             )
         return AgentResult.ok(stage.value, data)
 
