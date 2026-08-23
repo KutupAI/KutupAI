@@ -6,7 +6,8 @@ Pipeline (Documentation/architecture.md section 4 / task doc section 4+7):
      Agent does not run OCR itself).
   2. Try the Optimization fast classifier first (cheap ONNX pre-filter).
   3. If unavailable, inconclusive, or below the escalation threshold,
-     call Qwen VLM with normalized_text + rendered image + layout together.
+     call the VLM (Gemma 3, local llama.cpp/llama-server) with
+     normalized_text + rendered image + layout together.
   4. Apply the needs_review threshold and return strict JSON in
      graph_state["classification_result"] (never free text -- section 7).
 
@@ -28,7 +29,7 @@ from Agents.classification_agent.config import ClassificationConfig
 from Agents.classification_agent.exceptions import ClassificationAgentError, MissingInputError
 from Agents.classification_agent.models import ClassificationAlternative, ClassificationResult
 from Agents.classification_agent.taxonomy import UNCERTAIN_CODE
-from Agents.classification_agent.tools import run_fast_classifier, run_qwen_classification
+from Agents.classification_agent.tools import run_fast_classifier, run_vlm_classification
 
 
 @register
@@ -110,8 +111,10 @@ class ClassificationAgent(BaseAgent):
                 )
             # else: fast classifier absent or not confident enough -> escalate to Qwen VLM.
 
-        # Step 2: Qwen VLM (section 4: image + text + layout together)
-        qwen_output = run_qwen_classification(
+        # Step 2: VLM (section 4: image + text + layout together). Gemma 3
+        # (4B/12B/27B, local llama.cpp/llama-server) as of this change --
+        # previously Qwen2.5-VL, see Inference/client/vlm_client.py.
+        vlm_output = run_vlm_classification(
             normalized_text=normalized_text,
             ocr_confidence=ocr_confidence,
             layout=layout,
@@ -121,11 +124,11 @@ class ClassificationAgent(BaseAgent):
         )
         return self._build_result(
             document_id=document_id,
-            document_type=qwen_output["document_type"],
-            confidence=qwen_output["confidence"],
-            alternatives=qwen_output.get("alternatives", []),
+            document_type=vlm_output["document_type"],
+            confidence=vlm_output["confidence"],
+            alternatives=vlm_output.get("alternatives", []),
             ocr_confidence=ocr_confidence,
-            source="qwen_vlm",
+            source="vlm",
         )
 
     def _build_result(
@@ -236,6 +239,19 @@ def _extract_image_bytes(state: Dict[str, Any]) -> bytes | None:
 def _merge_result(state: Dict[str, Any], result: ClassificationResult) -> Dict[str, Any]:
     state["classification_result"] = result.to_dict()
     state["classification_status"] = result.status
+    # Unified short-key contract for validation_agent, matching ocr_agent's
+    # existing dual-key convention (state["ocr"] short/unified key +
+    # state["ocr_result"] wire key). classification_agent previously only
+    # wrote "classification_result" (with a field named "confidence"), so
+    # validation_agent's state.get("classification") / "classification_confidence"
+    # lookup always saw an empty dict, silently skipping the
+    # low_classification_confidence check on every run.
+    state["classification"] = {
+        "success": result.success,
+        "classification_confidence": result.confidence,
+        "document_type": result.document_type,
+        "status": result.status,
+    }
     if not result.success:
         errors = list(state.get("errors") or [])
         errors.append(f"classification_agent: {result.error}")

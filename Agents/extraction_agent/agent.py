@@ -59,7 +59,7 @@ from .models import (
     SemanticInfo,
     VisionInfo,
 )
-from .tools import LLMSemanticExtractor, NEREngine, RegexExtractor, VisionFieldExtractor
+from .tools import HybridSemanticExtractor, NEREngine, RegexExtractor, VisionFieldExtractor
 
 logger = logging.getLogger("extraction_agent")
 
@@ -98,6 +98,32 @@ def _get_document_image_b64(state: Dict[str, Any]) -> Optional[str]:
     return state.get("document_image_b64") or state.get("document_image")
 
 
+def _to_unified_contract(result: "ExtractionResult") -> dict[str, Any]:
+    """Flatten ExtractionResult into the short-key contract validation_agent
+    reads (state["extraction"]): {success, sender, date, address, phone,
+    email}. This mirrors ocr_agent's own dual-key convention (state["ocr"]
+    unified + state["ocr_result"] wire) -- extraction_agent previously only
+    wrote the wire key (state["extraction_result"]), so validation_agent's
+    EXTRACTION_FIELDS lookup always saw an empty dict regardless of how the
+    run actually went.
+    """
+
+    def _first(values: list) -> Optional[str]:
+        for fv in values:
+            if fv.value:
+                return fv.value
+        return None
+
+    return {
+        "success": result.meta.success,
+        "sender": _first(result.entities.person.ad_soyad),
+        "date": result.document.tarih.value,
+        "address": _first(result.entities.person.adres),
+        "phone": _first(result.entities.person.telefon),
+        "email": _first(result.entities.person.eposta),
+    }
+
+
 @register
 class ExtractionAgent(BaseAgent):
     """Hybrid (Regex + NER + LLM + optional Vision) information extraction."""
@@ -112,7 +138,11 @@ class ExtractionAgent(BaseAgent):
         self.cfg = config
         self.regex = RegexExtractor(config)
         self.ner = NEREngine(config)
-        self.llm = LLMSemanticExtractor(config)
+        # HybridSemanticExtractor = LLMSemanticExtractor (request_type/topic/
+        # intent/keywords, unchanged) + LangExtract-grounded persons/
+        # organizations when config.llm.use_langextract is True. Same
+        # .extract() contract either way, so nothing else below changes.
+        self.llm = HybridSemanticExtractor(config)
         self.vision = VisionFieldExtractor(config)
 
     # ------------------------------------------------------------------
@@ -123,8 +153,9 @@ class ExtractionAgent(BaseAgent):
         text, ocr_flags = _get_ocr_text_and_flags(state)
         if not text.strip():
             warnings.append("OCR metni bos ya da bulunamadi - extraction atlandi")
-            result = ExtractionResult(meta=ExtractionMeta(warnings=warnings, low_confidence=True))
+            result = ExtractionResult(meta=ExtractionMeta(success=False, warnings=warnings, low_confidence=True))
             state["extraction_result"] = result.to_state_dict()
+            state["extraction"] = _to_unified_contract(result)
             return state
 
         classification_hint = _get_classification_hint(state)
@@ -179,16 +210,38 @@ class ExtractionAgent(BaseAgent):
 
         llm_data = llm_out.get("data") or {}
         llm_conf = float(llm_data.get("confidence", 0.0))
-        llm_persons = [
-            FieldValue(value=name, confidence=llm_conf, source="llm")
-            for name in (llm_data.get("persons") or [])
-            if name
-        ]
-        llm_orgs = [
-            FieldValue(value=name, confidence=llm_conf, source="llm")
-            for name in (llm_data.get("organizations") or [])
-            if name
-        ]
+        langextract_used = bool(llm_out.get("langextract_used"))
+        if llm_out.get("langextract_error"):
+            warnings.append(str(llm_out["langextract_error"]))
+
+        def _spanned_field_values(names: list[str], spans: list[Optional[dict]]) -> list[FieldValue]:
+            values: list[FieldValue] = []
+            for i, name in enumerate(names):
+                if not name:
+                    continue
+                span = spans[i] if i < len(spans) else None
+                # Grounded (LangExtract char-aligned) values get a higher,
+                # verified confidence than the plain LLM guess -- the span
+                # match itself is evidence the text literally contains this
+                # value, not a paraphrase/hallucination.
+                confidence = 0.95 if (langextract_used and span) else llm_conf
+                values.append(
+                    FieldValue(
+                        value=name,
+                        confidence=confidence,
+                        source="llm",
+                        char_start=(span or {}).get("start"),
+                        char_end=(span or {}).get("end"),
+                    )
+                )
+            return values
+
+        llm_persons = _spanned_field_values(
+            llm_data.get("persons") or [], llm_data.get("persons_spans") or []
+        )
+        llm_orgs = _spanned_field_values(
+            llm_data.get("organizations") or [], llm_data.get("organizations_spans") or []
+        )
 
         entities = Entities(
             person=PersonInfo(
@@ -220,6 +273,7 @@ class ExtractionAgent(BaseAgent):
             retried=bool(llm_out.get("retried")),
             retry_count=int(llm_out.get("retry_count", 0)),
             llm_used=bool(llm_out.get("used")),
+            langextract_used=langextract_used,
             ner_used=ner_used,
             vision_used=vision_info.used,
             errors=errors,
@@ -228,6 +282,14 @@ class ExtractionAgent(BaseAgent):
 
         result = ExtractionResult(document=document, entities=entities, request=request, vision=vision_info, meta=meta)
         state["extraction_result"] = result.to_state_dict()
+        # Unified short-key contract for validation_agent, mirroring the
+        # same dual-key convention ocr_agent already uses
+        # (state["ocr"] short/unified + state["ocr_result"] wire format).
+        # extraction_result's nested schema (document/entities/request) was
+        # never mirrored into a flat "extraction" key before this, so
+        # validation_agent always read an empty {} and reported
+        # extraction_result_missing even on successful runs.
+        state["extraction"] = _to_unified_contract(result)
         return state
 
     # ------------------------------------------------------------------

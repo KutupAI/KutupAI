@@ -31,6 +31,12 @@ class FieldValue(BaseModel):
     value: Optional[str] = None
     confidence: float = 0.0
     source: SourceType = "unknown"
+    # Character-offset provenance into the *original* OCR full_text, only
+    # populated when source == "llm" and the LangExtract path produced a
+    # grounded (char-aligned) span for this value. None for regex/ner
+    # (which don't track offsets today) and for ungrounded LLM output.
+    char_start: Optional[int] = None
+    char_end: Optional[int] = None
 
     @classmethod
     def empty(cls) -> "FieldValue":
@@ -93,11 +99,17 @@ class VisionInfo(BaseModel):
 class ExtractionMeta(BaseModel):
     """Internal diagnostics - consumed by Validation Agent (section 10)."""
 
+    # Explicit run-level outcome, mirroring the success flag ocr_agent and
+    # classification_agent already expose in their own state contracts.
+    # False only when extraction could not run at all (e.g. no OCR text) --
+    # NOT the same as low_confidence, which means it ran but is unsure.
+    success: bool = True
     overall_confidence: float = 0.0
     low_confidence: bool = False
     retried: bool = False
     retry_count: int = 0
     llm_used: bool = False
+    langextract_used: bool = False
     ner_used: bool = False
     vision_used: bool = False
     errors: List[str] = Field(default_factory=list)

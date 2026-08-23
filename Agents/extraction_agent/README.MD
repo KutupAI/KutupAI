@@ -1,278 +1,133 @@
 # Information Extraction Agent (Bilgi Cikarma Ajani)
----
 
-## 1. Ozet: Neler Yapildi?
+Bir belgenin OCR metninden (ve varsa gorselinden) yapilandirilmis bilgi
+cikaran Agent -- tarih, evrak numarasi, telefon, email gibi kesin
+alanlari kural-tabanli (regex) yakalar; kisi adi, kurum, talep turu,
+konu gibi anlamsal alanlari LLM (Gemma 3) ile cikarir; mumkun oldugunda
+bunlari metinde birebir dogrulanmis (grounded) hale getirir (LangExtract).
 
-Baslangicta `Agents/extraction_agent/` klasorunde sadece 4 bos dosya vardi
-(icinde sadece aciklama yorumu olan iskelet dosyalar: `agent.py`,
-`config.py`, `prompts.py`, `tools.py`). Bu dosyalar sifirdan dolduruldu,
-3 yeni dosya eklendi, ve `Agents/base/base_agent.py` +
-`Agents/base/agent_registry.py` kontratina tam uyumlu hale getirildi.
-
-Gelistirme sirasinda ekibin gercek ortamiyla (yerel `llama-server` +
-`qwen-vl.gguf`, port 8092) uctan uca test edildi ve **basariyla calisti**
-(asagida bolum 6'da tam cikti var).
-
----
-
-## 2. Klasor Yapisi ve Her Dosyanin Gorevi
-
-```
-Agents/extraction_agent/
-├── __init__.py        [YENI]     -> paketi disariya acar
-├── agent.py            [DOLDURULDU] -> ana ExtractionAgent sinifi
-├── config.py            [DOLDURULDU] -> tum ayarlar (esikler, model adlari, URL'ler)
-├── models.py             [YENI]     -> Pydantic JSON semasi (cikti formati)
-├── prompts.py              [DOLDURULDU] -> LLM icin sistem + retry promptlari
-├── tools.py                  [DOLDURULDU] -> Regex / LLM / Vision arac siniflari
-├── test_agent.py                [YENI]     -> hizli manuel test scripti
-├── .env                            [YENI]     -> ortam degiskenleri (gizli, git'e eklenmez)
-└── README.md                         [YENI]     -> bu dosya
-```
-
-### `models.py` - Cikti Semasi (Pydantic)
-Tum agentlar arasi standart JSON formatini tanimlar (rapor bolum 9'daki
-`{document, entities, request, validation}` yapisina uygun - `validation`
-kismi Validation Agent tarafindan doldurulacak, bu ajan onu doldurmaz).
-
-Her deger bir `FieldValue` icinde tutulur: `{value, confidence, source}`.
-`source` alani `"regex"`, `"llm"` veya `"vision"` olabilir - boylece
-Validation Agent hangi bilginin nereden geldigini ve ne kadar guvenilir
-oldugunu bilir.
-
-Ana siniflar: `DocumentInfo` (tarih/sayi/konu), `Entities` (person +
-organization), `SemanticInfo` (request_type/topic/intent/keywords),
-`VisionInfo`, `ExtractionMeta` (guven skoru, uyarilar, hata listesi).
-
-### `config.py` - Ayarlar
-Tum esik degerleri ve model/URL ayarlarini ortam degiskenlerinden
-(`.env`) okur. **En onemli detay:** `.env` dosyasi bu dosyanin en
-basinda (`load_dotenv(...)`) yuklenir - nedeni bolum 5'te ("Karsilasilan
-Sorunlar") acildi.
-
-Icerik: `RegexConfig` (tarih/telefon/email/evrak-no pattern'leri),
-`NERConfig` (varsayilan **kapali** - bkz. bolum 5), `LLMConfig` (Qwen
-baglanti ayarlari), `VisionConfig` (Qwen-VL baglanti ayarlari),
-`ExtractionAgentConfig` (hepsini birlestiren ust-duzey ayar objesi).
-
-### `prompts.py` - LLM Promptlari
-Qwen'e gonderilen sistem promptu ve JSON semasi burada tanimli. Sema
-sunlari icerir: `request_type`, `topic`, `intent`, `keywords`,
-`missing_info`, **`persons`**, **`organizations`** (son ikisi, ayri bir
-NER modeli kurmadan kisi/kurum adlarini almak icin eklendi - bkz. bolum 5),
-`confidence`.
-
-Ayrica, ilk deneme basarisiz olursa (gecersiz JSON / dusuk guven)
-kullanilan daha sikı bir **retry (tekrar deneme) promptu** var - rapor
-bolum 10'daki "Alternatif prompt denenir" adimini karsilar.
-
-### `tools.py` - Arac Siniflari (fail-soft tasarim)
-- `RegexExtractor`: tarih, telefon, email, evrak/sayi numarasi - kural
-  tabanli, %100 deterministik.
-- `NEREngine`: ayri bir NER modeli (BERTurk) icin altyapi - **su an
-  devre disi**, ama kod hazir dursun diye silinmedi (kolayca aktif
-  edilebilir).
-- `LLMSemanticExtractor`: Qwen'e OpenAI-uyumlu `/v1/chat/completions`
-  cagrisi yapar, JSON'u guvenli sekilde parse eder (```json bloklarini
-  temizler), dusuk guven durumunda otomatik retry yapar.
-- `VisionFieldExtractor`: sadece imza/tablo/el yazisi tespit edildiginde
-  ve bir gorsel (base64) saglandiginda calisir.
-
-**Onemli tasarim prensibi:** Her arac kendi basina cokmez. Model
-indirilemezse, API key eksikse ya da LLM gecersiz cevap donerse, o katman
-sessizce atlanir ve `meta.warnings` icine bir not eklenir - agent asla
-`Exception` firlatarak tum pipeline'i durdurmaz.
-
-### `agent.py` - Ana Sinif
-`ExtractionAgent(BaseAgent)` - `Agents/base/base_agent.py` kontratina
-uyar (`run(state) -> state`), ve `Agents/base/agent_registry.py`
-uzerinden `@register` decorator'u ile kendini otomatik kaydeder.
-
-`state` icinden OCR ciktisini ve (varsa) siniflandirma sonucunu **birden
-fazla olasi anahtar ismini deneyerek** okur (`ocr_result`/`ocr_output`,
-`classification_result`/`classification`) - takim arkadaslarinin tam
-anahtar ismini degistirmesi durumunda kirilmasin diye.
-
-Tum araclarin (regex/LLM/vision) sonuclarini `models.py`'deki standart
-semaya gore birlestirir, genel bir guven skoru hesaplar, ve
-`state["extraction_result"]` olarak yazar.
-
-### `test_agent.py` - Manuel Test
-Sahte (ama gercekci) bir `state` olusturur (rapordaki elektrik faturasi
-ornegiyle ayni metin), `ExtractionAgent.run()`'i cagirir ve sonucu JSON
-olarak ekrana basar. `.env` dosyasini otomatik yukler. Hem pytest'e
-gerek kalmadan hizli dogrulama hem de yeni birinin "bu nasil calisiyor"
-sorusuna canli cevap vermek icin var.
-
-### `.env` - Ortam Degiskenleri
-Gercek API adresleri, model isimleri, esik degerleri. **Bu dosya git'e
-eklenmemeli** (icinde ozel bilgi olmasa bile, herkesin kendi yerel
-ayarina gore degistirebilmesi icin `.gitignore`'a eklenmesi onerilir).
+> **Model degisikligi notu:** Baslangicta Qwen2.5 (LLM) + Qwen2.5-VL
+> (Vision), Together AI (bulut) uzerinden calisiyordu. Iki degisiklik
+> yapildi: (1) **Qwen -> Gemma 3** -- proje genelinde Gemma3 zaten
+> varsayilan model oldugu icin; (2) **bulut -> yerel `llama-server`** --
+> Turkce resmi belge metinlerinin disariya cikmamasi icin (veri
+> gizliligi), ayrica gercek API anahtarina da artik gerek yok. Ek olarak
+> **Google LangExtract** entegre edildi: `persons`/`organizations`
+> alanlari artik mumkun oldugunda metinde birebir gecen, karakter konumu
+> dogrulanmis degerler olarak cikariliyor.
 
 ---
 
-## 3. Kurulum (Gerekli Kutuphaneler)
+## ÇALIŞTIRMA SIRASI (baştan sona, sırayla)
 
-Asagidaki komutlari calistirin (Windows PowerShell, proje kok
-dizininde, ornegin `KutupAI-main` icinde):
-
+### 1 · Kur
 ```powershell
-python -m pip install pydantic openai python-dotenv
+python -m pip install -r Agents/extraction_agent/requirements.txt
 ```
+Bu, `pydantic`, `python-dotenv`, `openai` ve `langextract`'i kurar.
+**Neden `pip` yerine `python -m pip`?** Birden fazla Python sürümü
+kuruluysa (`3.11` ve `3.14` gibi), tek başına `pip` komutu yanlış/bozuk
+bir sürüme denk gelebilir ("Fatal error in launcher"). `python -m pip`
+her zaman o an çalıştırdığın `python` ile aynı ortama kurar.
 
-**Neden `pip` yerine `python -m pip`?** Bilgisayarda birden fazla Python
-surumu kuruluysa (bizim durumumuzda Python 3.11 ve 3.14), tek basina
-`pip` komutu yanlis/bozuk bir surume denk gelebilir
-("Fatal error in launcher" hatasi). `python -m pip` her zaman o an
-calistirdiginiz `python` ile ayni ortama kurulum yapar.
+### 2 · `.env` dosyasının var olduğundan emin ol
+İçeriği bölüm 7'de -- yoksa oradan kopyala, `Agents/extraction_agent/.env`
+olarak kaydet.
 
-**NER icin (opsiyonel, varsayilan olarak GEREKLI DEGIL):**
+### 3 · Yerel Gemma 3 sunucusunu başlat (ayrı terminal, açık bırak)
 ```powershell
-python -m pip install transformers torch
+.\llama\llama-server.exe -m Inference\models\gemma-3.gguf --mmproj Inference\models\gemma-3-mmproj.gguf --host 0.0.0.0 --port 8092 --ctx-size 8192 --image-min-tokens 1024 --alias gemma-3-27b-it
 ```
-Bu ekip karari geregi kurulmadi - detay bolum 5'te.
+`--mmproj` bayrağını unutma. `--alias` değeri `.env` içindeki
+`EXTRACTION_LLM_MODEL`/`EXTRACTION_VLM_MODEL` ile eşleşmeli. Bu,
+`classification_agent` ile **aynı paylaşılan sunucu/port** -- ikinci bir
+sunucuya gerek yok.
+
+### 4 · Agent'ı çalıştır (yeni terminal, proje kökünden)
+```powershell
+python -m Agents.extraction_agent.test_agent
+```
+⚠️ **Mutlaka proje kök dizininden** (`Agents` klasörünün göründüğü
+yerden) çalıştır. `extraction_agent` klasörüne girip doğrudan
+`python test_agent.py` çalıştırma -- relative import hatası verir.
+
+### 5 · (Önerilir) Üç Agent'ı zincir halinde test et
+`classification_agent` → `extraction_agent` → `validation_agent`
+zincirinin gerçekten bağlı çalıştığını gösteren en iyi test:
+```powershell
+python -c "
+from Agents.validation_agent.agent import ValidationAgent
+from Agents.classification_agent.agent import ClassificationAgent
+from Agents.extraction_agent.agent import ExtractionAgent
+import json
+
+state = {'ocr_result': {'full_text': 'Sayı: 2024/458 Ahmet Yılmaz, 0532 123 45 67, ahmet@example.com'}}
+state = ClassificationAgent().run(state)
+state = ExtractionAgent().run(state)
+state = ValidationAgent().run(state)
+print(json.dumps(state['validation'], ensure_ascii=False, indent=2))
+"
+```
 
 ---
 
-## 4. Nasil Calistirilir
+## Sorun mu çıktı? (Troubleshooting -- gelişim sürecinde karşılaşılanlar)
 
-1. `Agents/extraction_agent/.env` dosyasinin var oldugundan emin olun
-   (icerigi asagida, bolum 7'de).
-2. Yerel LLM sunucusunu baslatin (ayri bir terminal penceresinde,
-   kapatmayin):
-   ```powershell
-   .\llama\llama-server.exe -m Inference\models\qwen-vl.gguf --mmproj Inference\models\qwen-vl-mmproj.gguf --host 0.0.0.0 --port 8092 --ctx-size 8192 --image-min-tokens 1024
-   ```
-3. Proje kok dizininden (`KutupAI-main`), test scriptini calistirin:
-   ```powershell
-   python -m Agents.extraction_agent.test_agent
-   ```
-
-**Onemli:** Komut `python -m Agents.extraction_agent.test_agent`
-seklinde, **proje kok dizininden** calistirilmali (icinde `Agents`
-klasorunun goruldugu yerden). `extraction_agent` klasorunun icine girip
-dogrudan `python test_agent.py` calistirmayin - bu, `from .agent import`
-gibi relative import'lar yuzunden hata verir.
+| # | Hata / Belirti | Sebep | Çözüm |
+|---|---|---|---|
+| 1 | `ModuleNotFoundError: No module named 'extraction_agent'` | Paket `Agents/` altında, proje kökünde değil | `python -m Agents.extraction_agent.test_agent` kullan (proje kökünden) |
+| 2 | `ModuleNotFoundError: No module named 'pydantic'` | Kütüphane kurulu değil | `python -m pip install -r Agents/extraction_agent/requirements.txt` |
+| 3 | `pip install ...` → *"Fatal error in launcher"* | Birden fazla Python sürümü, `pip` yanlış sürüme işaret ediyor | `python -m pip install ...` kullan |
+| 4 | `.env` okunmuyor, LLM yanlış adrese gidiyor | `test_agent.py` çalıştırıldığında Python önce `Agents/extraction_agent/__init__.py`'yi (→`agent.py`→`config.py`) çalıştırır, `test_agent.py` en sona kalır -- `load_dotenv()` çok geç kalıyordu | `load_dotenv()` çağrısı `config.py`'nin en başına taşındı (config.py, env okuyan ilk dosya) |
+| 5 | NER modeli yüklenemiyor (`No module named 'transformers'`) | `transformers`/`torch` kurulu değil (~2-3 GB) | Ekip kararı: ayrı NER modeli kurmak yerine `persons`/`organizations` aynı LLM çağrısından + LangExtract ile alınıyor. `EXTRACTION_NER_ENABLED=true` yapıp kurarsan yine aktif edilebilir |
+| 6 | Gemma 3'e geçince LLM adımı sessizce atlanıyor, sonra timeout | **(a)** Kod gerçek API anahtarı zorunlu kılıyordu (Together AI için mantıklıydı, yerel sunucu için gereksiz); **(b)** `60s` timeout, CPU'da gözlemlenen gerçek gecikmeye (76-126 sn/çağrı) göre çok kısaydı | **(a)** anahtar yoksa `"not-needed"`'e düşecek şekilde düzeltildi; **(b)** timeout `180s`'ye yükseltildi |
+| 7 | LangExtract `used: true` ama `persons`/`organizations` boş | Küçük kuantize (Q4) model CPU'da bazen bozuk/boş JSON parçası dönüyor -- LangExtract bunu sessizce atlıyor | **Bilinen sınırlama, çözülmedi.** Daha büyük/az-kuantize model ile tekrar denenmeli |
+| 8 | `validation_agent` başarılı çalışmaları bile "eksik" işaretliyor | `extraction_agent` sadece `state["extraction_result"]` (ayrıntılı) yazıyordu, `validation_agent` ise `state["extraction"]` (düz format) okuyordu -- bu anahtar hiç yazılmıyordu | `agent.py`'ye `_to_unified_contract()` eklendi, artık `state["extraction"]` da yazılıyor (`classification_agent`'a da aynı şekilde `state["classification"]` eklendi) |
 
 ---
 
-## 5. Gelistirme Surecinde Karsilasilan Sorunlar ve Cozumleri
+## Son Test Sonucu (gerçek, yerel Gemma 3 ile)
 
-Bu bolum, ayni hatalarla tekrar karsilasan biri icin referans amaclidir.
-
-### Sorun 1: `ModuleNotFoundError: No module named 'extraction_agent'`
-**Sebep:** Paket `Agents/` klasorunun altinda, proje kokunde degil.
-**Cozum:** `python -m extraction_agent.test_agent` degil,
-`python -m Agents.extraction_agent.test_agent` calistirilmali (proje
-kokunden).
-
-### Sorun 2: `ModuleNotFoundError: No module named 'pydantic'`
-**Sebep:** Kutuphane kurulu degildi.
-**Cozum:** `python -m pip install pydantic openai`
-
-### Sorun 3: `pip install python-dotenv` -> "Fatal error in launcher"
-**Sebep:** Sistemde 2 farkli Python surumu var (3.11 ve 3.14), `pip`
-komutu bozuk/yanlis surume isaret ediyordu.
-**Cozum:** `python -m pip install python-dotenv` kullanildi (aktif
-`python` ile ayni ortama kurulumu garantiler).
-
-### Sorun 4 (en onemlisi): `.env` dosyasi okunmuyor, LLM `together.xyz`'e
-gidiyor ve `401 Unauthorized` hatasi aliniyordu
-**Sebep:** `python -m Agents.extraction_agent.test_agent` calistirildiginda,
-Python ONCE `Agents/extraction_agent/__init__.py`'yi calistirir (bu da
-`agent.py -> config.py` zincirini tetikler), SONRA `test_agent.py`'yi
-`__main__` olarak calistirir. Yani `test_agent.py` icine konan
-`load_dotenv()` cok GEC kaliyordu - `config.py`'deki ayarlar zaten
-(varsayilan/yanlis) degerlerle tanimlanmis oluyordu.
-**Cozum:** `load_dotenv()` cagrisi `test_agent.py`'den `config.py`'nin
-EN BASINA tasindi - cunku `config.py`, ortam degiskenlerini okuyan ilk
-dosya ve hangi giris noktasindan (`test_agent.py`, Supervisor, vs.)
-calistirilirsa calistirilsin en once o import edilir.
-
-### Sorun 5: NER modeli yuklenemiyordu (`No module named 'transformers'`)
-**Sebep:** `transformers`/`torch` kurulu degildi (buyuk kutuphaneler,
-~2-3 GB indirme).
-**Karar (ekip ile birlikte):** Ayri bir NER modeli kurmak yerine, kisi
-(`persons`) ve kurum (`organizations`) bilgilerini **ayni Qwen-VL LLM
-cagrisindan** almak icin `prompts.py`'deki JSON semasina 2 yeni alan
-eklendi. Sonuc: ekstra kurulum yok, tek bir LLM cagrisi, ve test
-sonucunda (bolum 6) bu yontemin dogru calistigi dogrulandi
-(`"Ahmet Yılmaz"` ve `"Enerji Müdürlüğü"` basariyla cikarildi).
-`EXTRACTION_NER_ENABLED=false` varsayilan yapildi; ayri bir NER modeli
-gerekirse `true` yapip `transformers`/`torch` kurarak tekrar
-aktiflestirilebilir - kod hazir, sadece devre disi.
-
----
-
-## 6. Son Test Sonucu (Basarili - Gercek Qwen-VL ile)
-
-Asagidaki cikti, yerel `llama-server` (port 8092) ile yapilan gercek bir
-cagriyla elde edildi (mock/sahte degil). `python -m
-Agents.extraction_agent.test_agent` komutunun son calistirilmasindan:
+Sorun 6 (timeout) düzeltmesinden sonra alınan gerçek çıktı (mock değil):
 
 ```json
 {
   "document": {
     "evrak_turu": "Şikayet",
     "tarih": { "value": "12.05.2024", "confidence": 0.95, "source": "regex" },
-    "sayi": { "value": "2024/4521", "confidence": 0.85, "source": "regex" },
-    "konu": { "value": "Elektrik Faturası", "confidence": 0.8, "source": "llm" }
+    "sayi": { "value": "2024/4521", "confidence": 0.85, "source": "regex" }
   },
   "entities": {
     "person": {
-      "ad_soyad": [{ "value": "Ahmet Yılmaz", "confidence": 0.8, "source": "llm" }],
       "telefon": [{ "value": "0532 123 45 67", "confidence": 0.9, "source": "regex" }],
-      "eposta": [{ "value": "ahmet.yilmaz@example.com", "confidence": 0.97, "source": "regex" }],
-      "adres": []
-    },
-    "organization": {
-      "kurum": [{ "value": "Enerji Müdürlüğü", "confidence": 0.8, "source": "llm" }],
-      "mudurluk": [],
-      "ilgili_birim": []
+      "eposta": [{ "value": "ahmet.yilmaz@example.com", "confidence": 0.97, "source": "regex" }]
     }
   },
-  "request": {
-    "request_type": "Sikayet",
-    "topic": "Elektrik Faturası",
-    "intent": "İncelenmesini istiyorum",
-    "keywords": ["Elektrik faturası", "geldi", "İncelenmesini"],
-    "missing_info": ["Tarih"],
-    "confidence": 0.8
-  },
-  "vision": { "used": false, "has_signature": null, "has_stamp": null, "has_table": null, "has_handwriting": null, "form_fields": {} },
-  "meta": {
-    "overall_confidence": 0.85,
-    "low_confidence": false,
-    "retried": false,
-    "retry_count": 0,
-    "llm_used": true,
-    "ner_used": false,
-    "vision_used": false,
-    "errors": [],
-    "warnings": []
-  }
+  "meta": { "success": true, "llm_used": true, "langextract_used": true, "errors": [], "warnings": [] }
 }
 ```
 
-**Sonuc: sifir hata, sifir uyari, tum alanlar dolu.** `missing_info`
-icindeki `"Tarih"` yanlis alarm - LLM sadece kendi ayristirdigi metinde
-tarihi net gormedi, ama tarih zaten regex katmani tarafindan ayrica ve
-dogru sekilde (`12.05.2024`) yakalandi. Gercek bir hata degil, LLM'in
-kendi guven notu.
+**Kritik gözlem:** LLM/LangExtract çağrısı tamamen başarısız olsa bile
+`meta.success: true` kalıyor ve regex katmanının bulduğu alanlar her
+zaman doğru geliyor -- "fail-soft" tasarımı tam olarak çalışıyor.
 
 ---
 
-## 7. `.env` Icerigi (Referans)
+## `.env` İçeriği (referans, güncel)
 
 ```env
 EXTRACTION_LLM_ENABLED=true
 EXTRACTION_LLM_BASE_URL=http://localhost:8092/v1
 EXTRACTION_LLM_API_KEY=not-needed
-EXTRACTION_LLM_MODEL=qwen-vl
+EXTRACTION_LLM_MODEL=gemma-3-27b-it
 EXTRACTION_LLM_TEMPERATURE=0.1
 EXTRACTION_LLM_MAX_TOKENS=800
-EXTRACTION_LLM_TIMEOUT=60
+EXTRACTION_LLM_TIMEOUT=180
 EXTRACTION_LLM_MAX_RETRIES=1
+
+EXTRACTION_USE_LANGEXTRACT=true
+EXTRACTION_LANGEXTRACT_PASSES=1
+EXTRACTION_LANGEXTRACT_MAX_CHAR_BUFFER=4000
 
 EXTRACTION_NER_ENABLED=false
 EXTRACTION_NER_MODEL=akdeniz27/bert-base-turkish-cased-ner
@@ -282,35 +137,180 @@ EXTRACTION_NER_MAX_CHARS=4000
 EXTRACTION_VLM_ENABLED=true
 EXTRACTION_VLM_BASE_URL=http://localhost:8092/v1
 EXTRACTION_VLM_API_KEY=not-needed
-EXTRACTION_VLM_MODEL=qwen-vl
-EXTRACTION_VLM_TIMEOUT=60
+EXTRACTION_VLM_MODEL=gemma-3-27b-it
+EXTRACTION_VLM_TIMEOUT=180
 
 EXTRACTION_CONF_THRESHOLD=0.55
 ```
 
 ---
 
-## 8. Beklenen `state` Anahtarlari (Diger Agentlarla Entegrasyon)
+## Beklenen `state` Anahtarları (Diğer Agent'larla Entegrasyon)
 
-**Girdi:**
+**Girdi (doğrulandı -- gerçek kod okunarak):**
 | Anahtar | Format | Kaynak |
 |---|---|---|
-| `state["ocr_result"]` veya `state["ocr_output"]` | `dict` (`UnifiedOCRResult.to_dict()`) veya `str` | OCR Agent (Obada) |
-| `state["classification_result"]` veya `state["classification"]` | `document_type` iceren `dict` | Classification Agent (Yasir) |
-| `state["document_image_b64"]` *(istege bagli)* | base64 string | imza/tablo varsa Vision icin |
+| `state["ocr_result"]` | `dict` (`{document_id, full_text, pages, ...}`) | `ocr_agent` |
+| `state["classification_result"]` | ayrıntılı `dict` | `classification_agent` |
+| `state["classification"]` | `{success, classification_confidence, document_type, status}` | `classification_agent` (kısa format) |
+| `state["document_image_b64"]` *(isteğe bağlı)* | base64 string | imza/tablo varsa Vision için |
 
-⚠️ Bu anahtarlarin gercek isimlerini Obada ve Yasir ile birebir teyit
-edin - kod en yaygin isimlendirmeleri dener ama garanti degildir.
-
-**Cikti:** `state["extraction_result"]` (bolum 6'daki JSON formati).
+**Çıktı:**
+| Anahtar | Format | Kim okuyor |
+|---|---|---|
+| `state["extraction_result"]` | ayrıntılı (yukarıdaki JSON gibi) | genel/debug |
+| `state["extraction"]` | `{success, sender, date, address, phone, email}` | `validation_agent` |
 
 ---
 
-## 9. Yarisma Icin Ek Gelistirme Fikirleri
+## Klasör Yapısı ve Her Dosyanın Görevi
 
-- **Precision/Recall/F1 scripti** (rapor bolum 11): kucuk bir
-  ground-truth JSON seti hazirlayip agent ciktisiyla karsilastirma.
-- **Cache**: ayni metin (hash) icin LLM sonuclarini onbellekte tutup
-  demo sirasinda tekrar cagriyi onlemek.
-- **Batch mod**: bir klasor dolusu OCR ornegini toplu isleyip performans
-  raporu ureten bir fonksiyon.
+```
+Agents/extraction_agent/
+├── __init__.py         -> paketi dışarıya açar
+├── agent.py             -> ana ExtractionAgent sınıfı
+├── config.py             -> tüm ayarlar (eşikler, model adları, URL'ler)
+├── models.py               -> Pydantic JSON şeması (çıktı formatı)
+├── prompts.py                -> LLM için sistem + retry promptları
+├── tools.py                    -> Regex / LLM / LangExtract / Vision araç sınıfları
+├── test_agent.py                  -> hızlı manuel test scripti
+├── requirements.txt                  -> Python bağımlılıkları
+├── .env                                 -> ortam değişkenleri (gizli, git'e eklenmez)
+└── README.md                               -> bu dosya
+```
+
+### `agent.py` -- Ana Sınıf
+`ExtractionAgent(BaseAgent)`, `Agents/base/base_agent.py` kontratına
+uyar (`run(state) -> state`) ve `agent_registry.py` üzerinden
+`@register` ile kendini otomatik kaydeder. `run()` sırasıyla: state
+içinden OCR çıktısını ve varsa sınıflandırma sonucunu **birden fazla
+olası anahtar ismini deneyerek** okur (`ocr_result`/`ocr_output`,
+`classification_result`/`classification`) -- takım arkadaşlarının
+anahtar ismini değiştirmesi durumunda kırılmasın diye bilinçli bir
+esneklik. Ardından dört aracı (regex, LLM, LangExtract, vision) sırayla
+çalıştırır, hepsinin sonucunu `models.py`'deki standart şemaya göre
+birleştirir, genel bir güven skoru hesaplar, ve **iki yere** yazar:
+`state["extraction_result"]` (document/entities/request/vision/meta
+içeren tam ayrıntılı yapı) ve `state["extraction"]` (validation_agent'ın
+okuduğu düz/kısa format -- `success`, `sender`, `date`, `address`,
+`phone`, `email`). Bu ikinci anahtar sonradan eklendi çünkü onsuz
+`validation_agent` her zaman boş bir sözlük görüyor, başarılı çalışmaları
+bile "eksik veri" olarak işaretliyordu (bkz. Sorun 8).
+
+### `config.py` -- Ayarlar
+Tüm eşik değerlerini ve model/URL ayarlarını ortam değişkenlerinden
+(`.env`) okur. **En kritik detay:** `.env` dosyası bu dosyanın en
+başında yüklenir (`load_dotenv(...)`) -- nedeni Sorun 4'te anlatıldı,
+kısaca: hangi giriş noktasından (`test_agent.py`, Supervisor, vs.)
+çalıştırılırsa çalıştırılsın, `config.py` her zaman ilk import edilen
+dosya olduğu için `.env` yüklemesinin orada olması gerekiyor. İçerdiği
+ayar grupları: `RegexConfig` (tarih/telefon/email/evrak-no
+pattern'leri -- kural tabanlı, model gerektirmez), `NERConfig`
+(varsayılan **kapalı**, bkz. Sorun 5), `LLMConfig` (Gemma 3 metin
+bağlantı ayarları -- `base_url`, `model`, `timeout` -- artı LangExtract
+ayarları: `use_langextract`, `langextract_extraction_passes`,
+`langextract_max_char_buffer`), `VisionConfig` (Gemma 3 görsel bağlantı
+ayarları), ve hepsini birleştiren üst-düzey `ExtractionAgentConfig`.
+
+### `models.py` -- Çıktı Şeması (Pydantic)
+Tüm agent'lar arası standart JSON formatını tanımlar
+(`{document, entities, request, validation}` yapısına uygun --
+`validation` kısmını bu agent değil, `validation_agent` doldurur). Her
+tek değer bir `FieldValue` içinde tutulur: `{value, confidence, source,
+char_start, char_end}`. `source` alanı değerin nereden geldiğini
+gösterir: `"regex"`, `"llm"`, `"ner"` veya `"vision"`. `char_start`/
+`char_end` -- sadece LangExtract, metinde birebir geçen bir değerin
+karakter aralığını doğrulayabildiğinde doluyor (ör. bir kişi adı için);
+regex/ner sonuçlarında veya LangExtract eşleşme bulamadığında `null`
+kalıyor -- yani bu alanların dolu olması "bu değer metinde gerçekten var,
+doğrulandı" anlamına geliyor, boş olması ise "ya bu yöntem konum takibi
+yapmıyor ya da doğrulanamadı" demek, hatayı göstermiyor. `ExtractionMeta`
+içinde ayrıca `success` (bu çalışma gerçekten denendi mi, yoksa OCR
+metni boş olduğu için hiç başlamadı mı) ve `langextract_used` (grounded
+çıkarım denendi mi) alanları var. Ana sınıflar: `DocumentInfo`
+(tarih/sayı/konu), `Entities` (person + organization), `SemanticInfo`
+(request_type/topic/intent/keywords), `VisionInfo`, `ExtractionMeta`.
+
+### `prompts.py` -- LLM Promptları
+Gemma 3'e gönderilen sistem promptu ve beklenen JSON şeması burada
+tanımlı -- model-agnostik yazıldığı için Qwen'den Gemma'ya geçişte bu
+dosyada tek satır değişmedi. Şema şu alanları içeriyor: `request_type`,
+`topic`, `intent`, `keywords`, `missing_info`, ve **`persons`**/
+**`organizations`** (bu ikisi, ayrı bir NER modeli kurmadan kişi/kurum
+adlarını almak için sonradan eklendi, bkz. Sorun 5). Ayrıca, ilk deneme
+başarısız olursa (geçersiz JSON veya düşük güven skoru) kullanılan daha
+sıkı/net bir **retry (tekrar deneme) promptu** var.
+
+### `tools.py` -- Araç Sınıfları (fail-soft tasarım)
+Bu dosyadaki her araç, kendi başına asla pipeline'ı çökertmeyecek
+şekilde yazıldı -- model indirilemezse, API key eksikse, veya LLM
+geçersiz cevap dönerse, o katman sessizce atlanır ve
+`meta.warnings`'e bir not eklenir.
+- **`RegexExtractor`**: tarih, telefon, email, evrak/sayı numarası --
+  kural tabanlı, %100 deterministik, hiçbir modele ihtiyaç duymaz.
+- **`NEREngine`**: ayrı bir NER modeli (BERTurk) için altyapı, şu an
+  devre dışı ama kod hazır dursun diye silinmedi -- ihtiyaç olursa tek
+  bir env değişkeniyle geri açılabilir.
+- **`LLMSemanticExtractor`**: Gemma 3'e OpenAI-uyumlu
+  `/v1/chat/completions` çağrısı yapar (yerel `llama-server`, varsayılan
+  port 8092), dönen metni güvenli şekilde JSON'a çevirir (` ```json `
+  bloklarını temizler), düşük güven skorunda otomatik olarak daha sıkı
+  bir promptla tekrar dener. `request_type`/`topic`/`intent`/`keywords`/
+  `persons`/`organizations` üretir.
+- **`LangExtractSemanticExtractor` [YENİ]**: Google LangExtract
+  kütüphanesini kullanarak **sadece** `persons`/`organizations` için
+  karakter-konumu doğrulanmış (grounded) çıkarım yapar -- aynı Gemma 3
+  sunucusunu kullanır, ayrı model veya altyapı gerekmez. Neden sadece bu
+  iki alan: LangExtract'ın gerçek değeri, metinde birebir geçen kelime
+  gruplarını (span) orijinal metne hizalayabilmesinde; `request_type`/
+  `topic` gibi sınıflandırma-tarzı alanlar zaten modelin kendi
+  parafrazı/özeti olduğu için metinde birebir aranamıyor -- bu test
+  edilip doğrulandı, grounded olmayan alanlarda LangExtract hiçbir fayda
+  sağlamadan sadece ekstra bir çağrı ekliyor.
+- **`HybridSemanticExtractor` [YENİ]**: `LLMSemanticExtractor` ile
+  tamamen aynı `.extract()` sözleşmesini taşıyan bir sarmalayıcı
+  (wrapper) -- önce normal LLM çağrısını olduğu gibi çalıştırır, sonra
+  (eğer aktifse) `LangExtractSemanticExtractor` ile `persons`/
+  `organizations` alanlarını grounded değerlerle **üzerine yazar**
+  (override). LangExtract başarısız olursa veya kurulu değilse, sessizce
+  eski (grounded olmayan) LLM sonucuna geri döner -- yani hiçbir zaman
+  agent'ı bozmaz, en kötü ihtimalle eski davranışa eşdeğer çalışır.
+  `agent.py`, artık `LLMSemanticExtractor` yerine doğrudan bunu
+  kullanıyor.
+- **`VisionFieldExtractor`**: sadece imza/tablo/el yazısı tespit
+  edildiğinde ve bir görsel (base64) sağlandığında çalışır -- gereksiz
+  yere her belgede görsel modele çağrı atmaz.
+
+### `test_agent.py` -- Manuel Test
+Sahte ama gerçekçi bir `state` oluşturur (rapordaki elektrik faturası
+örneğiyle aynı metin), `ExtractionAgent.run()`'i çağırır ve sonucu JSON
+olarak ekrana basar. `.env` dosyasını otomatik yükler. Hem pytest'e
+gerek kalmadan hızlı doğrulama için, hem de yeni birine "bu nasıl
+çalışıyor" sorusuna canlı bir cevap vermek için var.
+
+### `requirements.txt` [YENİ]
+`pydantic`, `python-dotenv`, `openai` (LLM/Vision için OpenAI-uyumlu
+istemci), **`langextract`** (grounded entity extraction için). Daha
+önce bu dosya hiç yoktu.
+
+### `.env` -- Ortam Değişkenleri
+Gerçek sunucu adresleri, model isimleri, eşik değerleri. **Bu dosya
+git'e eklenmemeli** -- içinde özel bilgi olmasa bile, herkesin kendi
+yerel ayarına göre değiştirebilmesi için `.gitignore`'a eklenmesi
+önerilir.
+
+---
+
+## Yarışma İçin Ek Geliştirme Fikirleri
+
+- **Precision/Recall/F1 scripti**: küçük bir ground-truth JSON seti
+  hazırlayıp agent çıktısıyla karşılaştırmak -- LangExtract'ın
+  `char_start`/`char_end` alanlarını da bu değerlendirmeye dahil etmek
+  (grounded vs. grounded-olmayan doğruluk farkını ölçmek için).
+- **Cache**: aynı metin (hash) için LLM sonuçlarını önbellekte tutup
+  demo sırasında tekrar çağrıyı önlemek -- yerel CPU inference'in yavaş
+  olduğu göz önüne alınırsa (bkz. Sorun 6) bu özellikle değerli.
+- **Batch mod**: bir klasör dolusu OCR örneğini toplu işleyip performans
+  raporu üreten bir fonksiyon.
+- **LangExtract güvenilirliği**: Sorun 7'nin kökten çözümü için daha
+  büyük/az-kuantize bir model ile ablation testi.

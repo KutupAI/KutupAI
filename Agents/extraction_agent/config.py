@@ -106,25 +106,63 @@ class NERConfig:
 
 @dataclass
 class LLMConfig:
-    """LLM semantic extraction (report section 3.3 / 7)."""
+    """LLM semantic extraction (report section 3.3 / 7).
+
+    MODEL SWITCH (Qwen2.5-72B via Together AI cloud -> Gemma 3, local
+    llama.cpp/llama-server): matches classification_agent's VLM switch and
+    the project's stated "Gemma3 is the default text LLM for every other
+    Agent" policy. Also removes a real concern -- this step previously sent
+    Turkish official-document text to an external cloud API (Together AI);
+    local inference keeps that data on-premises.
+
+    NOTE: the actual .env for this agent (Agents/extraction_agent/.env)
+    already runs ONE shared local llama-server on port 8092 for BOTH LLM
+    text extraction AND vision (EXTRACTION_LLM_BASE_URL ==
+    EXTRACTION_VLM_BASE_URL == http://localhost:8092/v1) -- same port
+    classification_agent's VLM uses. The default below matches that
+    existing shared-server setup rather than inventing a second port.
+    """
 
     enabled: bool = _env_bool("EXTRACTION_LLM_ENABLED", True)
-    base_url: str = os.getenv("EXTRACTION_LLM_BASE_URL", "https://api.together.xyz/v1")
+    base_url: str = os.getenv("EXTRACTION_LLM_BASE_URL", "http://localhost:8092/v1")
     api_key_env: str = "EXTRACTION_LLM_API_KEY"
-    model: str = os.getenv("EXTRACTION_LLM_MODEL", "Qwen/Qwen2.5-72B-Instruct-Turbo")
+    model: str = os.getenv("EXTRACTION_LLM_MODEL", "gemma-3-27b-it")
     temperature: float = _env_float("EXTRACTION_LLM_TEMPERATURE", 0.1)
     max_tokens: int = _env_int("EXTRACTION_LLM_MAX_TOKENS", 800)
     timeout_s: int = _env_int("EXTRACTION_LLM_TIMEOUT", 30)
 
+    # --- LangExtract (grounded/schema-based extraction) ---
+    # When True, LLMSemanticExtractor's role is taken over by
+    # LangExtractSemanticExtractor (character-span-grounded persons/
+    # organizations/topic/etc, same OpenAI-compatible endpoint as above --
+    # no separate model or infra). Falls back automatically to the plain
+    # prompt-based extractor (use_langextract path off) if the langextract
+    # package is missing or a call fails, per this file's fault-tolerance
+    # rule -- never a hard dependency.
+    use_langextract: bool = _env_bool("EXTRACTION_USE_LANGEXTRACT", True)
+    langextract_extraction_passes: int = _env_int("EXTRACTION_LANGEXTRACT_PASSES", 1)
+    langextract_max_char_buffer: int = _env_int("EXTRACTION_LANGEXTRACT_MAX_CHAR_BUFFER", 4000)
+
 
 @dataclass
 class VisionConfig:
-    """Qwen-VL vision extraction (report section 7) - imza/kase/tablo/el yazisi."""
+    """Vision extraction (report section 7) - imza/kase/tablo/el yazisi.
+
+    Model default switched from Qwen2.5-VL-7B-Instruct to Gemma 3 (local
+    llama.cpp/llama-server, matching classification_agent's VLM switch --
+    see Inference/client/vlm_client.py). Uses the plain openai.OpenAI
+    client (VisionFieldExtractor in tools.py), which was already fully
+    model-agnostic -- only this default string needed to change. The
+    Python-level default here is left empty on purpose (as before this
+    change) -- the actual .env (Agents/extraction_agent/.env) is what sets
+    this in practice, and already points at the same shared local
+    llama-server as LLMConfig above (port 8092).
+    """
 
     enabled: bool = _env_bool("EXTRACTION_VLM_ENABLED", True)
     base_url: str = os.getenv("EXTRACTION_VLM_BASE_URL", "")
     api_key_env: str = "EXTRACTION_VLM_API_KEY"
-    model: str = os.getenv("EXTRACTION_VLM_MODEL", "Qwen/Qwen2.5-VL-7B-Instruct")
+    model: str = os.getenv("EXTRACTION_VLM_MODEL", "gemma-3-27b-it")
     timeout_s: int = _env_int("EXTRACTION_VLM_TIMEOUT", 45)
 
 
