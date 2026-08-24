@@ -258,3 +258,9 @@ Agents/ocr_agent/
 | معالجة مسبقة + إعادة محاولة | تشغيل VL على كل صفحة |
 | VL اختياري عند الحاجة | استقبال رفع HTTP مباشرة |
 | إرجاع `state["ocr"]` + wire keys | الكتابة إلى Storage |
+
+انشاء بيئىة افتراضية وتشغيلها:
+cd /d D:\AI\KutupAI
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install -r Agents\ocr_agent\requirements.txt
