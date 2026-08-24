@@ -11,6 +11,13 @@ from Inference.client.inference_request import InferenceRequest, Message
 from Inference.client.llama_client import LlamaClient
 from RAG.agent.citations import render_citations, validate_citations
 from RAG.agent.context_builder import _article_scoped_text, build_context
+from RAG.agent.evidence_guards import (
+    court_date_comparison_is_incomplete,
+    direct_cross_law_reference_answer,
+    direct_constitutional_annulment_answer,
+    direct_travel_duration_answer,
+    incomplete_court_date_comparison_answer,
+)
 from RAG.agent.semantic_cache import SemanticCache
 from RAG.retriever.query_intent import service_lookup_notice
 from RAG.retriever.retriever import retrieve
@@ -27,6 +34,11 @@ nitelikli veri şartları) sorulan maddeyle karıştırma. Kesin hukukî tavsiye
 bilgilendirici ve ihtiyatlı ol. Doğrudan cevap bağlamda yoksa bunu açıkça belirt;
 varsa yalnız konuya yakın kanun/madde kaynaklarını “yakın kaynaklar” olarak listele ve
 onların sorunun kesin cevabı olmadığını söyle. Cevabı Türkçe, kısa paragraflarla yaz."""
+
+_REFERENCE_DOCUMENT_RULE = """\nREFERANS BELGE KURALI:
+Bağlamda “Referans Belge” yazıyorsa bu kaynak kanun veya resmî hukukî hüküm değildir.
+Yalnız belgenin yapısı, alanları veya örnek içeriği hakkında konuş; ondan hukukî sonuç,
+zorunluluk veya güncel işlem kuralı çıkarma."""
 
 _CONVERSATION_MEMORY_RULE = """\n\nKONUŞMA BELLEĞİ KURALI:
 Aşağıdaki önceki konuşma yalnız soru içindeki kişi, olay ve zamirleri anlamak içindir.
@@ -183,6 +195,29 @@ class LegalRagAgent:
         )
 
     @staticmethod
+    def _partial_evidence_answer(
+        text: str,
+        sources: List[Dict[str, object]],
+        *,
+        total_ms: float,
+        retrieval_ms: float,
+        plan_name: str,
+        plan_reason: str,
+    ) -> LegalAnswer:
+        """Eksik cevapta doğrulanmış kısmı, ilgisiz yakın kaynak eklemeden sunar."""
+        return LegalAnswer(
+            answer=text,
+            sources=sources,
+            citations=render_citations(sources),
+            grounded=False,
+            retrieval_ms=round(retrieval_ms, 3),
+            total_ms=round(total_ms, 3),
+            refusal_reason="partial_evidence_missing_required_date",
+            retrieval_plan=plan_name,
+            retrieval_plan_reason=plan_reason,
+        )
+
+    @staticmethod
     def _fallback_citation_label(question: str, sources: List[Dict[str, object]]) -> str:
         """Prefer an explicitly requested law/article over raw reranker rank."""
         from RAG.retriever.query_metadata import get_query_metadata_extractor
@@ -258,6 +293,42 @@ class LegalRagAgent:
         context = build_context(results)
         if not context.sources:
             return self._refusal("no_retrieved_evidence", (perf_counter() - started) * 1000)
+
+        # İki tarihli mahkeme karşılaştırmasında karar tarihi ile yürürlük
+        # tarihini birbirine karıştırmak ciddi bir hukukî hata üretir. İki
+        # tarih açık kanıtla gelmediyse model hesap yapmaz; yakın maddeler
+        # yalnız yön gösterici olarak sunulur.
+        from RAG.retriever.query_metadata import get_query_metadata_extractor
+
+        requested_law = str(get_query_metadata_extractor().extract(question).get("law_number") or "")
+        relevant_sources = [
+            source for source in context.sources
+            if not requested_law or str(source.get("law_number") or "") == requested_law
+        ] or context.sources
+        if court_date_comparison_is_incomplete(question, relevant_sources):
+            partial_answer = incomplete_court_date_comparison_answer(question, relevant_sources)
+            if partial_answer:
+                return self._partial_evidence_answer(
+                    partial_answer, relevant_sources,
+                    total_ms=(perf_counter() - started) * 1000,
+                    retrieval_ms=retrieval_ms,
+                    plan_name=plan.name,
+                    plan_reason=plan.rationale,
+                )
+            return self._nearby_evidence_refusal(
+                relevant_sources,
+                total_ms=(perf_counter() - started) * 1000,
+                retrieval_ms=retrieval_ms,
+                generation_ms=0.0,
+                plan_name=plan.name,
+                plan_reason=plan.rationale,
+                draft_answer="",
+                message=partial_answer or (
+                    "Değişiklik cetvelinde yer alan tarih bulunmuştur; ancak Anayasa Mahkemesi "
+                    "kararının yürürlüğe giriş tarihi kaynaklarda açıkça doğrulanamadığı için "
+                    "zaman farkı hesaplanamaz."
+                ),
+            )
         fallback = self._nearby_evidence_refusal(
             context.sources,
             total_ms=(perf_counter() - started) * 1000,
@@ -398,6 +469,42 @@ class LegalRagAgent:
         if not context.sources:
             return self._refusal("no_retrieved_evidence", (perf_counter() - started) * 1000)
 
+        # ``answer`` doğrudan interaktif sohbetin ana yoludur. Bu kontrolün
+        # nearby_sources ile aynı yerde bulunması, iki tarihli mahkeme
+        # sorularının hangi giriş yolundan geldiğine bakılmaksızın tahminle
+        # hesaplanmasını engeller.
+        from RAG.retriever.query_metadata import get_query_metadata_extractor
+
+        requested_law = str(get_query_metadata_extractor().extract(question).get("law_number") or "")
+        relevant_sources = [
+            source for source in context.sources
+            if not requested_law or str(source.get("law_number") or "") == requested_law
+        ] or context.sources
+        if court_date_comparison_is_incomplete(question, relevant_sources):
+            partial_answer = incomplete_court_date_comparison_answer(question, relevant_sources)
+            if partial_answer:
+                return self._partial_evidence_answer(
+                    partial_answer, relevant_sources,
+                    total_ms=(perf_counter() - started) * 1000,
+                    retrieval_ms=retrieval_ms,
+                    plan_name=plan.name,
+                    plan_reason=plan.rationale,
+                )
+            return self._nearby_evidence_refusal(
+                relevant_sources,
+                total_ms=(perf_counter() - started) * 1000,
+                retrieval_ms=retrieval_ms,
+                generation_ms=0.0,
+                plan_name=plan.name,
+                plan_reason=plan.rationale,
+                draft_answer="",
+                message=partial_answer or (
+                    "Değişiklik cetvelinde yer alan tarih bulunmuştur; ancak Anayasa Mahkemesi "
+                    "kararının yürürlüğe giriş tarihi kaynaklarda açıkça doğrulanamadığı için "
+                    "zaman farkı hesaplanamaz."
+                ),
+            )
+
         # Deterministik madde seçiminin kanıt metnini görmesi için pasaj saklanır.
         result_text_by_id = {
             str(item["id"]): _article_scoped_text(item)
@@ -407,6 +514,23 @@ class LegalRagAgent:
             {**source, "text": result_text_by_id.get(str(source.get("chunk_id")), "")}
             for source in context.sources
         ]
+        direct_answer = (
+            direct_cross_law_reference_answer(question, internal_sources)
+            or
+            direct_constitutional_annulment_answer(question, internal_sources)
+            or direct_travel_duration_answer(question, internal_sources)
+        )
+        if direct_answer:
+            return LegalAnswer(
+                answer=direct_answer,
+                sources=context.sources,
+                citations=render_citations(context.sources),
+                grounded=True,
+                retrieval_ms=round(retrieval_ms, 3),
+                total_ms=round((perf_counter() - started) * 1000, 3),
+                retrieval_plan=plan.name,
+                retrieval_plan_reason=plan.rationale,
+            )
         if plan.name == "article_lookup":
             selected = self._best_article_lookup_source(question, internal_sources)
             if selected:
@@ -436,7 +560,7 @@ class LegalRagAgent:
         generation_started = perf_counter()
         response = self.client.generate(
             InferenceRequest(
-                messages=[Message(role="system", content=_SYSTEM_PROMPT + _CONVERSATION_MEMORY_RULE), Message(role="user", content=prompt)],
+                messages=[Message(role="system", content=_SYSTEM_PROMPT + _REFERENCE_DOCUMENT_RULE + _CONVERSATION_MEMORY_RULE), Message(role="user", content=prompt)],
                 temperature=agent_config.temperature,
                 top_p=agent_config.top_p,
                 max_tokens=agent_config.max_tokens,
@@ -466,11 +590,17 @@ class LegalRagAgent:
         if invalid:
             return self._refusal("invalid_citation", (perf_counter() - started) * 1000, response.text.strip())
         if not grounded:
-            # Bazı quantize modeller doğru cevapta kaynak parantezini atlayabilir.
-            # Yalnız en güçlü bağlam kaynağıyla etiket eklenir; uydurma etiket düzeltilmez.
-            label = self._fallback_citation_label(question, context.sources)
-            response.text = f"{response.text.strip()}\n\nKaynak: [{label}]"
-            grounded = True
+            # Kaynak etiketi olmayan metin kanıtlanmış cevap değildir. Modelin
+            # taslağı saklanır; kullanıcıya yalnız yakın, açık kaynaklar sunulur.
+            return self._nearby_evidence_refusal(
+                context.sources,
+                total_ms=(perf_counter() - started) * 1000,
+                retrieval_ms=retrieval_ms,
+                generation_ms=generation_ms,
+                plan_name=plan.name,
+                plan_reason=plan.rationale,
+                draft_answer=response.text.strip(),
+            )
 
         tokens_per_second = None
         if response.completion_tokens and generation_ms > 0:

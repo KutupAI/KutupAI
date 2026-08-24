@@ -171,7 +171,10 @@ def hybrid_search(
     extractor = get_query_metadata_extractor()
     # Query transform arama ifadesini çeşitlendirebilir; ancak kesin kanun/madde
     # filtresini yalnız kullanıcının özgün sorusu belirler.
-    extracted_filters = extractor.extract(metadata_query or query)
+    # Sadece açık atıflar aramayı daraltabilir. Başlıktan tahmin edilen kanun
+    # numarası ise Retriever'da ayrıca, geniş aramayı kapatmadan aday havuzu
+    # olarak kullanılır.
+    extracted_filters = extractor.extract_strict_filters(metadata_query or query)
     if extracted_filters:
         # Açık çağıran filtresi önceliklidir; çıkarılan kanun/madde filtresi eklenir.
         # Böylece kaynak kapsamı ve kesin kanun araması birlikte çalışır.

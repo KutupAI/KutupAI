@@ -9,7 +9,13 @@ from typing import Dict, List, Optional
 
 from langchain_core.documents import Document
 
-from RAG.configuration.rag_config_loader import documents_config, indexing_config
+from RAG.configuration.rag_config_loader import (
+    amendment_ledger_config,
+    documents_config,
+    facts_registry_config,
+    indexing_config,
+    legal_index_config,
+)
 from RAG.ingestion.chunker import split_documents
 from RAG.ingestion.enricher import enrich_documents
 from RAG.ingestion.loader import load_all_sources, load_directory
@@ -25,9 +31,51 @@ def _invalidate_answer_cache() -> None:
     """Corpus changes invalidate generated answers even if a query is identical."""
     from RAG.agent.semantic_cache import SemanticCache
     from RAG.graph.legal_graph import reset_legal_graph
+    from RAG.retriever.query_metadata import reset_query_metadata_cache
 
     SemanticCache().clear()
     reset_legal_graph()
+    reset_query_metadata_cache()
+
+
+def _rebuild_amendment_ledger() -> None:
+    if not amendment_ledger_config.enabled:
+        return
+    from RAG.retriever.amendment_ledger import build_amendment_ledger
+
+    report = build_amendment_ledger()
+    print(f"Amendment ledger: files={report['files']} records={report['records']}")
+
+
+def _rebuild_facts_registry() -> None:
+    """Metin tabanlı corpus için kanıtlı fact kayıtlarını günceller."""
+    if not facts_registry_config.enabled:
+        return
+    from RAG.metadata.facts_registry import build_facts_registry
+
+    report = build_facts_registry(get_vector_store().export_all())
+    from RAG.vector_store.fact_store import rebuild_fact_store
+
+    indexed = rebuild_fact_store(facts_registry_config.output_path)
+    print(f"Facts registry: records={report['records']} indexed={indexed} types={len(report['summary'])}")
+
+
+def _rebuild_legal_index() -> None:
+    """Chroma'nın yanında yerel SQL/FTS hukuk indeksini atomik olarak yeniler."""
+    if not legal_index_config.enabled:
+        return
+    from RAG.metadata.legal_index import rebuild_legal_index
+
+    report = rebuild_legal_index(
+        get_vector_store().export_all(),
+        facts_path=facts_registry_config.output_path,
+        ledger_path=amendment_ledger_config.output_path,
+    )
+    print(
+        "Legal index: "
+        f"documents={report['documents']} chunks={report['chunks']} "
+        f"facts={report['facts']} amendments={report['amendments']}"
+    )
 
 
 @dataclass
@@ -155,6 +203,8 @@ def ingest_contract_document(document: Document) -> tuple[IngestionReport, List[
     chunks = _unique_chunks(_prepare([document]))
     invalid = _upsert(chunks)
     rebuild_bm25_from_chunks(store.export_all())
+    _rebuild_facts_registry()
+    _rebuild_legal_index()
     _invalidate_answer_cache()
     return (
         IngestionReport(
@@ -168,7 +218,12 @@ def ingest_contract_document(document: Document) -> tuple[IngestionReport, List[
 
 
 def ingest_directory(directory: Path, *, rebuild_bm25: bool = True) -> IngestionReport:
-    return ingest_documents(load_directory(directory), rebuild_bm25=rebuild_bm25)
+    report = ingest_documents(load_directory(directory), rebuild_bm25=rebuild_bm25)
+    _rebuild_amendment_ledger()
+    _rebuild_facts_registry()
+    _rebuild_legal_index()
+    _invalidate_answer_cache()
+    return report
 
 
 def ingest_file(
@@ -188,7 +243,12 @@ def ingest_file(
         if str(d.metadata.get("source_file")) == path.name
         or Path(str(d.metadata.get("source", ""))).resolve() == path.resolve()
     ]
-    return ingest_documents(docs)
+    report = ingest_documents(docs)
+    _rebuild_amendment_ledger()
+    _rebuild_facts_registry()
+    _rebuild_legal_index()
+    _invalidate_answer_cache()
+    return report
 
 
 def reindex_file(file_path: Path | str) -> IngestionReport:
@@ -210,7 +270,7 @@ def _chunk_export_record(doc: Document) -> dict:
         "page_start": doc.metadata.get("page_start", doc.metadata.get("page")),
         "page_end": doc.metadata.get("page_end", doc.metadata.get("page")),
         "text_length": len(doc.page_content),
-        "text_preview": doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content,
+        # İnceleme çıktısında metin tek kez tutulur; arama için Chroma'da ayrıca saklanır.
         "full_text": doc.page_content,
     }
 
@@ -231,8 +291,8 @@ def _export_chunks_to_json(documents: List[Document], output_path: str = "RAG/do
             "page_start": doc.metadata.get("page_start", doc.metadata.get("page")),
             "page_end": doc.metadata.get("page_end", doc.metadata.get("page")),
             "text_length": len(doc.page_content),
-            "text_preview": doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content, # İlk 300 karakter önizleme
-            "full_text": doc.page_content # Tam metin (Dosya boyutu çok büyük olursa bunu kaldırabilirsiniz)
+            # Denetim JSON'unda metin tek kez tutulur.
+            "full_text": doc.page_content
         })
     
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -250,7 +310,11 @@ def build_vector_database(*, reset: bool = False) -> IngestionReport:
         _invalidate_answer_cache()
 
     documents_config.uploads_path.mkdir(parents=True, exist_ok=True)
-    return ingest_documents(load_all_sources(documents_config))
+    report = ingest_documents(load_all_sources(documents_config))
+    _rebuild_amendment_ledger()
+    _rebuild_facts_registry()
+    _rebuild_legal_index()
+    return report
 
 
 def sync_vector_database() -> IngestionReport:
@@ -280,8 +344,27 @@ def sync_vector_database() -> IngestionReport:
     if selected or diff.removed_sources:
         rebuild_bm25_from_chunks(get_vector_store().export_all())
         _invalidate_answer_cache()
+        _rebuild_amendment_ledger()
+        _rebuild_facts_registry()
+        _rebuild_legal_index()
     manifest.write(documents)
     return report
+
+
+def rebuild_supporting_indexes() -> IngestionReport:
+    """Mevcut Chroma vektörlerinden BM25 ve yardımcı hukuk indekslerini yeniler.
+
+    Büyük corpus'ta ingestion son aşamada kesilirse embedding'leri tekrar
+    üretmeye gerek kalmaz. Bu kurtarma yolu yalnız kalıcı vektörleri okur.
+    """
+    store = get_vector_store()
+    rows = store.export_all()
+    rebuild_bm25_from_chunks(rows)
+    _invalidate_answer_cache()
+    _rebuild_amendment_ledger()
+    _rebuild_facts_registry()
+    _rebuild_legal_index()
+    return IngestionReport({}, 0, store.count())
 
 
 if __name__ == "__main__":
@@ -290,6 +373,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RAG ingestion pipeline")
     parser.add_argument("--reset", action="store_true")
     parser.add_argument("--incremental", action="store_true", help="Index only changed/deleted corpus files.")
+    parser.add_argument(
+        "--rebuild-supporting-indexes",
+        action="store_true",
+        help="Rebuild BM25, ledger, facts and legal index from existing Chroma vectors.",
+    )
     parser.add_argument("--file", type=str, default=None)
     parser.add_argument(
         "--bucket",
@@ -298,15 +386,16 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.file and args.incremental:
-        parser.error("--file and --incremental cannot be used together")
-    if args.reset and args.incremental:
-        parser.error("--reset and --incremental cannot be used together")
+    active_modes = int(bool(args.file)) + int(args.incremental) + int(args.reset) + int(args.rebuild_supporting_indexes)
+    if active_modes > 1:
+        parser.error("--file, --incremental, --reset and --rebuild-supporting-indexes birlikte kullanılamaz")
     report = (
         ingest_file(args.file, bucket=args.bucket)
         if args.file
         else sync_vector_database()
         if args.incremental
+        else rebuild_supporting_indexes()
+        if args.rebuild_supporting_indexes
         else build_vector_database(reset=args.reset)
     )
     print(

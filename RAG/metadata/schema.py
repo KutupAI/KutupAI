@@ -30,6 +30,9 @@ class SourceMetadata:
     language: str = "tr"
     tags: List[str] = field(default_factory=list)
     notes: str = ""
+    document_category: str = ""
+    authority_level: str = "unknown"
+    content_role: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -44,6 +47,9 @@ class SourceMetadata:
             language=str(data.get("language", "tr")),
             tags=list(data.get("tags", [])),
             notes=str(data.get("notes", "")),
+            document_category=str(data.get("document_category", "")),
+            authority_level=str(data.get("authority_level", "unknown")),
+            content_role=str(data.get("content_role", "")),
         )
 
 

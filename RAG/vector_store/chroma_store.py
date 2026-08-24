@@ -101,23 +101,35 @@ class ChromaStore(VectorStoreInterface):
         """
         Export all stored chunks for BM25 rebuild / evaluation.
         Returns list of {chunk_id, text, metadata}.
+
+        Chroma'nın ``get()`` çağrısını sınırsız kullanmak, büyük koleksiyonlarda
+        SQLite'ın parametre sınırına takılabilir. Bu yüzden dışa aktarma sabit
+        boyutlu sayfalarla yapılır; corpus büyüdükçe BM25 yeniden kurulumu da
+        güvenilir kalır.
         """
         collection = self._store._collection  # noqa: SLF001
-        raw = collection.get(include=["documents", "metadatas"])
         rows: List[Dict[str, Any]] = []
-        ids = raw.get("ids") or []
-        docs = raw.get("documents") or []
-        metas = raw.get("metadatas") or []
-        for i, doc_id in enumerate(ids):
-            meta = dict(metas[i] or {})
-            chunk_id = str(meta.get("chunk_id") or doc_id)
-            rows.append(
-                {
-                    "chunk_id": chunk_id,
-                    "text": docs[i] or "",
-                    "metadata": meta,
-                }
+        total = int(collection.count())
+        page_size = 500
+        for offset in range(0, total, page_size):
+            raw = collection.get(
+                include=["documents", "metadatas"],
+                limit=page_size,
+                offset=offset,
             )
+            ids = raw.get("ids") or []
+            docs = raw.get("documents") or []
+            metas = raw.get("metadatas") or []
+            for i, doc_id in enumerate(ids):
+                meta = dict(metas[i] or {})
+                chunk_id = str(meta.get("chunk_id") or doc_id)
+                rows.append(
+                    {
+                        "chunk_id": chunk_id,
+                        "text": docs[i] or "",
+                        "metadata": meta,
+                    }
+                )
         return rows
 
 

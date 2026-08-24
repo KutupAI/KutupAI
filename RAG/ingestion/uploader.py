@@ -10,7 +10,7 @@ from RAG.configuration.rag_config_loader import documents_config
 from RAG.metadata.registry import save_source_metadata
 from RAG.metadata.schema import SourceMetadata
 
-SourceBucket = Literal["laws", "regulations", "amendments", "internal_docs", "uploads"]
+SourceBucket = Literal["laws", "regulations", "amendments", "internal_docs", "uploads", "reference_docs"]
 
 
 def upload_file(
@@ -30,6 +30,7 @@ def upload_file(
         "amendments": documents_config.amendments_path,
         "internal_docs": documents_config.internal_docs_path,
         "uploads": documents_config.uploads_path,
+        "reference_docs": documents_config.reference_docs_path,
     }[bucket]
     dest_dir.mkdir(parents=True, exist_ok=True)
     dest = dest_dir / source_path.name

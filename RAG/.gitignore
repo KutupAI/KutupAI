@@ -2,3 +2,20 @@
 !documents/laws/*.pdf
 !documents/regulations/*.pdf
 !documents/indexed_chunks.json
+
+# Pipeline tarafından yeniden üretilebilen yerel çalışma dosyaları.
+documents/.legal_index.sqlite*
+documents/.semantic_cache.json
+documents/facts_registry_build.log*
+evaluation/experiments/
+evaluation/models/
+
+# Ana RAG çalışma hattında kullanılmayan büyük/analiz amaçlı kaynaklar.
+# reference_docs bilinçli olarak hariç tutulmaz; belge tabanlı retrieval için teslim edilir.
+archive/
+documents/classification_data/
+documents/raw_documents_full_text.json
+documents/PRE_CHANGE_ROUTER_METADATA_AUDIT.md
+documents/QUERY_ROUTER_METADATA_CATALOG.md
+documents/legal_metadata_retrieval_analysis.md
+documents/legal_vocabulary_candidates.json

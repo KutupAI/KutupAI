@@ -51,6 +51,9 @@ PARAGRAPH_PATTERN = re.compile(r"(?m)^\s*\((\d+)\)\s+")
 # Bent tespiti (Örn: "a) ", "b) ", "c) ", "1 - ", "2 - ")
 CLAUSE_PATTERN = re.compile(r"(?m)(?:^|\s)([a-zA-ZçğıöşüÇĞİÖŞÜ])\)\s+|(?:^|\s)(\d+)\s*[-–]\s+")
 PAGE_MARKER_PATTERN = re.compile(r"\[\[RAG_PAGE:(\d+)\]\]")
+_ACCEPTANCE_DATE_PATTERN = re.compile(r"Kabul\s+Tarihi\s*[:\-]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})", re.IGNORECASE)
+_PUBLICATION_DATE_PATTERN = re.compile(r"Resm[îi]\s+Gazete\s*[:\-]?.{0,80}?Tarih\s*[:\-]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})", re.IGNORECASE)
+_LAW_CITATION_PATTERN = re.compile(r"\b(\d{3,5})\s+say[ıi]l[ıi]\s+(?:Kanun|Kanun\s+Hükmünde\s+Kararname)\b", re.IGNORECASE)
 
 
 def _heading_start_before_article(text: str, previous_end: int, article_start: int) -> int:
@@ -101,6 +104,46 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\s*\((\d+)\)\s*\n", r" (\1) ", text)
     
     return normalize_whitespace(text)
+
+
+def _document_dates(text: str) -> Dict[str, str]:
+    """Belge başlığındaki resmî tarihleri metadata'ya taşır; tahmin yapmaz."""
+    header = PAGE_MARKER_PATTERN.sub("", text[:6000])
+    result: Dict[str, str] = {}
+    accepted = _ACCEPTANCE_DATE_PATTERN.search(header)
+    published = _PUBLICATION_DATE_PATTERN.search(header)
+    if accepted:
+        result["acceptance_date"] = accepted.group(1)
+    if published:
+        result["publication_date"] = published.group(1)
+    return result
+
+
+def _chunk_structure(article_no: Any, content: str) -> Dict[str, Any]:
+    """Chunk'ın madde/fıkra/bent bağlamını kaybetmeden saklar."""
+    visible = PAGE_MARKER_PATTERN.sub("", content).strip()
+    paragraph = PARAGRAPH_PATTERN.search(visible)
+    clause = CLAUSE_PATTERN.search(visible)
+    first_line = visible.split("\n", 1)[0].strip()
+    # Madde satırından sonra kısa bir başlık varsa saklanır; hüküm cümlesi başlık sayılmaz.
+    title = ""
+    marker = re.sub(r"^(?:Ek\s+Madde|Geçici\s+Madde|Muvakkat\s+Madde|Madde)\s+[^\-–—.:]+[\-–—.:]?\s*", "", first_line, flags=re.IGNORECASE)
+    if 3 <= len(marker) <= 120 and not re.match(r"^\(?\d+\)", marker) and marker.count(".") <= 1:
+        title = marker
+    path = [f"Madde {article_no}" if article_no else "Belge girişi"]
+    if paragraph:
+        path.append(f"Fıkra {paragraph.group(1)}")
+    clause_value = (clause.group(1) or clause.group(2)) if clause else None
+    if clause_value:
+        path.append(f"Bent {clause_value}")
+    return {
+        "article_title": title,
+        "structural_path": " > ".join(path),
+        "paragraph_no": paragraph.group(1) if paragraph else None,
+        "clause_no": clause_value,
+        "legal_status": "mülga" if re.search(r"\bMülga\b", visible, re.IGNORECASE) else "consolidated",
+        "cited_law_numbers": sorted(set(_LAW_CITATION_PATTERN.findall(visible))),
+    }
 
 
 def _page_at_offset(text: str, offset: int, fallback: Any = None) -> int | None:
@@ -573,6 +616,8 @@ def split_documents(documents: List[Document]) -> List[Document]:
                     "page_start": page_start,
                     "page_end": page_end,
                 })
+                metadata.update(_chunk_structure(article_no, content))
+                metadata.update(_document_dates(normalized_document_text))
 
                 # 🚀 FİLTRELEME: Çok kısa veya anlamsız chunk'ları atla (Örn: sadece "Ek", "Geçici", tablo başlıkları)
                 # Mülga maddeler genellikle 40-50 karakterdir, bu yüzden 20 sınırı güvenlidir.

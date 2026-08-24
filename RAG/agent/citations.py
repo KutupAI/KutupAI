@@ -35,6 +35,19 @@ def render_citations(sources: Iterable[Dict[str, object]]) -> str:
     for source in sources:
         page = source.get("page_start")
         page_text = f" - Sayfa {page}" if page else ""
+        if source.get("source_type") == "reference_docs":
+            category = str(source.get("document_category") or "belirsiz")
+            lines.append(
+                f"[{source.get('label')}] Referans Belge ({category}) - "
+                f"{source.get('source_file')}{page_text}"
+            )
+            continue
+        if source.get("source_type") == "legal_facts":
+            lines.append(
+                f"[{source.get('label')}] Yapılandırılmış Hukukî Olgu - "
+                f"{source.get('source_file')}{page_text}"
+            )
+            continue
         lines.append(
             f"[{source.get('label')}] {_display_law_name(source)} - "
             f"Madde {source.get('article_number')}{page_text}"

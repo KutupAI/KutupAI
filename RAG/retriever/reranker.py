@@ -34,7 +34,16 @@ def rerank(query: str, results: List[SearchResult], top_k: int) -> List[SearchRe
     for index, item in enumerate(candidates):
         base_score = 1.0 - (index / count)
         cross_score = 1.0 - ((reranker_rank[index] - 1) / count)
-        combined = (base_weight * base_score) + ((1.0 - base_weight) * cross_score)
+        # Structured kanıt, yalnız ilgili sorgu çerçevesi tarafından eklenir.
+        # Bu küçük öncelik değişiklik cetvelinin ham kanun paragrafları arasında
+        # kaybolmasını önler; Cross-Encoder yine ana sıralama sinyalidir.
+        source_type = str(item["metadata"].get("source_type") or "")
+        structured_boost = 0.0
+        if source_type == "amendment_ledger":
+            structured_boost = 0.14
+        elif item["metadata"].get("structured_fact_type"):
+            structured_boost = 0.08
+        combined = (base_weight * base_score) + ((1.0 - base_weight) * cross_score) + structured_boost
         ranked.append((item, float(scores[index]), combined, index + 1, reranker_rank[index]))
     ranked.sort(key=lambda entry: (entry[2], entry[1]), reverse=True)
 
