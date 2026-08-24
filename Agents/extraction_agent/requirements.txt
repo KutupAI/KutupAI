@@ -1,0 +1,16 @@
+pydantic>=2.6,<3
+python-dotenv>=1.0,<2
+
+# LLM semantic extraction + vision extraction (OpenAI-compatible client,
+# works with Together AI / OpenRouter / local vLLM-Qwen or vLLM-Gemma).
+openai>=1.30,<2
+
+# Grounded (character-span) entity extraction -- persons/organizations only,
+# see tools.py::LangExtractSemanticExtractor. Optional in practice: if not
+# installed, HybridSemanticExtractor auto-falls-back to the plain LLM path,
+# but it IS required for the LangExtract integration to actually run.
+langextract>=1.6,<2
+
+# Optional: only if EXTRACTION_NER_ENABLED=true (config.py NERConfig)
+# transformers>=4.40,<5
+# torch>=2.2,<3

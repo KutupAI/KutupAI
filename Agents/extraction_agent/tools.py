@@ -183,9 +183,11 @@ class NEREngine:
 # 3. LLM Semantic Extraction - report section 3.3
 class LLMSemanticExtractor:
     """
-    Calls an OpenAI-compatible chat endpoint (works with Together AI,
-    OpenRouter, or a locally-served vLLM/Ollama instance exposing Qwen2.5)
-    to extract request_type / topic / intent / keywords.
+    Calls an OpenAI-compatible chat endpoint -- local llama.cpp/llama-server
+    serving Gemma 3 by default (see config.py LLMConfig), also works with
+    Together AI, OpenRouter, or any other OpenAI-compatible host if you
+    override EXTRACTION_LLM_BASE_URL/EXTRACTION_LLM_MODEL -- to extract
+    request_type / topic / intent / keywords.
 
     Retries once with a stricter prompt if the first response fails to
     parse or comes back below the confidence threshold (report section 10).
@@ -204,11 +206,14 @@ class LLMSemanticExtractor:
         if not self.cfg.enabled:
             self._init_error = "LLM devre disi (config.llm.enabled=False)"
             return False
-        api_key = os.getenv(self.cfg.api_key_env)
-        if not api_key:
-            self._init_error = f"{self.cfg.api_key_env} tanimli degil - LLM adimi atlaniyor"
-            logger.warning(self._init_error)
-            return False
+        # Local llama.cpp/llama-server (Gemma 3 default, see config.py) does
+        # not require a real API key -- only external cloud hosts (e.g. the
+        # old Together AI setup) do. Previously this hard-required a key
+        # and silently skipped the whole LLM step if unset, which would
+        # have broken extraction entirely against a keyless local server.
+        # Matches VisionFieldExtractor's existing "not-needed" fallback
+        # pattern in this same file.
+        api_key = os.getenv(self.cfg.api_key_env) or "not-needed"
         try:
             from openai import OpenAI  # local import: optional dependency
 
@@ -281,6 +286,179 @@ class LLMSemanticExtractor:
             retry = True
 
         out["error"] = "LLM gecerli/guvenilir JSON uretemedi (retry sonrasi da)"
+        return out
+
+
+# 3b. LangExtract grounded entity extraction - persons/organizations ONLY.
+#
+# Why only these two fields (not request_type/topic/intent too): LangExtract's
+# value is character-span alignment against the *original* text, which only
+# works for spans that appear verbatim (names, org names). Classification-
+# style fields (request_type/topic/intent) are the model's own paraphrase/
+# label, not a literal substring, so the aligner cannot ground them and
+# there is no benefit over the plain LLMSemanticExtractor path already
+# handling those fields. This was verified empirically before wiring it in
+# here: verbatim spans ("Ahmet Yilmaz", "Enerji Mudurlugu") align correctly
+# with char_interval; label-style text ("Sikayet") does not and comes back
+# with char_interval=None, i.e. LangExtract would be doing nothing useful
+# for those fields except adding a second LLM call.
+_LANGEXTRACT_EXAMPLES: list[Any] | None = None
+
+
+def _build_langextract_examples() -> list[Any]:
+    global _LANGEXTRACT_EXAMPLES
+    if _LANGEXTRACT_EXAMPLES is not None:
+        return _LANGEXTRACT_EXAMPLES
+    import langextract as lx
+
+    _LANGEXTRACT_EXAMPLES = [
+        lx.data.ExampleData(
+            text=(
+                "Elektrik faturam beklediğimden yüksek geldi. İncelenmesini "
+                "istiyorum. Ahmet Yılmaz, Enerji Müdürlüğü'ne başvurmuştur."
+            ),
+            extractions=[
+                lx.data.Extraction(extraction_class="persons", extraction_text="Ahmet Yılmaz"),
+                lx.data.Extraction(extraction_class="organizations", extraction_text="Enerji Müdürlüğü"),
+            ],
+        ),
+        lx.data.ExampleData(
+            text="Dilekçe Sayın Vali Yardımcısı Mehmet Demir tarafından İmar Müdürlüğü'ne iletilmiştir.",
+            extractions=[
+                lx.data.Extraction(extraction_class="persons", extraction_text="Mehmet Demir"),
+                lx.data.Extraction(extraction_class="organizations", extraction_text="İmar Müdürlüğü"),
+            ],
+        ),
+    ]
+    return _LANGEXTRACT_EXAMPLES
+
+
+def _span_from_char_interval(extraction: Any) -> Optional[dict[str, int]]:
+    interval = getattr(extraction, "char_interval", None)
+    if interval is None or interval.start_pos is None or interval.end_pos is None:
+        return None
+    return {"start": int(interval.start_pos), "end": int(interval.end_pos)}
+
+
+class LangExtractSemanticExtractor:
+    """Grounded persons/organizations extraction via Google LangExtract,
+    reusing the SAME OpenAI-compatible endpoint already configured for
+    LLMSemanticExtractor (cfg.llm.base_url/model) -- no separate model or
+    infra required. Fault-tolerant like every other tool in this file:
+    any missing package / init / call failure degrades to an empty,
+    clearly-flagged result rather than raising (see module docstring).
+    """
+
+    def __init__(self, cfg: ExtractionAgentConfig = DEFAULT_CONFIG):
+        self.cfg = cfg.llm
+        self.passes = cfg.llm.langextract_extraction_passes
+        self.max_char_buffer = cfg.llm.langextract_max_char_buffer
+
+    def extract_entities(self, text: str) -> dict[str, Any]:
+        out: dict[str, Any] = {
+            "persons": [],
+            "organizations": [],
+            "persons_spans": [],
+            "organizations_spans": [],
+            "used": False,
+            "error": None,
+        }
+        if not text:
+            return out
+
+        try:
+            import langextract as lx
+            from langextract.data import FormatType
+            from langextract.providers.openai import OpenAILanguageModel
+        except ImportError as exc:
+            out["error"] = f"langextract paketi kurulu degil, atlaniyor: {exc}"
+            return out
+
+        api_key = os.getenv(self.cfg.api_key_env) or "not-needed"
+        try:
+            model = OpenAILanguageModel(
+                model_id=self.cfg.model,
+                api_key=api_key,
+                base_url=self.cfg.base_url,
+                temperature=0.0,
+            )
+            result = lx.extract(
+                text_or_documents=text,
+                prompt_description=(
+                    "Turkce resmi bir belge metninden SADECE metinde birebir "
+                    "gecen gercek kisi ad-soyadlarini (persons) ve kurum/"
+                    "mudurluk isimlerini (organizations) cikar. Metinde "
+                    "olmayan hicbir sey uydurma; unvan/rolleri ('Sayin "
+                    "Yetkili' gibi) kisi adi olarak sayma."
+                ),
+                examples=_build_langextract_examples(),
+                model=model,
+                format_type=FormatType.JSON,
+                fence_output=False,
+                use_schema_constraints=False,
+                extraction_passes=max(1, self.passes),
+                max_char_buffer=self.max_char_buffer,
+                show_progress=False,
+            )
+        except Exception as exc:  # noqa: BLE001 - must never crash the agent
+            logger.warning("LangExtract cagrisi basarisiz: %s", exc)
+            out["error"] = f"LangExtract cagrisi basarisiz: {exc}"
+            return out
+
+        out["used"] = True
+        for extraction in result.extractions or []:
+            value = (extraction.extraction_text or "").strip()
+            if not value:
+                continue
+            span = _span_from_char_interval(extraction)
+            if extraction.extraction_class == "persons":
+                out["persons"].append(value)
+                out["persons_spans"].append(span)
+            elif extraction.extraction_class == "organizations":
+                out["organizations"].append(value)
+                out["organizations_spans"].append(span)
+        return out
+
+
+class HybridSemanticExtractor:
+    """Drop-in replacement for LLMSemanticExtractor with the exact same
+    `.extract(text, classification_hint) -> dict` contract, so agent.py
+    needs no changes beyond swapping which class it instantiates.
+
+    Behavior: runs the existing plain LLM call for request_type/topic/
+    intent/keywords/missing_info/confidence (unchanged), then -- only if
+    cfg.llm.use_langextract is True -- additionally grounds persons/
+    organizations via LangExtractSemanticExtractor and overrides those two
+    fields with the grounded, span-verified values when available. Any
+    LangExtract failure silently keeps the plain call's persons/
+    organizations output (which is exactly what ran before this change),
+    so this can never make extraction_agent worse than it was.
+    """
+
+    def __init__(self, cfg: ExtractionAgentConfig = DEFAULT_CONFIG):
+        self.cfg = cfg
+        self._plain = LLMSemanticExtractor(cfg)
+        self._grounded = LangExtractSemanticExtractor(cfg) if cfg.llm.use_langextract else None
+
+    def extract(self, text: str, classification_hint: Optional[str] = None) -> dict[str, Any]:
+        out = self._plain.extract(text, classification_hint=classification_hint)
+        if not self._grounded:
+            out["langextract_used"] = False
+            return out
+
+        grounded = self._grounded.extract_entities(text)
+        out["langextract_used"] = bool(grounded["used"] and not grounded["error"])
+        if grounded["error"]:
+            out["langextract_error"] = grounded["error"]
+
+        if out["langextract_used"]:
+            data = out.setdefault("data", {})
+            if grounded["persons"]:
+                data["persons"] = grounded["persons"]
+                data["persons_spans"] = grounded["persons_spans"]
+            if grounded["organizations"]:
+                data["organizations"] = grounded["organizations"]
+                data["organizations_spans"] = grounded["organizations_spans"]
         return out
 
 

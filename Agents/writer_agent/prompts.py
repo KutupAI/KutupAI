@@ -25,13 +25,12 @@ def build_user_prompt(
     document_type: str,
     summary: str,
     extracted_data: Dict[str, Any],
+    document_text: str = "",
 ) -> str:
     """Builds the dynamic (per-request) half of the prompt.
 
-    Only non-empty fields are included -- an empty document_type,
-    summary, or extracted_data block is left out entirely rather than
-    sent as an empty placeholder, to avoid wasting tokens and to avoid
-    duplicating information already implied elsewhere.
+    Preference order for grounding text: summary (RAG) → OCR document_text.
+    Only non-empty fields are included.
     """
     parts = [f"Question:\n{question}"]
 
@@ -40,10 +39,10 @@ def build_user_prompt(
 
     if summary:
         parts.append(f"Relevant Context:\n{summary}")
+    elif document_text:
+        parts.append(f"Document Text:\n{document_text}")
 
     if extracted_data:
-        # Compact single-line rendering to minimize tokens; only
-        # fields with an actual value are included.
         extra = ", ".join(
             f"{key}: {value}"
             for key, value in extracted_data.items()

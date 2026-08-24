@@ -3,7 +3,9 @@ tools.py
 ----------
 External integrations needed by classification_agent:
 - Optimization layer (fast ONNX pre-classification)
-- Qwen VLM (multimodal classification via Inference/client/qwen_vl_client.py)
+- VLM (multimodal classification via Inference/client/vlm_client.py) --
+  Gemma 3 (4B/12B/27B, local llama.cpp/llama-server), previously Qwen2.5-VL.
+  See vlm_client.py's module docstring for the migration note.
 
 Kept separate from agent.py so the control-flow/decision logic in agent.py
 stays readable, matching the OCR agent's split between agent.py and
@@ -18,14 +20,14 @@ import time
 from typing import Any
 
 from Agents.classification_agent.config import ClassificationConfig
-from Agents.classification_agent.exceptions import InvalidClassificationOutputError, QwenVLMError
+from Agents.classification_agent.exceptions import InvalidClassificationOutputError, VLMError
 from Agents.classification_agent.prompts import (
     SYSTEM_PROMPT,
     build_layout_summary,
     build_user_prompt,
 )
 from Agents.classification_agent.taxonomy import UNCERTAIN_CODE, is_valid_code
-from Inference.client.qwen_vl_client import QwenVLClient, QwenVLRequest
+from Inference.client.vlm_client import VLMClient, VLMRequest
 from Optimization.services.fast_classification_service import (
     FastClassificationResult,
     classify_fast,
@@ -41,7 +43,7 @@ def run_fast_classifier(normalized_text: str) -> FastClassificationResult | None
     return classify_fast(normalized_text)
 
 
-def run_qwen_classification(
+def run_vlm_classification(
     *,
     normalized_text: str,
     ocr_confidence: float | None,
@@ -50,10 +52,11 @@ def run_qwen_classification(
     image_bytes: bytes | None,
     config: ClassificationConfig,
 ) -> dict[str, Any]:
-    """Call Qwen VLM and return a parsed+validated dict:
+    """Call the classification VLM (Gemma 3, local llama.cpp/llama-server --
+    see Inference/client/vlm_client.py) and return a parsed+validated dict:
     {"document_type": str, "confidence": float, "alternatives": [...]}
 
-    Raises QwenVLMError on transport failure, InvalidClassificationOutputError
+    Raises VLMError on transport failure, InvalidClassificationOutputError
     if the model's response isn't the strict JSON the prompt requires (§7).
     """
     from Agents.classification_agent.prompts import build_vision_signal_summary
@@ -69,13 +72,14 @@ def run_qwen_classification(
         top_k_alternatives=config.top_k_alternatives,
     )
 
-    client = QwenVLClient(base_url=config.qwen_base_url, timeout=config.qwen_timeout_s)
-    request = QwenVLRequest(
+    client = VLMClient(base_url=config.vlm_base_url, timeout=config.vlm_timeout_s)
+    request = VLMRequest(
         text_prompt=user_prompt,
         system_prompt=SYSTEM_PROMPT,
         image_bytes=image_bytes if config.send_image else None,
-        temperature=config.qwen_temperature,
-        max_tokens=config.qwen_max_tokens,
+        model=config.vlm_model_name,
+        temperature=config.vlm_temperature,
+        max_tokens=config.vlm_max_tokens,
     )
 
     started = time.monotonic()
@@ -83,11 +87,17 @@ def run_qwen_classification(
     elapsed_ms = (time.monotonic() - started) * 1000
 
     if not response.success:
-        raise QwenVLMError(response.error or "qwen_vl_client returned success=False")
+        raise VLMError(response.error or "vlm_client returned success=False")
 
     parsed = _parse_json_response(response.text)
     parsed["_processing_ms"] = elapsed_ms
     return parsed
+
+
+# Backward-compat alias: evaluation/ablation.py imports run_qwen_classification
+# by name. Keeping this avoids touching that file in this change; new code
+# should call run_vlm_classification directly.
+run_qwen_classification = run_vlm_classification
 
 
 def _parse_json_response(raw_text: str) -> dict[str, Any]:

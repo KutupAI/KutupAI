@@ -5,11 +5,21 @@ Calls RAG/client (never Storage, never ChromaDB directly).
 Heavy RAG deps are imported lazily so Agent registration stays lightweight.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
+
+
+def run_layer_retrieve(state: Mapping[str, Any]) -> Dict[str, Any]:
+    """Retrieve-only Layers_contracts path used by Orchestration.
+
+    Fills ``state["rag"]`` via ``handle_layer_state`` (no LLM answer).
+    """
+    from RAG.client.contract_adapter import handle_layer_state
+
+    return handle_layer_state(state)
 
 
 def search_legal_context(query: str, top_k: Optional[int] = None):
-    """Retrieve Mevzuat / regulation passages relevant to `query`."""
+    """Legacy helper: retrieve Mevzuat / regulation passages for a raw query."""
     from RAG.client import RetrievalRequest
     from RAG.client.rag_client import get_legal_context
 
