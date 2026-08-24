@@ -1,0 +1,98 @@
+/* Structured Explanatory Style — dark gray surfaces, red accents */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  font-family: var(--font-body);
+  color: var(--kutup-white);
+}
+
+.sectionHeading {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--kutup-border-strong);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kutup-red-hover);
+}
+
+.answerSection {
+  padding: 0;
+}
+
+.answerBody {
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--kutup-white);
+}
+
+.answerParagraph {
+  margin: 0 0 10px;
+}
+
+.answerParagraph:last-child {
+  margin-bottom: 0;
+}
+
+.factsSection,
+.extractionSection {
+  background: var(--kutup-bg-elevated);
+  border: 1px solid var(--kutup-border);
+  border-left: 3px solid var(--kutup-red);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 14px;
+}
+
+.factList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.factRow {
+  display: grid;
+  grid-template-columns: minmax(96px, 132px) 1fr;
+  gap: 8px 14px;
+  align-items: baseline;
+}
+
+.factLabel {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--kutup-gray);
+}
+
+.factValue {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--kutup-white);
+  word-break: break-word;
+}
+
+.factValueMuted {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--kutup-gray-dim);
+  font-style: italic;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .factRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .factLabel {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}

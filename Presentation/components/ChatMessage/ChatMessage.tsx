@@ -1,5 +1,6 @@
 import React from "react";
 import PoleStarIcon from "../icons/PoleStarIcon";
+import AnalysisResultCard from "../AnalysisResultCard/AnalysisResultCard";
 import { ChatMessageModel } from "../../models/ChatMessage";
 import { isImageFile } from "../../utils/fileValidators";
 import styles from "./ChatMessage.module.css";
@@ -50,7 +51,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         </div>
       )}
 
-      <div className={`${styles.bubble} ${isUser ? styles.bubbleUser : styles.bubbleAssistant}`}>
+      <div
+        className={`${styles.bubble} ${
+          isUser ? styles.bubbleUser : styles.bubbleAssistant
+        } ${message.pipelineState ? styles.bubbleStructured : ""}`}
+      >
         {!isUser && <div className={styles.senderLabel}>KutupAI</div>}
 
         {message.file && (
@@ -70,7 +75,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           </div>
         )}
 
-        <div className={styles.content}>{renderContent(message.content)}</div>
+        <div className={styles.content}>
+          {message.pipelineState ? (
+            <AnalysisResultCard state={message.pipelineState} />
+          ) : (
+            renderContent(message.content)
+          )}
+        </div>
 
         {message.status === "error" && (
           <div className={styles.errorTag} role="alert">
