@@ -160,6 +160,18 @@ class LLMConfig:
     langextract_extraction_passes: int = _env_int("EXTRACTION_LANGEXTRACT_PASSES", 1)
     langextract_max_char_buffer: int = _env_int("EXTRACTION_LANGEXTRACT_MAX_CHAR_BUFFER", 4000)
 
+    # --- LangExtract (grounded/schema-based extraction) ---
+    # When True, LLMSemanticExtractor's role is taken over by
+    # LangExtractSemanticExtractor (character-span-grounded persons/
+    # organizations/topic/etc, same OpenAI-compatible endpoint as above --
+    # no separate model or infra). Falls back automatically to the plain
+    # prompt-based extractor (use_langextract path off) if the langextract
+    # package is missing or a call fails, per this file's fault-tolerance
+    # rule -- never a hard dependency.
+    use_langextract: bool = _env_bool("EXTRACTION_USE_LANGEXTRACT", True)
+    langextract_extraction_passes: int = _env_int("EXTRACTION_LANGEXTRACT_PASSES", 1)
+    langextract_max_char_buffer: int = _env_int("EXTRACTION_LANGEXTRACT_MAX_CHAR_BUFFER", 4000)
+
 
 @dataclass
 class VisionConfig:

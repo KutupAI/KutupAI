@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "status": "complete",
+  "data": {
+    "document_id": "normal",
+    "file_name": "normal.png",
+    "file_type": "png",
+    "page_count": 1,
+    "language": "tr",
+    "pages": [
+      {
+        "page_number": 1,
+        "text": "CK BOĞAZIÇİ ELEKTRİK PERAKENDE SATIŞ A.Ş.\nPERAKENDE SATIŞ SÖZLEŞMESİ\n\nTARIH: 20-05-2022\nDağıtım Hizmet Noktası: 3443852000\nHizmet Anlaşması Numarası: 8827495852\nHesap Numarası: 8822534782\n\nSAYI: 17-34-03-1\n\nMadde 1- SÖZLEŞMENIN NİTELİĞİ ve TARAFLARI\n(1) İşbu perakende satış sözleşmesi (Sözleşme), Enerji Piyasası Düzenleme Kurulu (Kurul) tarafından\n22/11/2018 tarihli ve 8192 sayılı Kurul Kararı ile standart sözleşme olarak düzenlenmiştir.\n(2) Sözleşme, isim, unvan, adres ve iletişim bilgileri sözleşme ekinde yer alan serbest olmayan tüketici\nya da son kaynak tedariki kapsamındaki tüketici ile Görevli Tedarik Şirketi (Şirket) arasında tanzim\nedilmiş ve kurulmuştur.\n\nMadde 2- TANIMLAR\n(1) Sözleşmede kullanılan terim ve ibareler, 30/05/2018 tarihli ve 30436 sayılı Resmi Gazete'de\nyayımlanan Elektrik Piyasası Tüketici Hizmetleri Yönetmeliği'nde (Yönetmelik), bu Yönetmelikte\nhüküm bulunmaması halinde ilgili mevzuatta kullanılan anlam ve kapsama sahiptir.\n\nMadde 3- SÖZLEŞMENIN KONUSU\n(1) Sözleşme'nin konusu; yeni veya mevcut bir tüketim tesisi ve/veya kullanım yerine ilişkin, tarihi ve\nkullanıcı numarası EK-1'de belirtilen Bağlantı Anlaşması'na istinaden tüketiciye elektrik enerjisi\nveya kapasite temini ile hizmet verilmesidir.\n\nMadde 4- SÖZLEŞMENIN KAPSAMI\n(1) Sözleşme, tüketiciye elektrik enerjisi ve/veya kapasite temini ve hizmet verilmesinde taraflarca\nuyulması gereken yükumluluklar ile ilgili mevzuat ve Sözleşme şartlarına uyulması halinde\ntaraflara uygulanacak hüküm ve yaptırımları kapsar.\n\nMadde 5- SÖZLEŞME GÜCÜ\n(1) Sözleşme, tarihi ve kullanıcı numarası EK-1'de belirtilen Bağlantı Anlaşması'nda belirlenen güç\n(kilowatt/kW) üzerinden yapılmıştır. Bağlantı gücünün aşılması halinde ilgili mevzuata göre işlem\nyapılır.\n\nMadde 6- SAYAC ve ÖLÇÜM SİSTEMLERİ\n(1) Sözleşme uyarınca tüketici tarafından kullanılan elektrik enerjisi veya tüketiciye tahsis edilen\nkapasite, ilgili mevzuat uyarınca test edilen sayaç ve/veya ölçüm sistemleri üzerinden tespit edilir.\n(2) Tüketici, sözleşme kapsamındaki sayaç ve/veya ölçüm sistemlerine müdahele etmemek, TEİAŞ\nveya ilgili dağtım şirketi ile Şirket'in sayaç ve/veya ölçüm sistemlerine erişimini engellemekle\nmükelleftir.",
+        "vision": {
+          "signature": {
+            "detected": false,
+            "handwritten": false
+          },
+          "stamp": {
+            "detected": false
+          }
+        }
+      }
+    ],
+    "full_text": "CK BOĞAZIÇİ ELEKTRİK PERAKENDE SATIŞ A.Ş.\nPERAKENDE SATIŞ SÖZLEŞMESİ\n\nTARIH: 20-05-2022\nDağıtım Hizmet Noktası: 3443852000\nHizmet Anlaşması Numarası: 8827495852\nHesap Numarası: 8822534782\n\nSAYI: 17-34-03-1\n\nMadde 1- SÖZLEŞMENIN NİTELİĞİ ve TARAFLARI\n(1) İşbu perakende satış sözleşmesi (Sözleşme), Enerji Piyasası Düzenleme Kurulu (Kurul) tarafından\n22/11/2018 tarihli ve 8192 sayılı Kurul Kararı ile standart sözleşme olarak düzenlenmiştir.\n(2) Sözleşme, isim, unvan, adres ve iletişim bilgileri sözleşme ekinde yer alan serbest olmayan tüketici\nya da son kaynak tedariki kapsamındaki tüketici ile Görevli Tedarik Şirketi (Şirket) arasında tanzim\nedilmiş ve kurulmuştur.\n\nMadde 2- TANIMLAR\n(1) Sözleşmede kullanılan terim ve ibareler, 30/05/2018 tarihli ve 30436 sayılı Resmi Gazete'de\nyayımlanan Elektrik Piyasası Tüketici Hizmetleri Yönetmeliği'nde (Yönetmelik), bu Yönetmelikte\nhüküm bulunmaması halinde ilgili mevzuatta kullanılan anlam ve kapsama sahiptir.\n\nMadde 3- SÖZLEŞMENIN KONUSU\n(1) Sözleşme'nin konusu; yeni veya mevcut bir tüketim tesisi ve/veya kullanım yerine ilişkin, tarihi ve\nkullanıcı numarası EK-1'de belirtilen Bağlantı Anlaşması'na istinaden tüketiciye elektrik enerjisi\nveya kapasite temini ile hizmet verilmesidir.\n\nMadde 4- SÖZLEŞMENIN KAPSAMI\n(1) Sözleşme, tüketiciye elektrik enerjisi ve/veya kapasite temini ve hizmet verilmesinde taraflarca\nuyulması gereken yükumluluklar ile ilgili mevzuat ve Sözleşme şartlarına uyulması halinde\ntaraflara uygulanacak hüküm ve yaptırımları kapsar.\n\nMadde 5- SÖZLEŞME GÜCÜ\n(1) Sözleşme, tarihi ve kullanıcı numarası EK-1'de belirtilen Bağlantı Anlaşması'nda belirlenen güç\n(kilowatt/kW) üzerinden yapılmıştır. Bağlantı gücünün aşılması halinde ilgili mevzuata göre işlem\nyapılır.\n\nMadde 6- SAYAC ve ÖLÇÜM SİSTEMLERİ\n(1) Sözleşme uyarınca tüketici tarafından kullanılan elektrik enerjisi veya tüketiciye tahsis edilen\nkapasite, ilgili mevzuat uyarınca test edilen sayaç ve/veya ölçüm sistemleri üzerinden tespit edilir.\n(2) Tüketici, sözleşme kapsamındaki sayaç ve/veya ölçüm sistemlerine müdahele etmemek, TEİAŞ\nveya ilgili dağtım şirketi ile Şirket'in sayaç ve/veya ölçüm sistemlerine erişimini engellemekle\nmükelleftir."
+  }
+}

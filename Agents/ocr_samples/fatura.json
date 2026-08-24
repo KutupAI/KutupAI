@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "status": "complete",
+  "data": {
+    "document_id": "fatura",
+    "file_name": "fatura.jpeg",
+    "file_type": "jpeg",
+    "page_count": 1,
+    "language": "tr",
+    "pages": [
+      {
+        "page_number": 1,
+        "text": "AXASIGORTAAS\nMedsiMebusanCadNets wBlShearonIryeg\nTt No:645.004\nAYAAXA SIGORTA\n\nBEDEL (TL) NET PRiM (TL)\nSiGORTA TEMiNATI\nEVDEYASLI&&COCUK BAKIM\n00'0 71,43\nDiGER TEMiNAT PRiMLERi\nDOKTOR DANISMA HIZMETi\nNet Prim 2.664.07\nPRiM ODEME PLANI (TL)\nBsmv 133,21\nTarih Odeme Tutar\nYsV 2,86\n03/03/2023 280,05\nOdenecek Prim 2.800,14\n02/04/2023 280,01\n02/05/2023 280,01\n02/06/2023 280,01\n02/07/2023 280,01\n02/08/2023 280,01\n02/09/2023 280,01\n02/10/2023 280,01\n02/11/2023 280,01\n02/12/2023 280,01\n\nPoliceleriniz veportfoyunuz ile ilgili diger detaylara axasigorta.com.tr de yer alan Online islemler\nmenusunden ya da AxAFit uygulamamizdan ulasabilirsiniz AXAFit,Appstore ve GooglePlay de.Bu\nsigorta policesi 03/03/202317:11'de2nusha olarak duzenlenmistir.\n\nA.TEMINATHAKKINDA GENEL BILGILER\nYangin teminati:\n\nkadar teminat altina alinmistir.\n\nalinmistir.\nDiger Ek Teminatlar:\n\nkapsamina dahil edilmistir.",
+        "vision": {
+          "signature": {
+            "detected": false,
+            "handwritten": false
+          },
+          "stamp": {
+            "detected": false
+          }
+        }
+      }
+    ],
+    "full_text": "AXASIGORTAAS\nMedsiMebusanCadNets wBlShearonIryeg\nTt No:645.004\nAYAAXA SIGORTA\n\nBEDEL (TL) NET PRiM (TL)\nSiGORTA TEMiNATI\nEVDEYASLI&&COCUK BAKIM\n00'0 71,43\nDiGER TEMiNAT PRiMLERi\nDOKTOR DANISMA HIZMETi\nNet Prim 2.664.07\nPRiM ODEME PLANI (TL)\nBsmv 133,21\nTarih Odeme Tutar\nYsV 2,86\n03/03/2023 280,05\nOdenecek Prim 2.800,14\n02/04/2023 280,01\n02/05/2023 280,01\n02/06/2023 280,01\n02/07/2023 280,01\n02/08/2023 280,01\n02/09/2023 280,01\n02/10/2023 280,01\n02/11/2023 280,01\n02/12/2023 280,01\n\nPoliceleriniz veportfoyunuz ile ilgili diger detaylara axasigorta.com.tr de yer alan Online islemler\nmenusunden ya da AxAFit uygulamamizdan ulasabilirsiniz AXAFit,Appstore ve GooglePlay de.Bu\nsigorta policesi 03/03/202317:11'de2nusha olarak duzenlenmistir.\n\nA.TEMINATHAKKINDA GENEL BILGILER\nYangin teminati:\n\nkadar teminat altina alinmistir.\n\nalinmistir.\nDiger Ek Teminatlar:\n\nkapsamina dahil edilmistir."
+  }
+}

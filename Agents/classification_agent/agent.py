@@ -335,6 +335,19 @@ def _merge_result(state: Dict[str, Any], result: ClassificationResult) -> Dict[s
     state["classification"] = contract
     state["classification_result"] = contract
     state["classification_status"] = result.status
+    # Unified short-key contract for validation_agent, matching ocr_agent's
+    # existing dual-key convention (state["ocr"] short/unified key +
+    # state["ocr_result"] wire key). classification_agent previously only
+    # wrote "classification_result" (with a field named "confidence"), so
+    # validation_agent's state.get("classification") / "classification_confidence"
+    # lookup always saw an empty dict, silently skipping the
+    # low_classification_confidence check on every run.
+    state["classification"] = {
+        "success": result.success,
+        "classification_confidence": result.confidence,
+        "document_type": result.document_type,
+        "status": result.status,
+    }
     if not result.success:
         errors = list(state.get("errors") or [])
         errors.append(f"classification_agent: {result.error}")

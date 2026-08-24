@@ -132,6 +132,12 @@ class ClassificationConfig:
         default_model = registry.get("model_name") or "gemma3"
         default_timeout = int(os.getenv("INFERENCE_TIMEOUT", "300"))
 
+        def env_with_legacy_fallback(new_name: str, legacy_name: str, default: str) -> str:
+            # New VLM_* var wins; fall back to the old QWEN_VLM_* var (still
+            # honored) so existing .env files don't break on upgrade; only
+            # if neither is set do we use `default`.
+            return os.getenv(new_name, os.getenv(legacy_name, default))
+
         return cls(
             needs_review_threshold=float(os.getenv("CLASSIFICATION_NEEDS_REVIEW_THRESHOLD", "0.60")),
             top_k_alternatives=int(os.getenv("CLASSIFICATION_TOP_K_ALTERNATIVES", "2")),
