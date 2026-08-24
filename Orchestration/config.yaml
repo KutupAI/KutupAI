@@ -24,23 +24,23 @@ agents:
     fallback: terminate    # OCR is required input for every later stage
 
   classification:
-    enabled: false          # set true once Agents.classification_agent exists
+    enabled: true
     module: Agents.classification_agent
     class_name: ClassificationAgent
     retries: 1
-    timeout_seconds: 60
+    timeout_seconds: 300
     fallback: skip
 
   extraction:
-    enabled: false
+    enabled: true
     module: Agents.extraction_agent
     class_name: ExtractionAgent
     retries: 1
-    timeout_seconds: 60
+    timeout_seconds: 300
     fallback: skip
 
   validation:
-    enabled: false
+    enabled: true
     module: Agents.validation_agent
     class_name: ValidationAgent
     retries: 1
@@ -48,7 +48,7 @@ agents:
     fallback: skip
 
   rag:
-    enabled: false
+    enabled: true
     module: Agents.rag_agent
     class_name: RAGAgent
     retries: 1
@@ -56,7 +56,7 @@ agents:
     fallback: skip          # RAG is optional; never blocks the workflow
 
   summary:
-    enabled: false          # set true once RAG stage feeds rag_result reliably
+    enabled: true
     module: Agents.summary_agent
     class_name: SummaryAgent
     retries: 1
@@ -64,7 +64,7 @@ agents:
     fallback: skip
 
   routing:
-    enabled: false          # set true once upstream stages feed usable text/summary
+    enabled: true
     module: Agents.routing_agent
     class_name: RoutingAgent
     retries: 1
@@ -72,7 +72,7 @@ agents:
     fallback: skip
 
   writing:
-    enabled: false
+    enabled: true
     module: Agents.writer_agent
     class_name: WriterAgent
     retries: 1

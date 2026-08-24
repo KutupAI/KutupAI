@@ -102,7 +102,7 @@ class GraphState(TypedDict, total=False):
 
 
 STATE_SECTION_BY_STAGE: Dict[str, str] = {
-    "ocr": "ocr_result",
+    "ocr": "ocr",
     "classification": "classification_result",
     "extraction": "extraction_result",
     "validation": "validation_result",

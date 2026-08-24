@@ -55,18 +55,43 @@ def test_full_happy_path_runs_every_stage_in_order():
     assert result.state["final_decision"]["completed"] is True
 
 
-def test_default_config_only_runs_ocr_then_skips_rest():
-    # No overrides: config.yaml has only OCR enabled by default, so every
-    # later stage should be skipped (never faked) and the workflow still
-    # completes cleanly.
-    wf = build_workflow(agent_overrides={Stage.OCR: MockOCRAgent()})
+def test_default_config_runs_full_pipeline_with_mocks():
+    # All stages enabled in config.yaml; mock Agents avoid live Inference.
+    wf = build_workflow(agent_overrides=_full_overrides())
     result = wf.run({"document_id": "doc-1", "document_path": "/tmp/a.pdf"})
 
     assert result.completed is True
     statuses = result.state["stage_status"]
     assert statuses[Stage.OCR.value] == "success"
-    for stage in (Stage.CLASSIFICATION, Stage.EXTRACTION, Stage.VALIDATION, Stage.RAG, Stage.SUMMARY, Stage.ROUTING, Stage.WRITING):
-        assert statuses[stage.value] == "skipped"
+    assert statuses[Stage.CLASSIFICATION.value] == "success"
+    assert statuses[Stage.EXTRACTION.value] == "success"
+    assert statuses[Stage.VALIDATION.value] == "success"
+    assert statuses[Stage.RAG.value] == "success"
+    assert statuses[Stage.SUMMARY.value] == "success"
+    assert statuses[Stage.ROUTING.value] == "success"
+    assert statuses[Stage.WRITING.value] == "success"
+    assert result.state["classification"] == {
+        "success": True,
+        "document_type": "invoice",
+        "classification_confidence": 0.95,
+    }
+    assert result.state["extraction"] == {
+        "success": True,
+        "sender": None,
+        "date": None,
+        "address": None,
+        "phone": None,
+        "email": None,
+    }
+    assert "success" in result.state["validation_result"]
+    assert "is_complete" in result.state["validation_result"]
+    assert result.state["rag"]["success"] is True
+    assert result.state["rag"]["rag_data"]["operation"] == "retrieve"
+    assert result.state["rag_result"]["data"] == result.state["rag"]["rag_data"]
+    # Unified OCR slot must be filled (not left as empty {}).
+    assert isinstance(result.state.get("ocr"), dict) and result.state["ocr"]
+    assert result.state["ocr"].get("success") is True
+    assert "ocr_data" in result.state["ocr"]
 
 
 def test_rag_optional_skip_after_retries_exhausted_does_not_terminate():
@@ -115,22 +140,58 @@ def test_invalid_agent_result_is_handled():
 
 
 def test_agent_override_takes_precedence_over_config_disabled_flag():
-    # classification is disabled in config.yaml by default; an override
-    # should still make it run (used for gradual, one-by-one integration
-    # testing without editing config.yaml).
+    # Force-disable summary in a local config copy; override should still run.
     config = load_config()
-    assert config.stage(Stage.CLASSIFICATION).enabled is False
+    summary_cfg = config.stage(Stage.SUMMARY)
+    from dataclasses import replace
 
-    registry = build_agent_registry(config, {Stage.CLASSIFICATION: MockClassificationAgent()})
-    adapter = registry[Stage.CLASSIFICATION]
+    disabled_summary = replace(summary_cfg, enabled=False)
+    stages = dict(config.stages)
+    stages[Stage.SUMMARY] = disabled_summary
+    config = replace(config, stages=stages)
+    assert config.stage(Stage.SUMMARY).enabled is False
+
+    registry = build_agent_registry(config, {Stage.SUMMARY: MockSummaryAgent()})
+    adapter = registry[Stage.SUMMARY]
     assert not getattr(adapter, "not_integrated", False)
 
 
 def test_not_integrated_stage_has_marker_and_never_fabricates_success():
+    # Disabled stages get a not_integrated placeholder (never a fake success).
     config = load_config()
+    from dataclasses import replace
+
+    summary_cfg = replace(config.stage(Stage.SUMMARY), enabled=False)
+    stages = dict(config.stages)
+    stages[Stage.SUMMARY] = summary_cfg
+    config = replace(config, stages=stages)
+
     registry = build_agent_registry(config, {})
-    adapter = registry[Stage.CLASSIFICATION]
+    adapter = registry[Stage.SUMMARY]
     assert getattr(adapter, "not_integrated", False) is True
-    result = adapter(Stage.CLASSIFICATION, {}, config.stage(Stage.CLASSIFICATION))
+    result = adapter(Stage.SUMMARY, {}, config.stage(Stage.SUMMARY))
     assert result.status == ExecutionStatus.NOT_INTEGRATED
     assert result.is_success is False
+
+def test_classification_is_enabled_and_loadable():
+    config = load_config()
+    assert config.stage(Stage.CLASSIFICATION).enabled is True
+    registry = build_agent_registry(config, {})
+    adapter = registry[Stage.CLASSIFICATION]
+    assert not getattr(adapter, "not_integrated", False)
+
+
+def test_extraction_is_enabled_and_loadable():
+    config = load_config()
+    assert config.stage(Stage.EXTRACTION).enabled is True
+    registry = build_agent_registry(config, {})
+    adapter = registry[Stage.EXTRACTION]
+    assert not getattr(adapter, "not_integrated", False)
+
+
+def test_rag_is_enabled_and_loadable():
+    config = load_config()
+    assert config.stage(Stage.RAG).enabled is True
+    registry = build_agent_registry(config, {})
+    adapter = registry[Stage.RAG]
+    assert not getattr(adapter, "not_integrated", False)

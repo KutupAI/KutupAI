@@ -1,11 +1,11 @@
 # Orchestration Layer
 
 **اللغة:** Python 3.11+ · **الإطار:** FastAPI (نقطة الدخول) + محرك Workflow داخلي (بدون LangGraph أو أي مكتبة graph خارجية)
-**المسؤولية:** استقبال مهمة المعالجة من Application، تهيئة الحالة المركزية، تشغيل الـ Workflow (Supervisor → Agent → Result → State Update → Decision → Next Agent)، وإرجاع العقد النهائي `{ Success, Data }`.
+**المسؤولية:** استقبال مهمة المعالجة من Application (عقد `{ request, ocr:{}, … writing:{} }` أو الحمولة المسطّحة القديمة)، تهيئة الحالة المركزية، تشغيل الـ Workflow (Supervisor → Agent → Result → State Update → Decision → Next Agent)، وإرجاع العقد النهائي `{ Success, Data }`.
 
 الاتصال مع Agents هو **استدعاء دالة داخل العملية** (`agent.run(state)`)، وليس عبر الشبكة، وليس Agent-to-Agent مباشرة. كل استدعاء يمر عبر: **Orchestration → Agent → Result → State Update → Decision → Next Agent**.
 
-> **حالة تكامل الـ Agents اليوم:** فقط `OCRAgent` مفعّل في `config.yaml`. `SummaryAgent` مربوط عقديًا (يقرأ `rag`/`rag_result` ويكتب `summary.rag_summary_text`) وجاهز للتفعيل عبر `agents.summary.enabled: true` مع باقي المراحل (Classification, Extraction, Validation, RAG, Routing, Writing).
+> **حالة تكامل الـ Agents اليوم:** كل المراحل مفعّلة في `config.yaml`: OCR → Classification → Extraction → Validation → RAG → Summary → Routing → Writing.
 
 ---
 
@@ -34,7 +34,7 @@ OCR → Classification → Extraction → Validation → RAG → Summary → Rou
 
 | الدالة | الوصف |
 |---|---|
-| `run_workflow(...)` | المسار الوحيد: تشغيل Graph المراحل (OCR → … → Writing). المراحل غير المفعّلة تُتخطى. اليوم OCR فقط مفعّل، فيعمل كمرحلة أولى مثل أي Agent. |
+| `run_workflow(...)` | المسار الوحيد: تشغيل Graph المراحل (OCR → … → Writing). كل المراحل مفعّلة افتراضيًا في `config.yaml`. |
 
 `POST /process` في `main.py` يستدعي `run_workflow` فقط (لا مسار OCR منفصل، ولا `/process/full`).
 
@@ -71,7 +71,7 @@ python -m pytest Orchestration/tests -v
 
 ## الإعدادات (`config.yaml`)
 
-لكل مرحلة: `enabled`, `module`, `class_name` (المسار للاستيراد الكسول عند التفعيل فقط), `retries`, `timeout_seconds`, `fallback` (`terminate` | `skip` | `fallback_stage`). ملف فارغ/غائب = القيم الافتراضية البرمجية (OCR فقط مفعّل). `supervisor.max_total_retries` هو حد أمان لكامل الـ Workflow.
+لكل مرحلة: `enabled`, `module`, `class_name` (المسار للاستيراد الكسول عند التفعيل فقط), `retries`, `timeout_seconds`, `fallback` (`terminate` | `skip` | `fallback_stage`). ملف فارغ/غائب = القيم الافتراضية البرمجية (كل المراحل مفعّلة). `supervisor.max_total_retries` هو حد أمان لكامل الـ Workflow.
 
 ---
 
@@ -134,13 +134,19 @@ python -m pytest Orchestration/tests -v
 
 ## نقاط التكامل المستقبلية (لكل Agent قادم)
 
-لربط Agent حقيقي جديد (مثال: `classification_agent`):
+لربط Agent حقيقي جديد (مثال: `rag_agent`):
 
-1. تأكد أن الـ Agent يوفّر `run(self, state: dict) -> dict` ويكتب فقط `classification_result` (و`classification_status` اختياريًا) في الحالة التي يستقبلها.
-2. في `config.yaml`: عيّن `agents.classification.enabled: true`، وتأكد أن `module`/`class_name` يشيران للمسار الصحيح.
+1. تأكد أن الـ Agent يوفّر `run(self, state: dict) -> dict` ويكتب قسمه في الحالة (المفتاح القصير + `*_result` إن وُجد).
+2. في `config.yaml`: عيّن `agents.<stage>.enabled: true`، وتأكد أن `module`/`class_name` يشيران للمسار الصحيح.
 3. لا حاجة لتعديل أي كود Orchestration آخر - `workflow_builder.build_agent_registry` سيستورد الـ Agent كسولًا عند أول تشغيل.
 4. أضف اختبارات في `Orchestration/tests/` باستخدام mock مطابق للواجهة الحقيقية قبل التفعيل في `config.yaml`، ثم فعّله.
 
-نفس الخطوات لبقية المراحل: `extraction`, `validation`, `rag`, `summary`, و`writing`.
+نفس الخطوات لبقية المراحل: `rag`, `summary`, `routing`, و`writing`.
+
+**مفعّل:** `classification` — `ClassificationAgent.run` يقرأ `ocr`/`ocr_result` ويكتب `classification` + `classification_result` = `{success, document_type, classification_confidence}` (مفعّل في `config.yaml`). انظر `Orchestration/tests/test_classification_integration.py`. يعتمد على Inference Gemma (`gemma3` على `:8080`).
+
+**مفعّل:** `extraction` — `ExtractionAgent.run` يقرأ `ocr`/`ocr_result` + `classification` ويكتب `extraction` + `extraction_result` = `{success, sender, date, address, phone, email}` (مفعّل في `config.yaml`). انظر `Orchestration/tests/test_extraction_integration.py`. يعتمد على Inference Gemma (`gemma3` على `:8080`) للحقول الدلالية؛ الـ regex يعمل بدون مودل.
+
+**مفعّل:** `validation` — `ValidationAgent.run` يقرأ `ocr`/`ocr_result` + `classification`/`classification_result` + `extraction`/`extraction_result` ويكتب `validation` + `validation_result` = `{success, is_complete, errors, warnings}` (مفعّل في `config.yaml`). انظر `Orchestration/tests/test_validation_integration.py`.
 
 **جاهز للربط:** `routing` — `RoutingAgent.run` يكتب `state["routing"] = {success, department}` (مفعّل عبر `agent_overrides` في الاختبارات؛ عيّن `agents.routing.enabled: true` في `config.yaml` عند جاهزية المراحل السابقة). انظر `Orchestration/tests/test_routing_integration.py`.
