@@ -26,8 +26,9 @@
 namespace Application::Services {
 
 // Every failure this service can produce is reported through this struct
-// (never thrown past this class) so ChatController can return the unified
-// { Success, Data } contract and log the failed boundary.
+// (never thrown past this class) so ChatController can return Presentation's
+// ApiResponse { Success, AdditionalData: { ChatId, State } } and log the
+// failed boundary.
 struct ChatServiceResult {
     bool success = false;
     Application::DTOs::SendMessageResponseData data;

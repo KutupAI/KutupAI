@@ -1,6 +1,9 @@
 // ChatDTO
 // Request shape for POST api/Chat/SendMessage (Presentation inbound).
-// Response uses the unified layer contract { Success, Data }.
+// Response shape matches Presentation ApiResponse:
+//   { Success, Message?, Code?, AdditionalData: { ChatId, State } }
+// where State is the 9-key pipeline envelope
+//   { request, ocr, classification, extraction, validation, rag, summary, routing, writing }
 
 #pragma once
 
@@ -37,11 +40,31 @@ struct SendMessageRequestDTO {
     static SendMessageRequestDTO fromJson(const Json::Value& body);
 };
 
-// Unified processing contract forwarded to Presentation.
+// Presentation: SendMessageResponseData inside AdditionalData.
 struct SendMessageResponseData {
-    Json::Value contract;  // { "Success": bool, "Data": [ document, ... ] }
+    std::string chatId;
+    Json::Value state;  // 9-key pipeline envelope for the UI
 
+    // Builds { Success, AdditionalData: { ChatId, State } }.
+    // Note: JsonCpp sorts object keys alphabetically, so prefer
+    // toOrderedJsonString() for the Presentation wire format.
     Json::Value toJson() const;
+
+    // Same payload as toJson(), but key order is stable for the UI contract:
+    //   Success → AdditionalData → ChatId → State
+    //   State: request → ocr → classification → extraction → validation
+    //          → rag → summary → routing → writing
+    std::string toOrderedJsonString() const;
+
+    // Map Orchestration { Success, Data: [doc] } (+ request identity) into
+    // the Presentation pipeline State.
+    static Json::Value pipelineStateFromOrchestrationDoc(
+        const Json::Value& doc,
+        const std::string& chatId,
+        const std::string& question,
+        const std::optional<ChatFileDTO>& file);
+
+    static Json::Value emptyPipelineState();
 };
 
 } // namespace Application::DTOs

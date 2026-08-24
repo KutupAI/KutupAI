@@ -1,5 +1,6 @@
 #include "ChatService.h"
 #include "../DTOs/ApiResponseDTO.h"
+#include "../DTOs/LayerStateDTO.h"
 
 #include <drogon/utils/Utilities.h>
 #include <json/json.h>
@@ -15,6 +16,8 @@
 
 using Application::DTOs::ApiResponseDTO;
 using Application::DTOs::ErrorStage;
+using Application::DTOs::LayerDocumentDTO;
+using Application::DTOs::LayerStateDTO;
 
 namespace Application::Services {
 
@@ -31,66 +34,23 @@ std::string generateRequestId() {
     return "req-" + oss.str();
 }
 
-void fillContractIdentity(Json::Value& contract,
-                           const std::string& documentId,
-                           const std::string& question,
-                           const std::optional<Application::DTOs::ChatFileDTO>& file) {
-    if (!contract.isObject()) {
-        contract = ApiResponseDTO::emptyDocumentEnvelope(false);
+Json::Value firstOrchestrationDoc(const Json::Value& contract) {
+    if (contract.isObject() && contract.isMember("Data") && contract["Data"].isArray() &&
+        !contract["Data"].empty() && contract["Data"][0].isObject()) {
+        return contract["Data"][0];
     }
-    if (!contract.isMember("Data") || !contract["Data"].isArray()) {
-        contract["Data"] = Json::Value(Json::arrayValue);
-    }
-    if (contract["Data"].empty()) {
-        Json::Value doc(Json::objectValue);
-        doc["document_id"] = documentId;
-        doc["file_name"] = file.has_value() ? file->fileName : "";
-        doc["file_type"] = "";
-        doc["page_count"] = "";
-        doc["language"] = "tr";
-        doc["date"] = "";
-        doc["pages"] = Json::Value(Json::arrayValue);
-        doc["question"] = question;
-        doc["rewritten_question"] = "";
-        doc["answer"] = "";
-        doc["full_text"] = "";
-        doc["summary"] = "";
-        Json::Value classification(Json::objectValue);
-        classification["document_type"] = Json::nullValue;
-        classification["confidence"] = Json::nullValue;
-        doc["classification"] = classification;
-        doc["rag"] = Json::Value(Json::arrayValue);
-        contract["Data"].append(doc);
-        return;
-    }
-    Json::Value& doc = contract["Data"][0];
-    if (!doc.isMember("document_id") || doc["document_id"].asString().empty()) {
-        doc["document_id"] = documentId;
-    }
-    if (!question.empty() &&
-        (!doc.isMember("question") || doc["question"].asString().empty())) {
-        doc["question"] = question;
-    }
-    if (file.has_value()) {
-        if (!doc.isMember("file_name") || doc["file_name"].asString().empty()) {
-            doc["file_name"] = file->fileName;
-        }
-        if (!doc.isMember("file_type") || doc["file_type"].asString().empty()) {
-            const std::string name = file->fileName;
-            const auto dot = name.find_last_of('.');
-            if (dot != std::string::npos && dot + 1 < name.size()) {
-                doc["file_type"] = name.substr(dot + 1);
-            }
-        }
-    }
+    return Json::Value(Json::objectValue);
 }
 
-ChatServiceResult failed(const std::string& stage, const std::string& message) {
+ChatServiceResult failed(const std::string& stage,
+                          const std::string& message,
+                          const std::string& chatId = "") {
     ChatServiceResult result;
     result.success = false;
     result.errorStage = stage;
     result.errorMessage = message;
-    result.data.contract = ApiResponseDTO::emptyDocumentEnvelope(false);
+    result.data.chatId = chatId;
+    result.data.state = Application::DTOs::SendMessageResponseData::emptyPipelineState();
     return result;
 }
 
@@ -230,11 +190,24 @@ ChatServiceResult ChatService::sendMessage(
         }
     }
 
-    // --- 3) Delegate to Orchestration ---
+    // --- 3) Build unified pipeline envelope, then delegate to Orchestration ---
+    LayerDocumentDTO document;
+    document.documentId = requestId;
+    if (request.file.has_value()) {
+        document.fileName = std::filesystem::path(request.file->fileName).filename().string();
+        document.fileType =
+            LayerStateDTO::normalizeFileType(document.fileName, request.file->fileType);
+    }
+    if (tempPath.has_value()) {
+        document.documentPath = tempPath;
+    }
+
     OrchestrationRequest orchestrationRequest;
     orchestrationRequest.requestId = requestId;
     orchestrationRequest.question = request.question;
     orchestrationRequest.documentPath = tempPath;
+    orchestrationRequest.layerState =
+        LayerStateDTO::initial(std::move(document), request.question, /*success=*/true);
 
     const OrchestrationResult orchestrationResult = orchestrationClient_.process(orchestrationRequest);
 
@@ -245,12 +218,22 @@ ChatServiceResult ChatService::sendMessage(
 
     if (!orchestrationResult.reachable) {
         LOG_ERROR << "ChatService: Orchestration unreachable: " << orchestrationResult.errorMessage;
-        return failed(orchestrationResult.errorStage, orchestrationResult.errorMessage);
+        return failed(orchestrationResult.errorStage, orchestrationResult.errorMessage, requestId);
     }
 
-    result.success = true;
-    result.data.contract = orchestrationResult.contract;
-    fillContractIdentity(result.data.contract, requestId, request.question, request.file);
+    const Json::Value& contract = orchestrationResult.contract;
+    const bool orchSuccess =
+        contract.isMember("Success") && contract["Success"].isBool() && contract["Success"].asBool();
+
+    result.success = orchSuccess;
+    result.data.chatId = requestId;
+    result.data.state = Application::DTOs::SendMessageResponseData::pipelineStateFromOrchestrationDoc(
+        firstOrchestrationDoc(contract), requestId, request.question, request.file);
+
+    if (!orchSuccess) {
+        result.errorStage = ErrorStage::OrchestrationError;
+        result.errorMessage = "Orchestration returned Success=false";
+    }
     return result;
 }
 

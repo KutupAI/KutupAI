@@ -11,6 +11,20 @@
 namespace Application::Routes {
 
 void registerChatRoutes(const std::shared_ptr<Application::Controllers::ChatController>& controller) {
+    // CORS preflight for browser clients that call Application directly.
+    drogon::app().registerHandler(
+        "/api/Chat/SendMessage",
+        [](const drogon::HttpRequestPtr&,
+           std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+            auto resp = drogon::HttpResponse::newHttpResponse();
+            resp->setStatusCode(drogon::k200OK);
+            resp->addHeader("Access-Control-Allow-Origin", "*");
+            resp->addHeader("Access-Control-Allow-Headers", "Content-Type");
+            resp->addHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+            callback(resp);
+        },
+        {drogon::Options});
+
     drogon::app().registerHandler(
         "/api/Chat/SendMessage",
         [controller](const drogon::HttpRequestPtr& req,

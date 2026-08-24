@@ -20,8 +20,11 @@ OrchestrationResult OrchestrationClient::process(const OrchestrationRequest& req
     OrchestrationResult result;
     result.contract = ApiResponseDTO::emptyDocumentEnvelope(false);
 
-    // Build the outgoing payload for Orchestration/main.py's POST /process.
-    Json::Value payload(Json::objectValue);
+    // Primary payload: unified pipeline envelope from LayerStateDTO.
+    Json::Value payload = request.layerState.toJson();
+
+    // Flat wire fields kept for Orchestration/main.py ProcessRequest and
+    // process_service path checks (document_path must be absolute on disk).
     payload["document_id"] = request.requestId;
     payload["question"] = request.question;
     payload["text"] = request.question;
