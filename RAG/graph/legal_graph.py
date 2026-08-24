@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from collections import defaultdict, deque
 from dataclasses import dataclass
+import json
+from pathlib import Path
 import re
 from typing import Any, Dict, Iterable, List, Set, Tuple
 
@@ -24,6 +26,7 @@ _CROSS_REFERENCE = re.compile(
     r"(?:(?P<article1>\d+)\s*\.?\s*madd(?:e|esi|esine|esinin)|madde\s*(?P<article2>\d+))",
     re.IGNORECASE | re.DOTALL,
 )
+_LAW_REFERENCE = re.compile(r"\b(?P<law>\d{3,4})\s*(?:sayılı|sayili)\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,7 @@ class LegalKnowledgeGraph:
         self._chunks: Dict[str, SearchResult] = {}
         self._neighbors: Dict[str, Set[str]] = defaultdict(set)
         self._reference_neighbors: Dict[str, Set[str]] = defaultdict(set)
+        self._law_reference_targets: Dict[str, Set[str]] = defaultdict(set)
         self._built = False
 
     @staticmethod
@@ -56,12 +60,13 @@ class LegalKnowledgeGraph:
         return LegalKnowledgeGraph._article_node(law, article) if law and article else None
 
     def build(self, rows: Iterable[Dict[str, object]] | None = None) -> GraphStats:
-        rows = rows if rows is not None else get_vector_store().export_all()
+        rows = rows if rows is not None else self._indexed_rows()
         self._by_law.clear()
         self._article_chunks.clear()
         self._chunks.clear()
         self._neighbors.clear()
         self._reference_neighbors.clear()
+        self._law_reference_targets.clear()
 
         pending_references: List[Tuple[str, str, str]] = []
         for row in rows:
@@ -77,10 +82,30 @@ class LegalKnowledgeGraph:
             self._chunks[chunk_id] = SearchResult(
                 id=chunk_id, text=str(row.get("text") or ""), metadata=meta, score=0.0
             )
-            for match in _CROSS_REFERENCE.finditer(str(row.get("text") or "")):
+            text = str(row.get("text") or "")
+            for match in _LAW_REFERENCE.finditer(text):
+                target_law = match.group("law")
+                if target_law != law:
+                    self._law_reference_targets[node].add(target_law)
+            for match in _CROSS_REFERENCE.finditer(text):
                 target_article = match.group("article1") or match.group("article2")
                 if target_article:
                     pending_references.append((node, match.group("law"), target_article))
+
+        # PDF metninde satır kırılmasıyla kaçan atıflar, SQLite extractor'ın
+        # daha geniş düzenli ifadeleriyle yakalanmış olabilir. Aynı graph'a
+        # ikinci bir tahmin katmanı eklemeden bu kanıtlı kenarları da kullan.
+        try:
+            from RAG.metadata.legal_index import get_legal_index
+
+            for source_law, source_article, target_law, target_article, relation_type in get_legal_index().relation_edges():
+                source = self._article_node(source_law, source_article)
+                if relation_type == "cross_reference" and target_article:
+                    pending_references.append((source, target_law, target_article))
+                elif relation_type == "law_reference" and source in self._article_chunks and target_law != source_law:
+                    self._law_reference_targets[source].add(target_law)
+        except Exception:
+            pass
 
         adjacent_edges = 0
         for nodes in self._by_law.values():
@@ -100,6 +125,23 @@ class LegalKnowledgeGraph:
         self._built = True
         return GraphStats(len(self._by_law), len(self._article_chunks), adjacent_edges, reference_edges)
 
+    @staticmethod
+    def _indexed_rows() -> Iterable[Dict[str, object]]:
+        """Graph için mevcut chunk export'unu hızlıca yükler."""
+        path = Path(__file__).resolve().parents[1] / "documents" / "indexed_chunks.json"
+        if path.is_file():
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                for item in payload if isinstance(payload, list) else payload.get("chunks", []):
+                    yield {
+                        "chunk_id": item.get("chunk_id"), "text": item.get("full_text", ""),
+                        "metadata": item.get("metadata") or item,
+                    }
+                return
+            except (OSError, ValueError, TypeError):
+                pass
+        yield from get_vector_store().export_all()
+
     def related_chunk_ids(
         self, law_number: str, article_number: str, *, hops: int = 1, include_references: bool = False
     ) -> List[str]:
@@ -109,25 +151,43 @@ class LegalKnowledgeGraph:
         distances = self._distances({start}, hops, include_references=include_references)
         return [chunk_id for node in distances for chunk_id in self._article_chunks.get(node, []) if chunk_id]
 
+    def referenced_laws(self, results: List[SearchResult], *, max_laws: int = 2) -> List[str]:
+        """İlk adayların kanıtlı kanun atıflarını döndürür."""
+        if not self._built:
+            self.build()
+        laws: List[str] = []
+        for result in results[:8]:
+            node = self._metadata_node(dict(result.get("metadata") or {}))
+            for law in sorted(self._law_reference_targets.get(node or "", set())):
+                if law not in laws:
+                    laws.append(law)
+                if len(laws) >= max_laws:
+                    return laws
+        return laws
+
     def enrich(
         self, query: str, results: List[SearchResult], *, hops: int = 1, max_related: int = 12,
         include_references: bool = False,
     ) -> List[SearchResult]:
-        """Append graph neighbours without hiding base retrieval hits.
-
-        Expansion requires an explicit law and article, preventing broad
-        questions from being pulled toward an accidental top-ranked law.
-        """
-        filters = get_query_metadata_extractor().extract(query)
-        law, article = filters.get("law_number"), filters.get("article_no")
-        if not law or not article:
-            return results
+        """Açık atıf veya çoklu-kanun adaylarından güvenilir komşular ekler."""
+        extractor = get_query_metadata_extractor()
+        filters = extractor.extract(query)
+        intent = extractor.extract_intent(query)
         if not self._built:
             self.build()
-
-        distances = self._distances(
-            {self._article_node(law, article)}, hops, include_references=include_references
-        )
+        starts: Set[str] = set()
+        law, article = filters.get("law_number"), filters.get("article_no")
+        if law and article:
+            starts.add(self._article_node(law, article))
+        allowed_laws = set(intent.law_numbers)
+        for result in results[:8]:
+            node = self._metadata_node(dict(result.get("metadata") or {}))
+            result_law = str(result.get("metadata", {}).get("law_number") or "")
+            if node and (not allowed_laws or result_law in allowed_laws):
+                starts.add(node)
+        if not starts:
+            return results
+        distances = self._distances(starts, hops, include_references=include_references)
         if not distances:
             return results
 

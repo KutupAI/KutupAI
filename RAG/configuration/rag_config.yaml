@@ -11,8 +11,16 @@ documents:
   amendments_path: "RAG/documents/amendments"
   internal_docs_path: "RAG/documents/internal_docs"
   uploads_path: "RAG/documents/uploads"
+  # Sınıflandırma veri setinden seçilen kanun-dışı örnek/şablon belgeler.
+  reference_docs_path: "RAG/documents/reference_docs"
+  # Etiketli veri seti varsayılan olarak indekse girmez. Metin tabanlı örnekleri
+  # ileride eklemek için yalnız bu değeri true yapın; görseller her durumda atlanır.
+  classification_data_path: "RAG/documents/classification_data"
+  include_classification_text_data: false
   text_globs: ["**/*.txt", "**/*.md"]
   pdf_globs: ["**/*.pdf"]
+  docx_globs: ["**/*.docx"]
+  spreadsheet_globs: ["**/*.xlsx"]
 
 chunking:
   # Bir chunk'ın hedef karakter sınırı ve komşu chunk'a aktarılan bağlam.
@@ -79,6 +87,31 @@ reranker:
   top_n: 15
   # 0.0 yalnız reranker, 1.0 yalnız ilk retrieval sırası demektir.
   base_rank_weight: 0.0
+
+amendment_ledger:
+  # Değişiklik/iptal/yürürlük cetvelleri normal kanun chunk'larından ayrı tutulur.
+  enabled: true
+  output_path: "RAG/documents/amendment_ledger.json"
+  max_results: 4
+
+facts_registry:
+  # Chroma chunk'larından doğrulanabilir yapılandırılmış olaylar üretir.
+  enabled: true
+  output_path: "RAG/documents/facts_registry.json"
+  max_results: 3
+  collection_name: "legal_facts"
+
+legal_index:
+  # Chroma anlam araması için kalır. Bu yerel SQLite dosyası ise metadata,
+  # değişiklik cetvelleri, kanıt ilişkileri ve hızlı tam-terim aramasının
+  # kaynak kaydıdır. Pipeline her yeniden indekslemede otomatik üretir.
+  enabled: true
+  output_path: "RAG/documents/.legal_index.sqlite"
+  fts_candidate_k: 20
+
+multi_hop:
+  enabled: true
+  max_subqueries: 2
 
 query_expansion:
   # Kural tabanlı genişletme. Önce ablation testiyle faydası doğrulanmalıdır.

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from RAG.retriever.query_metadata import get_query_metadata_extractor
+from RAG.retriever.query_frame import build_query_frame
 from RAG.retriever.text_utils import fold_turkish
 
 
@@ -20,11 +21,42 @@ class QueryPlan:
 
 def choose_query_plan(question: str) -> QueryPlan:
     """Sorunun kanıt yapısına göre güvenli retrieval yolunu seçer."""
-    metadata = get_query_metadata_extractor().extract(question)
+    frame = build_query_frame(question, extractor=get_query_metadata_extractor())
+    metadata = {
+        "law_number": frame.intent.primary_law_number,
+        "article_no": frame.article_numbers[0] if frame.article_numbers else None,
+    }
+    intent = frame.intent
     normalized = fold_turkish(question).casefold()
+    # Bir karşılaştırma aynı zamanda "değişiklik" kelimesini içerebilir. Bu
+    # durumda cetvel tek başına yeterli değildir; iki kanıt havuzu gerekir.
+    if frame.kind == "comparison":
+        return QueryPlan("comparison_lookup", "hybrid", True, True, False,
+                         "Karşılaştırma sorusu: her hukukî taraf için dengeli kanıt havuzu.")
+    if frame.kind == "multi_law_relation":
+        return QueryPlan("multi_law_relation", "hybrid", True, True, "full",
+                         "Birden fazla kanun/atıf: her kanun için ayrı aday havuzu + Graph-RAG.")
+    if frame.needs_amendment_evidence:
+        return QueryPlan("amendment_lookup", "hybrid", True, True, False,
+                         "Değişiklik/iptal/yürürlük sorusu: kanun retrieval + değişiklik cetveli.")
     if metadata.get("law_number") and metadata.get("article_no"):
         return QueryPlan("exact_citation", "vector", False, True, None,
                          "Açık kanun ve madde bulundu: metadata filtresi + hassas sıralama.")
+    if intent.needs_multiple_evidence:
+        return QueryPlan("multi_article_same_law", "hybrid", True, True, "full",
+                         "Birden fazla hüküm isteniyor: alt kanıtlar birlikte getirilir.")
+    if intent.kind == "temporal":
+        return QueryPlan("temporal_lookup", "hybrid", False, True, False,
+                         "Tarih/yürürlük sorusu: tarih içeren hüküm ve cetvel önceliği.")
+    if intent.kind == "authority":
+        return QueryPlan("authority_lookup", "hybrid", False, True, False,
+                         "Yetki sorusu: kurum ve görev hükmü önceliği.")
+    if intent.kind == "sanction":
+        return QueryPlan("sanction_lookup", "hybrid", False, True, False,
+                         "Ceza/tutar sorusu: fiil ve yaptırım hükmü birlikte aranır.")
+    if intent.kind == "condition":
+        return QueryPlan("condition_lookup", "hybrid", False, True, False,
+                         "Şart/koşul sorusu: ilgili bentlerin tamamı aranır.")
     article_lookup_terms = ("hangi maddede", "hangi madde", "maddesi nedir", "hangi maddes")
     if any(term in normalized for term in article_lookup_terms):
         return QueryPlan("article_lookup", "hybrid", False, True, False,

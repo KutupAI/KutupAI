@@ -1,6 +1,7 @@
 """Query Router'ın pahalı bağımlılıklar olmadan temel rota testleri."""
 
 from RAG.retriever.query_router import choose_query_plan
+from RAG.retriever.query_metadata import QueryIntent
 
 
 class _EmptyMetadataExtractor:
@@ -8,6 +9,17 @@ class _EmptyMetadataExtractor:
 
     def extract(self, _question: str) -> dict:
         return {}
+
+    def extract_intent(self, _question: str) -> QueryIntent:
+        """Yeni router'ın beklediği boş ama geçerli soru çerçevesini üretir."""
+        return QueryIntent(
+            law_numbers=(),
+            article_numbers=(),
+            primary_law_number=None,
+            amending_law_numbers=(),
+            kind="general",
+            needs_multiple_evidence=False,
+        )
 
 
 def test_penalty_and_declaration_question_uses_hybrid(monkeypatch):

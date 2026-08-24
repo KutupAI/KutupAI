@@ -44,6 +44,9 @@ def _source_record(result: SearchResult, label: str) -> Dict[str, object]:
         "chunk_id": str(meta.get("chunk_id") or result["id"]),
         "document_id": str(meta.get("document_id") or ""),
         "score": float(result["score"]),
+        "source_type": str(meta.get("source_type") or "unknown"),
+        "document_category": str(meta.get("document_category") or ""),
+        "authority_level": str(meta.get("authority_level") or "unknown"),
     }
 
 
@@ -94,10 +97,22 @@ def build_context(
         source = _source_record(result, label)
         page = source["page_start"]
         page_text = f" | Sayfa {page}" if page else ""
-        header = (
-            f"[{label}] {source['law_name']} | Kanun {source['law_number']} | "
-            f"Madde {source['article_number']} | Dosya {source['source_file']}{page_text}"
-        )
+        if source["source_type"] == "reference_docs":
+            category = source["document_category"] or "belirsiz"
+            header = (
+                f"[{label}] Referans Belge | Kategori {category} | "
+                f"Durum {source['authority_level']} | Dosya {source['source_file']}{page_text}"
+            )
+        elif source["source_type"] == "legal_facts":
+            header = (
+                f"[{label}] Yapılandırılmış Hukukî Olgu | Tür {result['metadata'].get('fact_type', 'unknown')} | "
+                f"Dosya {source['source_file']}{page_text}"
+            )
+        else:
+            header = (
+                f"[{label}] {source['law_name']} | Kanun {source['law_number']} | "
+                f"Madde {source['article_number']} | Dosya {source['source_file']}{page_text}"
+            )
         body = " ".join(_article_scoped_text(result).split())[:max_chunk_chars].strip()
         candidate = f"{header}\n{body}"
         candidate_tokens = _estimate_tokens(candidate)

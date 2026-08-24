@@ -15,7 +15,7 @@ from RAG.configuration.rag_config_loader import cache_config
 # Retrieval, context, citation veya prompt değiştiğinde artırılır. Eski cevaplar
 # akıcı görünse de farklı bir kanıt hattından geldiği için güvenlik düzeltmesini
 # aşmamalıdır.
-CACHE_SCHEMA_VERSION = 9
+CACHE_SCHEMA_VERSION = 24
 
 
 @dataclass(frozen=True)

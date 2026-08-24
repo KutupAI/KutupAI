@@ -56,18 +56,27 @@ class DocumentsConfig:
     amendments_path: Path
     internal_docs_path: Path
     uploads_path: Path
+    reference_docs_path: Path
+    classification_data_path: Path
+    include_classification_text_data: bool
     text_globs: Tuple[str, ...]
     pdf_globs: Tuple[str, ...]
+    docx_globs: Tuple[str, ...]
+    spreadsheet_globs: Tuple[str, ...]
 
     @property
     def all_source_dirs(self) -> List[Path]:
-        return [
+        directories = [
             self.laws_path,
             self.regulations_path,
             self.amendments_path,
             self.internal_docs_path,
             self.uploads_path,
+            self.reference_docs_path,
         ]
+        if self.include_classification_text_data:
+            directories.append(self.classification_data_path)
+        return directories
 
 
 @dataclass(frozen=True)
@@ -145,6 +154,36 @@ class RerankerConfig:
 
 
 @dataclass(frozen=True)
+class AmendmentLedgerConfig:
+    enabled: bool
+    output_path: Path
+    max_results: int
+
+
+@dataclass(frozen=True)
+class FactsRegistryConfig:
+    enabled: bool
+    output_path: Path
+    max_results: int
+    collection_name: str
+
+
+@dataclass(frozen=True)
+class LegalIndexConfig:
+    """Yerel SQLite metadata/FTS indeksinin çalışma ayarları."""
+
+    enabled: bool
+    output_path: Path
+    fts_candidate_k: int
+
+
+@dataclass(frozen=True)
+class MultiHopConfig:
+    enabled: bool
+    max_subqueries: int
+
+
+@dataclass(frozen=True)
 class QueryExpansionConfig:
     enabled: bool
     strategies: Tuple[str, ...]
@@ -206,8 +245,13 @@ documents_config = DocumentsConfig(
     amendments_path=resolve_path(_raw["documents"].get("amendments_path", "RAG/documents/amendments")),
     internal_docs_path=resolve_path(_raw["documents"]["internal_docs_path"]),
     uploads_path=resolve_path(_raw["documents"].get("uploads_path", "RAG/documents/uploads")),
+    reference_docs_path=resolve_path(_raw["documents"].get("reference_docs_path", "RAG/documents/reference_docs")),
+    classification_data_path=resolve_path(_raw["documents"].get("classification_data_path", "RAG/documents/classification_data")),
+    include_classification_text_data=bool(_raw["documents"].get("include_classification_text_data", False)),
     text_globs=tuple(_raw["documents"]["text_globs"]),
     pdf_globs=tuple(_raw["documents"]["pdf_globs"]),
+    docx_globs=tuple(_raw["documents"].get("docx_globs", ["**/*.docx"])),
+    spreadsheet_globs=tuple(_raw["documents"].get("spreadsheet_globs", ["**/*.xlsx"])),
 )
 
 chunking_config = ChunkingConfig(
@@ -265,6 +309,34 @@ reranker_config = RerankerConfig(
     model_name=str(_rr.get("model_name", "cross-encoder/ms-marco-MiniLM-L-6-v2")),
     top_n=int(_rr.get("top_n", 15)),
     base_rank_weight=min(1.0, max(0.0, float(_rr.get("base_rank_weight", 0.0)))),
+)
+
+_ledger = _raw.get("amendment_ledger", {})
+amendment_ledger_config = AmendmentLedgerConfig(
+    enabled=bool(_ledger.get("enabled", True)),
+    output_path=resolve_path(str(_ledger.get("output_path", "RAG/documents/amendment_ledger.json"))),
+    max_results=max(1, int(_ledger.get("max_results", 4))),
+)
+
+_facts = _raw.get("facts_registry", {})
+facts_registry_config = FactsRegistryConfig(
+    enabled=bool(_facts.get("enabled", True)),
+    output_path=resolve_path(str(_facts.get("output_path", "RAG/documents/facts_registry.json"))),
+    max_results=max(1, int(_facts.get("max_results", 3))),
+    collection_name=str(_facts.get("collection_name", "legal_facts")),
+)
+
+_legal_index = _raw.get("legal_index", {})
+legal_index_config = LegalIndexConfig(
+    enabled=bool(_legal_index.get("enabled", True)),
+    output_path=resolve_path(str(_legal_index.get("output_path", "RAG/documents/.legal_index.sqlite"))),
+    fts_candidate_k=max(1, int(_legal_index.get("fts_candidate_k", 20))),
+)
+
+_multi_hop = _raw.get("multi_hop", {})
+multi_hop_config = MultiHopConfig(
+    enabled=bool(_multi_hop.get("enabled", True)),
+    max_subqueries=max(1, int(_multi_hop.get("max_subqueries", 2))),
 )
 
 _obs = _raw.get("observability", {})

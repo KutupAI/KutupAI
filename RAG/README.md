@@ -1,342 +1,225 @@
-# Hukukî RAG Katmanı
+# KutupAI Hukukî RAG Katmanı
 
-Bu klasör, KutupAI projesinin Türkçe hukukî kaynakları indeksleyen, getiren ve kaynaklı cevap üreten RAG katmanıdır. RAG ekibinin teslim/sahiplik sınırı `RAG/` ve `Tests/RAG/` klasörleridir. `Inference/` model sunucusunu sağlar; RAG bu katmana yalnız HTTP istemcisi olarak bağlanır.
+Bu klasör, KutupAI projesinin hukukî bilgi erişim katmanıdır. Mevzuat ve resmî belgeleri indeksler; kullanıcı sorusuna en ilgili, kaynaklı kanıt pasajlarını getirir.
 
-## Sistem ne yapar?
+RAG iki kullanım biçimi sunar:
 
-- Kanun ve yönetmelik PDF'lerini yükler; hukukî madde yapısını koruyarak chunk'lara ayırır.
-- Chunk kimliği, kanun/madde numarası, kaynak dosya, sayfa ve kaynak türü metadata'sı üretir.
-- BGE-M3 embedding'lerini ChromaDB'ye kalıcı olarak indeksler.
-- Dense retrieval, BM25, RRF hybrid, PRF, reranker, metadata filtresi ve Graph-RAG'i soru tipine göre birleştirir.
-- Qwen veya başka bir OpenAI-uyumlu LLM ile kaynaklı Türkçe cevap üretir.
-- Citation doğrulaması, Query Transform, semantic cache ve çok turlu konuşma belleği uygular.
+- **Retrieval servisi:** Uygulama katmanına kaynak pasaj, kanun/madde bilgisi, sayfa ve skor verir. Ana takım entegrasyonunda LLM çalışmaz.
+- **Yerel hukukî sohbet:** Aynı kanıt paketini OpenAI-uyumlu bir LLM'e göndererek kaynak etiketli Türkçe cevap üretir.
+
+Sistem, kaynakta açıkça bulunmayan hukukî sonuç, tarih, ceza veya işlem adımı üretmez.
+
+## Mimari
 
 ```mermaid
 flowchart LR
-  A["PDF / TXT"] --> B["Hukukî chunking + metadata"]
-  B --> C["BGE-M3 embedding"] --> D[("ChromaDB")]
-  B --> E["BM25"]
-  B --> F["Atıf grafı"]
+  A["Kanun / Yönetmelik / Resmî Belge"] --> B["Loader"]
+  B --> C["Hukukî Chunking + Metadata"]
+  C --> D["BGE-M3 Embedding"] --> E[("ChromaDB")]
+  C --> F["BM25"]
+  C --> G[("SQLite FTS5 Hukuk İndeksi")]
+  C --> H["Değişiklik Cetveli + Olgu Kaydı + Atıf Grafı"]
   Q["Kullanıcı sorusu"] --> T["Query Transform"] --> R["Query Router"]
-  R --> D & E & F
-  D & E & F --> H["Hybrid / PRF / Reranker"] --> I["Context Builder"]
-  I --> J["OpenAI-uyumlu LLM"] --> K["Kaynaklı Türkçe cevap"]
+  R --> E & F & G & H
+  E & F & G & H --> X["Hybrid / RRF / PRF / Reranker / Graph-RAG"]
+  X --> K["Kaynaklı kanıt paketleri"]
+  K --> O["Application / Orchestration"]
+  K -. isteğe bağlı .-> L["Context Builder"] --> M["LLM kaynaklı Türkçe cevap"]
 ```
 
-## Kullanılan teknoloji ve modeller
+Akışın mantığı: önce kaynak metni ve yapısı hazırlanır; sonra soru tipi anlaşılır; uygun arama yolları seçilir; yalnız güçlü kanıtlar sonraki katmana aktarılır.
 
-| Katman | Araç/model | Görev |
+## Katmanlar
+
+| Katman | Görev | Ana dosyalar |
 |---|---|---|
-| PDF yükleme | `PyPDFLoader`, `pypdf`, LangChain Community | PDF/TXT kaynaklarını okumak |
-| Doküman sözleşmesi | `langchain-core` `Document` | Chunk ve metadata aktarımı |
-| Chunking | `RAG/ingestion/chunker.py` | Hukukî madde sınırlarını korumak |
-| Embedding | `BAAI/bge-m3` | Türkçe/çok dilli dense retrieval |
-| Vektör store | ChromaDB + `langchain-chroma` | Kalıcı indeks ve metadata filtresi |
-| Lexical arama | `rank-bm25` | Tam terim ve kanun numarası eşleşmesi |
-| Fusion | RRF | Dense ve BM25 adaylarını birleştirmek |
-| PRF | Yerel pseudo relevance feedback | Geniş sorgularda recall artırmak |
-| Reranker | `BAAI/bge-reranker-v2-m3` | Adayları soru-pasaj ilişkisine göre sıralamak |
-| Graph-RAG | `RAG/graph/legal_graph.py` | Madde atıf/ilişki genişletmesi |
-| Cevap LLM'i | Qwen2.5-7B-Instruct GGUF Q4 (varsayılan) | Kaynaklı Türkçe cevap |
-| Query Transform LLM'i | Qwen2.5-1.5B-Instruct GGUF Q4 (isteğe bağlı) | Ek sorgu varyantları |
-| Test/ölçüm | `psutil`, `pytest` | Gecikme, RAM ve regresyon testi |
+| Kaynak yönetimi | Belgeleri kaynak türüne göre toplar. | `documents/`, `ingestion/loader.py` |
+| Ingestion | Metni okur, chunk üretir ve indeksleri kurar. | `ingestion/pipeline.py` |
+| Hukukî chunking | Madde/fıkra/bent sınırlarını korur. | `ingestion/chunker.py` |
+| Metadata | Kanun, madde, sayfa, kaynak türü ve hukukî sinyalleri taşır. | `metadata/` |
+| Vector retrieval | Anlam benzerliği ile aday bulur. | `embeddings/`, `chroma/`, `vector_store/` |
+| Lexical retrieval | Tam terim, kanun ve madde numarası arar. | `retriever/hybrid.py`, SQLite FTS5 |
+| Soru anlama | Soru sinyallerini çıkarır, retrieval planını seçer. | `query_metadata.py`, `query_frame.py`, `query_router.py` |
+| Kanıt zenginleştirme | Fusion, PRF, reranker, ledger ve Graph-RAG uygular. | `retriever/`, `graph/` |
+| Cevap güvenliği | Bağlamı sınırlar ve citation'ları doğrular. | `agent/` |
+| Entegrasyon | Diğer katmanlar için sabit JSON sözleşmesi sağlar. | `client/contract_adapter.py` |
 
-`torch`, `runtime.device: auto` ayarında CUDA varsa GPU'yu, yoksa CPU'yu seçer. Tüm çalışma ayarları Türkçe açıklamalarıyla `RAG/configuration/rag_config.yaml` içindedir.
+## Kaynaklar
 
-## Klasör yapısı
+| Yol | İçerik | Arama davranışı |
+|---|---|---|
+| `documents/laws/` | Kanunlar | Ana hukuk corpus'u |
+| `documents/regulations/` | Yönetmelik, tebliğ ve bağlı düzenlemeler | Soru uygunsa kanunlarla birlikte |
+| `documents/amendments/` | Değişiklik kaynakları | Yürürlük, iptal ve değişiklik soruları |
+| `documents/reference_docs/` | Form, dilekçe, sözleşme, tutanak ve resmî belge örnekleri | Belge/nüsha odaklı sorularda kanun corpus'unu tamamlar |
+| `documents/internal_docs/` | Kurum içi metinler | Ayrı metadata ile |
+| `documents/uploads/` | Sonradan eklenen dosyalar | Kaynak türü korunarak |
+| `documents/classification_data/` | Sınıflandırma verisi | Varsayılan olarak ana corpus dışı |
 
-| Yol | Açıklama |
-|---|---|
-| `configuration/` | Tek merkezli YAML ayarı ve typed config loader |
-| `documents/` | Corpus, kaynak README'leri ve chunk kaydı |
-| `ingestion/` | Loader, enrichment, manifest ve indeksleme pipeline'ı |
-| `embeddings/` | BGE-M3 model yükleme |
-| `chroma/`, `vector_store/` | ChromaDB yapılandırması ve store adaptörü |
-| `retriever/` | BM25, hybrid, PRF, router, reranker, Query Transform |
-| `graph/` | Hukukî madde-atıf grafı |
-| `agent/` | LLM bağlamı, citation, cache ve konuşma belleği |
-| `client/` | Diğer takım agent'ları için sabit RAG istemci sözleşmesi |
-| `evaluation/` | Benchmark kodu, metrikler ve versionlanan veri setleri |
-| `scripts/` | Retrieval/legal-agent CLI komutları |
-| `../Tests/RAG/` | Otomatik testler, benchmark ve ana manuel sohbet testi |
+Metin tabanlı PDF, TXT, DOCX ve XLSX desteklenir. Taranmış görsel PDF, DOC ve XLS dosyaları OCR yapılmadığı için indekslenmez.
 
-## Corpus ve Git LFS
-
-| İçerik | Yol | Yaklaşık boyut |
-|---|---|---:|
-| Kanun PDF'leri | `documents/laws/*.pdf` | 31 MB |
-| Yönetmelik PDF'leri | `documents/regulations/*.pdf` | 15 MB |
-| Hazır chunk kaydı | `documents/indexed_chunks.json` | 32 MB |
-
-PDF'ler ve `indexed_chunks.json` Git LFS ile izlenir:
-
-```powershell
-git lfs install
-git lfs pull
-```
-
-`documents/.chroma_db/`, `.semantic_cache.json`, `evaluation/models/`, `evaluation/experiments/`, Hugging Face cache ve `.venv` yerel çıktıdır; Git'e eklenmez.
-
-## Kurulum ve indeksleme
-
-Proje kök dizininden çalıştırın:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r RAG/requirements.txt
-python -m RAG.ingestion.pipeline --reset
-```
-
-Tek kaynak ekleme:
+Yeni tek dosya ekleme örneği:
 
 ```powershell
 python -m RAG.ingestion.pipeline --file "C:\tam\yol\yeni_kanun.pdf" --bucket laws
 ```
 
-Kaynak türüne göre `laws`, `regulations`, `amendments`, `internal_docs` veya `uploads` bucket'ı kullanılabilir. Yeni kaynak eklendikten sonra indeks güncellenmelidir. İlk model indirmesinde Hugging Face token'ı isteğe bağlı olarak hız/rate-limit avantajı sağlar:
+Corpus ilk kez kurulurken veya tamamen değiştiğinde:
 
 ```powershell
-$env:HF_TOKEN = "huggingface_tokeniniz"
+python -m RAG.ingestion.pipeline --reset
 ```
 
-## Çalıştırma
+Bu komut chunk kaydını, Chroma indeksini, değişiklik cetvelini, olgu kaydını ve yerel hukuk indeksini birlikte oluşturur.
 
-### Ana manuel sohbet ve test arayüzü
-
-Günlük kullanıcı testi için temel dosya budur:
+İndeksleme vektörler yazıldıktan sonra kesilirse, embedding'leri tekrar üretmeden yalnız yardımcı indeksleri yenilemek için:
 
 ```powershell
-python Tests/RAG/run_llm_evaluation.py --no-cache
+python -m RAG.ingestion.pipeline --rebuild-supporting-indexes
 ```
 
-Bu ekran cevap, kaynaklar, retrieval planı, Query Transform varyantları, cache, retrieval/generation süreleri ve konuşma belleği bilgisini gösterir.
+Bu kurtarma komutu mevcut Chroma vektörlerinden BM25, değişiklik cetveli, facts registry ve SQLite hukuk indeksini yeniden kurar.
 
-| Komut/seçenek | İşlev |
+## Hukukî chunking ve metadata
+
+Sistem sabit karakter sayısına göre kör biçimde bölmez. Önce kanun numarasını ve başlığını bulur; sonra `Madde`, `Ek Madde`, `Geçici Madde`, fıkra ve bent sınırlarını tanır. Çok uzun madde bölünürse her parça aynı madde metadata'sını taşır.
+
+Her chunk için örnek kayıt:
+
+```json
+{
+  "chunk_id": "2692_4_00002_2ad9de959dd0",
+  "law_number": "2692",
+  "law_name": "Sahil Güvenlik Komutanlığı Kanunu",
+  "article_no": "4",
+  "article_type": "madde",
+  "source_file": "2692_Sahil Güvenlik Komutanlığı.pdf",
+  "source_type": "laws",
+  "page_start": 2,
+  "page_end": 2,
+  "full_text": "..."
+}
+```
+
+Bu alanlar metadata filtresinde, Graph-RAG ilişkilerinde, kaynak gösteriminde ve takım sözleşmesinde kullanılır.
+
+## İndeksler ve modeller
+
+| Bileşen | Kullanım nedeni |
 |---|---|
-| `q`, `exit`, `çıkış` | Sohbetten çıkar |
-| `clear`, `temizle`, `yeni konu` | Sadece konuşma belleğini sıfırlar |
-| `--no-cache` | Kalıcı semantic cache'i kapatır; test için önerilir |
-| `--query-transform-llm` | Bu oturumda LLM tabanlı Query Transform'u açar |
+| `BAAI/bge-m3` | Türkçe ve çok dilli anlam tabanlı arama için embedding üretir. |
+| ChromaDB | Embedding vektörlerini ve metadata filtrelerini kalıcı tutar. |
+| BM25 | Kanun numarası, KHK numarası ve özel hukuk terimlerinde tam eşleşme sağlar. |
+| RRF | Vector ve BM25 sıralamalarını dengeli tek listede birleştirir. |
+| `BAAI/bge-reranker-v2-m3` | Soru-pasaj ilişkisini tekrar değerlendirerek adayları sıralar. |
+| SQLite FTS5 | Yerel tam metin, madde ve başlık araması sağlar. |
+| `pdfplumber` | Değişiklik/yürürlük tablolarını yapılandırılmış kayda dönüştürür. |
 
-### Sadece retrieval
+`documents/.legal_index.sqlite`, pipeline tarafından üretilen yerel indekstir. Chunk metadata'sı, FTS kayıtları, değişiklik cetvelleri, çıkarılmış olgular ve atıf ilişkilerini tutar; corpus yerine geçen kaynak dosya değildir ve yeniden üretilebilir.
 
-```powershell
-.\RAG\scripts\run_retrieval.ps1
+Değişiklik cetveli kaydı örneği:
+
+```json
+{
+  "hedef_kanun_no": "2692",
+  "degistiren_duzenleme_no": "668",
+  "yururluk_tarihi_ham": "27/7/2016",
+  "kaynak_sayfa": 23
+}
 ```
 
-Bu mod LLM ile cevap üretmeden chunk, skor, kanun, madde ve sayfa bilgisini verir.
-Varsayılan `--mode auto` ayarında Query Router soru türüne göre `exact_citation`,
-`article_lookup`, `lexical_legal_lookup`, `semantic_hybrid` veya
-`legal_relationship` planını seçer.
+Facts Registry; PDF'de açıkça yer alan süre, E./K. numarası, kanun atfı, iptal ve yürürlük bilgisini kaynak pasajına bağlı olarak saklar. Yeni hukuk kuralı üretmez.
 
-İnteraktif ekranda kısa teknik özet varsayılan olarak açıktır:
+## Query Transform ve Query Router
 
-```text
-Seçilen retrieval yolu
-Kullanılan teknikler
-Query Transform'un soruyu değiştirip değiştirmediği
-Arama, reranker ve toplam süre
-```
+### Query Transform
 
-Geçici olarak kapatmak için:
+Soru aramaya gitmeden önce hafif normalizasyondan geçer:
 
-```powershell
-.\RAG\scripts\run_retrieval.ps1 --no-debug
-```
+- `vergi nede sorgulanabilir` → `vergi nerede sorgulanabilir`
+- `CMK 100` → `Ceza Muhakemesi Kanunu 100`
 
-Kalıcı olarak `RAG/configuration/rag_config.yaml` içindeki aşağıdaki alanları
-değiştirin:
+Bu yerel düzeltme her zaman aktiftir. İsteğe bağlı Qwen tabanlı sorgu varyantı açıksa, yalnız anlamı koruyan ve kalite filtresinden geçen varyantlar aramaya eklenir.
 
-```yaml
-observability:
-  retrieval_debug: false
-  show_stage_timings: false
-  show_query_details: false
-  show_candidate_details: false
-  show_result_metadata: false
-```
+### Query Router
 
-`--mode vector|bm25|hybrid`, `--prf`, `--no-prf`, `--reranker`,
-`--no-reranker` ve `--graph-rag` seçenekleri yalnız deney/karşılaştırma için
-Router kararını geçersiz kılar.
+Router sabit konu sözlüğü kullanmaz. Kanun numarası, kanun adı, madde, KHK, tarih, yaptırım, atıf ve karşılaştırma sinyallerini çıkarır. Özel sinyal yoksa `semantic_hybrid` seçilir.
 
-### Tek turlu legal-agent CLI
+| Soru sinyali | Plan | Ana teknik |
+|---|---|---|
+| Açık kanun + madde | `exact_citation` | Metadata filtresi + vector + reranker |
+| “Hangi maddede?” | `article_lookup` | Hybrid arama + madde seçimi |
+| Özgün terim, ceza veya numara | `lexical_legal_lookup` | BM25 + vector + reranker |
+| Değişiklik, KHK, yürürlük, mülga | `amendment_lookup` | Hybrid + ledger + yapılandırılmış kanıt |
+| Birden çok kanun/madde ilişkisi | `multi_law_relation` | Hybrid + PRF + Graph-RAG |
+| Serbest hukuk sorusu | `semantic_hybrid` | Hybrid + reranker |
 
-```powershell
-.\RAG\scripts\run_legal_agent.ps1
-python -m RAG.scripts.ask_legal_agent "KVKK 5. maddede veri işleme şartları nelerdir?"
-```
+## Retrieval hattı
 
-## Varsayılan Qwen ile cevap üretimi
+1. Chroma, BM25 ve gerektiğinde SQLite FTS adayları toplanır.
+2. Açık kanun, madde veya kaynak türü varsa metadata filtresi uygulanır.
+3. Dense ve BM25 sonuçları RRF ile birleştirilir.
+4. Geniş veya ilişkisel soruda PRF ile ek arama sinyali üretilir.
+5. Atıf/değişiklik sorularında Graph-RAG, ledger ve facts kayıtları eklenir.
+6. Cross-encoder reranker son adayları soru-pasaj ilişkisine göre sıralar.
+7. Çok olgulu sorularda kanıt kapsama koruması, gerekli her olgunun sonuçlarda bulunmasını sağlar.
 
-RAG cevap katmanı OpenAI Chat Completions uyumlu endpoint bekler. Varsayılan ayar:
+Varsayılan olarak sonraki katmana beş kaynaklı chunk verilir. Her sonuç; metin, skor, kanun, madde ve sayfa bilgisini içerir.
+
+### Graph-RAG
+
+Graph-RAG LLM ile ilişki uydurmaz. Yalnız metinde açıkça bulunan bağlantıları kullanır:
+
+- madde → atıf yapılan kanun,
+- değişiklik düzenlemesi → etkilenen madde → yürürlük tarihi,
+- çıkarılmış olgu → kaynak chunk,
+- aynı kanundaki açık madde bağlantıları.
+
+Bu nedenle birden çok belgeyi ilgilendiren sorularda gerekli kanıtları birlikte getirir; kaynakta olmayan bağlantı kurmaz.
+
+## LLM ile kaynaklı cevap
+
+LLM isteğe bağlıdır. `Context Builder` tekrar eden pasajları temizler, bağlamı sınırlar ve her kaynağa `[S1]`, `[S2]` etiketi verir. Citation Validator yalnız bağlamda bulunan etiketleri kabul eder.
+
+Varsayılan endpoint:
 
 ```yaml
 agent:
   base_url: "http://127.0.0.1:8080/v1/chat/completions"
 ```
 
-Takımın Qwen2.5-7B GGUF sunucusunu ayrı terminalde başlatın:
-
-```powershell
-.\Inference\llama_server\server_launcher.bat
-```
-
-Sunucu `127.0.0.1:8080` üzerinde çalıştıktan sonra RAG LLM cevap üretebilir. Launcher GPU için `-ngl 99` kullanır; uygun CUDA yoksa Inference ekibinin CPU uyumlu launcher/ayarını kullanın.
-
-## Başka bir LLM ile entegrasyon
-
-Qwen zorunlu değildir. vLLM, LM Studio, Ollama'nın OpenAI-uyumlu endpoint'i, başka bir llama.cpp sunucusu veya kurum içi gateway kullanılabilir. Servisin aşağıdaki sözleşmeyi desteklemesi yeterlidir:
+RAG model dosyasına doğrudan bağlı değildir. Qwen GGUF, vLLM, LM Studio, Ollama veya başka bir OpenAI-uyumlu servis kullanılabilir. Servisin en az aşağıdaki yapıyı desteklemesi yeterlidir:
 
 ```json
-{
-  "messages": [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}],
-  "temperature": 0.0,
-  "top_p": 1.0,
-  "max_tokens": 450,
-  "stream": false
-}
+{"messages":[{"role":"system","content":"..."},{"role":"user","content":"..."}],"temperature":0.0}
 ```
-
-Beklenen yanıtta en az şu alan bulunmalıdır:
 
 ```json
-{"choices": [{"message": {"content": "Türkçe cevap"}}]}
+{"choices":[{"message":{"content":"Türkçe cevap"}}]}
 ```
 
-Yeni model OpenAI-uyumluysa yalnız `RAG/configuration/rag_config.yaml` içindeki `agent.base_url` değerini değiştirin. Endpoint farklı JSON sözleşmesi kullanıyorsa RAG kodunu değil `Inference/client/llama_client.py` adapter'ını güncelleyin; böylece `RAG.agent.LegalRagAgent` ve RAG pipeline'ı sabit kalır.
+Farklı JSON sözleşmesi olan model için RAG kodu değil `Inference/client/llama_client.py` adaptörü güncellenir.
 
-Model değişiminden sonra:
+Çok turlu sohbette önceki konuşma yalnız takip sorularını anlamak için kullanılır; önceki cevaplar bağımsız hukukî kaynak sayılmaz. Semantic cache ise önceden doğrulanmış, çok benzer soruları hızlandırır.
 
-```powershell
-python -m pytest Tests/RAG -q
-python Tests/RAG/run_llm_evaluation.py --no-cache
-```
+## Takım entegrasyonu
 
-Citation (`[S1]`) ve Türkçe talimat uyumunu manuel olarak da kontrol edin.
+Ana uygulama RAG'i `RAG.client.handle_rag_request` ile çağırır. Resmî input/output alanları [RAG-contract.md](../Layers_contracts/Layers_contracts/RAG-contract.md) dosyasındadır. Bu entegrasyon akışında RAG yalnız `rag` alanını doldurur ve LLM çağrısı yapmaz.
 
-## Query Transform
-
-Kural tabanlı düzeltme her zaman aktiftir: `nede` → `nerede`, `nerden` → `nereden`, `CMK` → `Ceza Muhakemesi Kanunu`. Bu yol ana LLM'e bağımlı değildir.
-
-Ek LLM sorgu varyantları için:
-
-```yaml
-query_transform:
-  enabled: true
-  use_llm: true
-  base_url: "http://127.0.0.1:8081/v1/chat/completions"
-```
-
-Önce ayrı dönüşüm sunucusunu açın:
-
-```powershell
-.\Inference\llama_server\query_transform_launcher.bat
-```
-
-Sonra:
-
-```powershell
-python Tests/RAG/run_llm_evaluation.py --query-transform-llm --no-cache
-```
-
-Ekran kural tabanlı düzeltmeleri ve LLM'in ürettiği alternatifleri ayrı gösterir. LLM kısa/bozuk bir sorgu üretirse kalite filtresi retrieval'a dahil etmez. Dönüşüm sunucusu kapalıysa sistem kural tabanlı dönüşüme geri döner.
-
-## Retrieval stratejileri
-
-| Soru türü | Seçilen yol | Açıklama |
-|---|---|---|
-| Açık kanun + madde | `exact_citation` | Metadata filtresi + vector + reranker |
-| “Hangi maddede?” | `article_lookup` | Hibrit arama + deterministik madde seçimi |
-| Ceza, beyanname, usulsüzlük, tebliğ/yönetmelik veya terim | `lexical_legal_lookup` | Hybrid lexical + semantic arama + reranker |
-| Serbest biçimli / yeni hukuk sorusu | `semantic_hybrid` | Varsayılan güvenli yol: Hybrid + reranker |
-| Atıf/ilişki/karşılaştırma | `legal_relationship` | Hybrid + PRF + Graph-RAG FULL |
-
-## Query Router nasıl karar verir?
-
-Router, sabit bir konu sözlüğüne bağlı bir sınıflandırıcı değildir. Önce soru
-metninden kanun numarası, kanun adı ve madde numarası gibi metadata sinyallerini
-çıkarır; sadece açık bir sinyal varsa özel bir yol seçer. Hiçbir özel sinyal
-yoksa soru `semantic_fast` yerine varsayılan olarak `semantic_hybrid` yoluna
-gider. Böylece kullanıcının daha önce görülmemiş ifade biçimleri için hem BM25
-tam-terim eşleşmesi hem de embedding tabanlı anlam eşleşmesi kullanılır.
-
-```mermaid
-flowchart TD
-    A["Kullanıcı sorusu"] --> B["Kural tabanlı Query Transform\nyazım düzeltmesi / kısaltma açılımı"]
-    B --> C["Metadata çıkarımı\nkanun no, kanun adı, madde no"]
-    C --> D{"Açık kanun no\nve madde no var mı?"}
-    D -- Evet --> E["exact_citation\nMetadata filtresi + Vector + Reranker"]
-    D -- Hayır --> F{"‘Hangi maddede?’\nsorusu mu?"}
-    F -- Evet --> G["article_lookup\nHybrid + Reranker"]
-    F -- Hayır --> H{"Atıf, ilişki veya\nkarşılaştırma sorusu mu?"}
-    H -- Evet --> I["legal_relationship\nHybrid + PRF + Graph-RAG + Reranker"]
-    H -- Hayır --> J{"Belirgin hukukî terim,\nceza/tutar veya düzenleme sinyali var mı?"}
-    J -- Evet --> K["lexical_legal_lookup\nHybrid + Reranker"]
-    J -- Hayır --> L["semantic_hybrid\nVarsayılan: Hybrid + Reranker"]
-```
-
-`semantic_hybrid` kararı hata veya düşük seviye bir yol değildir; bilinmeyen
-veya serbest biçimli hukuk sorularında doğruluğu korumak için kullanılan
-varsayılan yoldur. PRF ve Graph-RAG ise her soruda zorla çalıştırılmaz; yalnız
-ilişki/atıf sorularında devreye girer, çünkü gereksiz genişletme bazen yanlış
-sonuç ve ek gecikme yaratabilir.
-
-## Güvenilirlik ve konuşma belleği
-
-- Context Builder tekrar eden pasajları temizler ve LLM bağlamını sınırlar.
-- Citation Validator yalnız bağlamdaki `[S1]`, `[S2]` etiketlerini kabul eder.
-- Eksik kanun/madde referansı model çağrısı yapılmadan reddedilir.
-- Tekrarlanan uzun LLM cümleleri cache'e yazılmadan temizlenir.
-- Son üç sohbet turu LLM'e bellek olarak iletilir; eski cevaplar bağımsız hukukî kaynak sayılmaz. Yeni konu açıkça başlatılırsa eski bellek taşınmaz.
-
-Bu sistem bilgilendirme amaçlıdır; hukuken bağlayıcı danışmanlık yerine geçmez.
-
-## Test ve benchmark
-
-```powershell
-# Otomatik/regresyon testleri
-python -m pytest Tests/RAG -q
-
-# LLM'siz retrieval benchmark: Hit@k, MRR, gecikme, RAM ve disk
-python Tests/RAG/run_retrieval_evaluation.py
-
-# Ana manuel LLM sohbet testi
-python Tests/RAG/run_llm_evaluation.py --no-cache
-```
-
-Benchmark çıktıları `RAG/evaluation/experiments/` altında yerel kalır ve Git'e eklenmez. Versionlanan veri setleri `RAG/evaluation/datasets/` altındadır. FAISS/TurboVec benchmark seçenekleri deneysel görünse de bu teslimde çalışan ve desteklenen vektör store adaptörü ChromaDB'dir.
-
-## Diğer takım modülleri için istemci sözleşmesi
-
-Agent/Application katmanı doğrudan Chroma veya retriever import etmemelidir.
-
-### Ekipler arası JSON sözleşmesi (ana entegrasyon)
-
-Resmî input/output alanları
-[`Layers_contracts/Layers_contracts/RAG-contract.md`](../Layers_contracts/Layers_contracts/RAG-contract.md)
-dosyasında tanımlıdır. Application/Orchestration katmanı tüm state nesnesini
-tek giriş fonksiyonuna verir. RAG yalnız `rag` alanını doldurur; diğer katman
-alanlarını değiştirmez ve bu akışta hiçbir LLM çağrısı yapmaz:
+Örnek giriş:
 
 ```python
 from RAG.client import handle_rag_request
 
 result = handle_rag_request({
-    "request": {
-        "success": True,
-        "question": "bu ne sözleşmesi",
-        "document": {"document_id": "DOC-001", "file_name": "Elektrik sözleşmesi.pdf", "file_type": "pdf"},
-    },
+    "request": {"success": True, "question": "CMK 100. maddede tutuklama şartları nelerdir?"},
     "ocr": {"success": True, "ocr_data": {"full_text": "..."}},
-    "classification": {"success": True, "document_type": "Elektrik sözleşmesi"},
-    "extraction": {}, "validation": {}, "rag": {}, "summary": {}, "routing": {}, "writing": {},
+    "classification": {"success": True, "document_type": "kanun"},
+    "extraction": {}, "validation": {}, "rag": {}, "summary": {}, "routing": {}, "writing": {}
 })
 ```
 
-RAG'ın eklediği alan yalnızca aşağıdaki biçimdedir:
+Çıktı özeti:
 
 ```json
 {
@@ -344,59 +227,69 @@ RAG'ın eklediği alan yalnızca aşağıdaki biçimdedir:
     "success": true,
     "rag_data": {
       "operation": "retrieve",
-      "query": "kullanıcı sorusu + belge sinyalleri",
-      "results": [
-        {
-          "chunk_id": "...",
-          "law_number": "...",
-          "law_name": "...",
-          "article_no": "...",
-          "page_start": 1,
-          "page_end": 1,
-          "text": "...",
-          "score": 0.0
-        }
-      ]
+      "query": "kullanıcı sorusu",
+      "results": [{"chunk_id":"...","law_number":"5271","article_no":"100","page_start":1,"page_end":1,"text":"...","score":0.0}]
     }
   }
 }
 ```
 
-Retrieval için soru, belge türü ve OCR metninin sınırlı bir kesiti kullanılır.
-Kural tabanlı yazım düzeltmesi açıktır; Query Transform LLM'i ve cevap üretim
-LLM'i bu sözleşme akışında kapalıdır.
+Application/Orchestration katmanı bu kanıtları kendi LLM'ine göndererek nihai cevabı üretebilir. Böylece retrieval, model ve kullanıcı arayüzü birbirinden bağımsız kalır.
 
-### Eski iç Python retrieval arayüzü
+## Yapılandırma ve klasör haritası
 
-RAG içindeki Agent'lar için düşük seviyeli, geriye uyumlu giriş noktası:
+Tüm ayarlar `configuration/rag_config.yaml` içindedir. `documents`, `chunking`, `embedding`, `retrieval`, `reranker`, `query_transform`, `graph_rag`, `agent` ve `observability` bölümleri kod değiştirmeden davranışı yönetir.
 
-```python
-from RAG.client import RetrievalRequest, get_legal_context
-
-response = get_legal_context(
-    RetrievalRequest(
-        query="CMK 100. maddede tutuklama şartları nelerdir?",
-        top_k=5,
-        use_reranker=True,
-    )
-)
-
-print(response.context)
-print(response.sources)
+```text
+RAG/
+├── configuration/       # YAML ayarları
+├── documents/           # Corpus ve üretilen kayıtlar
+├── ingestion/           # Loader, chunking, pipeline
+├── metadata/            # Şema, SQLite indeks, facts registry
+├── embeddings/          # BGE-M3 yükleme
+├── chroma/              # ChromaDB yapılandırması
+├── vector_store/        # Store arayüzü
+├── retriever/           # Router, hybrid, PRF, reranker, transform
+├── graph/               # Kanıtlı hukukî ilişki grafı
+├── agent/               # Context, citation, cache, LLM cevabı
+├── client/              # Takım katmanları için adapter
+└── scripts/             # Pipeline ve yerel çalışma komutları
 ```
 
-## Teslim öncesi kontrol
+## Kurulum ve çalıştırma
 
 ```powershell
-git lfs install
-git lfs pull
-pip install -r RAG/requirements.txt
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r RAG/requirements.txt
 python -m RAG.ingestion.pipeline --reset
-python -m pytest Tests/RAG -q
-python Tests/RAG/run_llm_evaluation.py --no-cache
-git add RAG Tests/RAG
-git status
-git lfs ls-files
 ```
 
-`git add .` yerine `git add RAG Tests/RAG` kullanın; bu diğer ekiplerin değişikliklerini yanlışlıkla stage etmeyi önler.
+İsteğe bağlı Hugging Face token için `RAG/.env.example` dosyasını `RAG/.env` olarak kopyalayın ve kendi token'ınızı ekleyin. `.env` Git'e eklenmemelidir.
+
+Yalnız retrieval sonuçlarını görmek için:
+
+```powershell
+.\RAG\scripts\run_retrieval.ps1
+```
+
+Yerel LLM ile kaynaklı sohbet için Inference sunucusu açıkken:
+
+```powershell
+.\RAG\scripts\run_legal_agent.ps1
+```
+
+Hugging Face token zorunlu değildir; ilk model indirmesinde hız ve rate-limit avantajı sağlar:
+
+```powershell
+$env:HF_TOKEN = "huggingface_tokeniniz"
+```
+
+## Sınırlar ve güvenlik
+
+- Sistem OCR yapmaz; taranmış PDF'ler güvenilir metin gibi işlenmez.
+- Retrieval sonucu hukukî danışmanlık değil, kaynaklı bilgi erişimidir.
+- LLM yalnız getirilen bağlama dayanmalıdır.
+- Kaynak, madde veya tarih açık değilse kesin sonuç üretilmemelidir.
+- Chroma, SQLite, cache ve indirilen modeller yerel/rebuild edilebilir çalışma verisidir; PDF corpus ve hazır chunk kaydı teslim verisidir.
