@@ -1,1 +1,54 @@
-Dockerfile for Orchestration + Agents (same Python runtime).
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# System dependencies required by OCR / OpenCV / runtime packages
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libgl1 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files first for Docker layer caching
+COPY Orchestration/requirements.txt /tmp/orchestration-requirements.txt
+
+COPY Agents/classification_agent/requirements.txt /tmp/classification-requirements.txt
+COPY Agents/extraction_agent/requirements.txt /tmp/extraction-requirements.txt
+COPY Agents/ocr_agent/requirements.txt /tmp/ocr-requirements.txt
+COPY Agents/routing_agent/requirements.txt /tmp/routing-requirements.txt
+COPY Agents/summary_agent/requirements.txt /tmp/summary-requirements.txt
+COPY Agents/writer_agent/requirements.txt /tmp/writer-requirements.txt
+COPY RAG/requirements.txt /tmp/rag-requirements.txt
+
+# Install project dependencies
+RUN pip install --no-cache-dir \
+    -r /tmp/orchestration-requirements.txt \
+    -r /tmp/classification-requirements.txt \
+    -r /tmp/extraction-requirements.txt \
+    -r /tmp/ocr-requirements.txt \
+    -r /tmp/routing-requirements.txt \
+    -r /tmp/summary-requirements.txt \
+    -r /tmp/writer-requirements.txt \
+    -r /tmp/rag-requirements.txt
+
+# Copy source code
+COPY Agents /app/Agents
+COPY Orchestration /app/Orchestration
+COPY RAG /app/RAG
+COPY Inference /app/Inference
+COPY Config /app/Config
+COPY Optimization /app/Optimization
+COPY Storage /app/Storage
+
+# Runtime configuration
+ENV PYTHONUNBUFFERED=1
+ENV ORCHESTRATION_HOST=0.0.0.0
+ENV ORCHESTRATION_PORT=8000
+
+# Inference will be another Docker service
+ENV INFERENCE_BASE_URL=http://inference:8080/v1/chat/completions
+
+EXPOSE 8000
+
+CMD ["python", "-m", "Orchestration.main"]

@@ -1,15 +1,9 @@
 /**
- * إعدادات KutupAI Chat.
- * عناوين الـ API أدناه Placeholders — استبدلها بالـ Endpoints الفعلية
- * الموجودة في Application Layer (DocumentController / ChatController...الخ)
- * دون تغيير http helper الحالي أو نمط الاستجابة.
+ * إعدادات KutupAI Chat — مربوطة بـ Application `POST /api/Chat/SendMessage`.
  */
 export const CHAT_CONFIG = {
   endpoints: {
-    // TODO: استبدل بالـ endpoint الفعلي، مثال: '/Chat/SendMessage'
     sendMessage: "/api/Chat/SendMessage",
-    // TODO: استبدل بالـ endpoint الفعلي لإنشاء محادثة جديدة إن وُجد على السيرفر
-    createChat: "/api/Chat/CreateChat",
   },
   upload: {
     acceptAttribute: ".pdf,.jpg,.jpeg,.png,.txt",
@@ -20,7 +14,7 @@ export const CHAT_CONFIG = {
       "image/png",
       "text/plain",
     ],
-    maxSizeBytes: 10 * 1024 * 1024, // 10MB
+    maxSizeBytes: 10 * 1024 * 1024, // 10MB — mirrors Application AppConfig
   },
   ui: {
     productName: "KutupAI",

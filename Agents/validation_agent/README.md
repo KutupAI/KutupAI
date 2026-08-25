@@ -270,3 +270,6 @@ Extraction or Classification?**
   passes through the same validation logic regardless of which
   document type or extraction path it took, rather than each agent
   needing to duplicate its own validation rules.
+
+  Testing 
+  python -m pytest Tests\Agents\test_validation_agent.py::test_valid_pipeline_state_matches_contract_example -v -s

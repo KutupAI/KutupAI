@@ -1,0 +1,36 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.positive {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
+  border: 1px solid var(--kutup-red);
+}
+.positive .dot {
+  background: var(--kutup-red-hover);
+}
+
+.neutral {
+  background: var(--kutup-surface-hover);
+  color: var(--kutup-gray);
+  border: 1px solid var(--kutup-border-strong);
+}
+.neutral .dot {
+  background: var(--kutup-gray);
+}

@@ -37,15 +37,33 @@ class MockClassificationAgent:
         self.requires_rag = requires_rag
 
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        payload = {
+            "success": True,
+            "document_type": "invoice",
+            "classification_confidence": 0.95,
+        }
         state["classification_status"] = "completed"
-        state["classification_result"] = {"doc_type": "invoice", "requires_rag": self.requires_rag}
+        state["classification"] = payload
+        state["classification_result"] = payload
+        # Legacy flag still read by routing_logic branching.
+        if self.requires_rag is not None:
+            state["classification_result"] = {**payload, "requires_rag": self.requires_rag}
         return state
 
 
 class MockExtractionAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        payload = {
+            "success": True,
+            "sender": None,
+            "date": None,
+            "address": None,
+            "phone": None,
+            "email": None,
+        }
         state["extraction_status"] = "completed"
-        state["extraction_result"] = {"fields": {"amount": 100}}
+        state["extraction"] = payload
+        state["extraction_result"] = payload
         return state
 
 
@@ -54,38 +72,52 @@ class MockValidationAgent:
         self.requires_rag = requires_rag
 
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        payload = {
+            "success": True,
+            "is_complete": False,
+            "errors": [],
+            "warnings": [],
+            "requires_rag": self.requires_rag,
+        }
+        state["validation"] = payload
+        state["validation_result"] = payload
         state["validation_status"] = "completed"
-        state["validation_result"] = {"valid": True, "requires_rag": self.requires_rag}
         return state
 
 
 class MockRagAgent:
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
         question = (state.get("request") or {}).get("question") or state.get("question") or ""
-        state["rag_status"] = "completed"
-        # Shape matches RAGResult / what SummaryAgent adapts from state["rag_result"].
-        state["rag_result"] = {
-            "success": True,
-            "data": {
-                "operation": "retrieve",
-                "query": question,
-                "results": [
-                    {
-                        "chunk_id": "chunk-a",
-                        "text": "context A",
-                        "law_number": "6458",
-                        "article_no": "31",
-                    },
-                    {
-                        "chunk_id": "chunk-b",
-                        "text": "context B",
-                        "law_number": "6458",
-                        "article_no": "32",
-                    },
-                ],
-            },
-            "error": None,
+        rag_data = {
+            "operation": "retrieve",
+            "query": question,
+            "results": [
+                {
+                    "chunk_id": "chunk-a",
+                    "text": "context A",
+                    "law_number": "6458",
+                    "law_name": "Mock Kanun",
+                    "article_no": "31",
+                    "page_start": 1,
+                    "page_end": 1,
+                    "score": 0.9,
+                },
+                {
+                    "chunk_id": "chunk-b",
+                    "text": "context B",
+                    "law_number": "6458",
+                    "law_name": "Mock Kanun",
+                    "article_no": "32",
+                    "page_start": 2,
+                    "page_end": 2,
+                    "score": 0.8,
+                },
+            ],
         }
+        # Dual keys: Layers_contracts short slot + SummaryAgent RAGResult wire.
+        state["rag"] = {"success": True, "rag_data": rag_data}
+        state["rag_result"] = {"success": True, "data": rag_data, "error": None}
+        state["rag_status"] = "completed"
         return state
 
 

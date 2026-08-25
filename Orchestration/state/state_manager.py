@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from Orchestration.graph.graph_definition import Stage
-from Orchestration.messages.message_schema import AgentResult, ExecutionStatus
+from Orchestration.messages.message_schema import AgentResult, ExecutionStatus, is_contract_envelope
 from Orchestration.state.graph_state import (
     STATE_SECTION_BY_STAGE,
     GraphState,
@@ -34,6 +34,60 @@ from Orchestration.state.graph_state import (
 )
 
 logger = logging.getLogger("Orchestration.state_manager")
+
+
+def _aggregate_vision_from_pages(pages: Any) -> Dict[str, Any]:
+    signature_detected = False
+    signature_handwritten = False
+    stamp_detected = False
+    if isinstance(pages, list):
+        for page in pages:
+            if not isinstance(page, dict):
+                continue
+            vision = page.get("vision") if isinstance(page.get("vision"), dict) else {}
+            sig = vision.get("signature") if isinstance(vision.get("signature"), dict) else {}
+            stamp = vision.get("stamp") if isinstance(vision.get("stamp"), dict) else {}
+            signature_detected = signature_detected or bool(sig.get("detected"))
+            signature_handwritten = signature_handwritten or bool(sig.get("handwritten"))
+            stamp_detected = stamp_detected or bool(stamp.get("detected"))
+    return {
+        "signature": {"detected": signature_detected, "handwritten": signature_handwritten},
+        "stamp": {"detected": stamp_detected},
+    }
+
+
+def unified_ocr_from_wire(envelope: Dict[str, Any]) -> Dict[str, Any]:
+    """Build Layers_contracts `ocr` slot from wire `{ Success, Data: [doc] }`."""
+    data = envelope.get("Data") or envelope.get("data") or []
+    doc = data[0] if isinstance(data, list) and data and isinstance(data[0], dict) else {}
+    pages = doc.get("pages") if isinstance(doc.get("pages"), list) else []
+    language = doc.get("language")
+    if isinstance(language, dict):
+        language = language.get("detected")
+    return {
+        "success": bool(envelope.get("Success", envelope.get("success", True))),
+        "ocr_data": {
+            "page_count": doc.get("page_count") or (len(pages) if pages else 0),
+            "language": language or "tr",
+            "pages": pages,
+            "full_text": str(doc.get("full_text") or ""),
+            "vision": _aggregate_vision_from_pages(pages),
+        },
+    }
+
+
+def wire_ocr_from_unified(ocr: Dict[str, Any], *, document_id: str = "", question: str = "") -> Dict[str, Any]:
+    """Build wire `{ Success, Data }` from unified `ocr` for process_service / legacy readers."""
+    ocr_data = ocr.get("ocr_data") if isinstance(ocr.get("ocr_data"), dict) else {}
+    doc = {
+        "document_id": document_id,
+        "full_text": str(ocr_data.get("full_text") or ""),
+        "pages": list(ocr_data.get("pages") or []),
+        "page_count": ocr_data.get("page_count") or 0,
+        "language": ocr_data.get("language") or "tr",
+        "question": question,
+    }
+    return {"Success": bool(ocr.get("success", True)), "Data": [doc]}
 
 # Fields every valid GraphState must contain once initialized.
 _REQUIRED_KEYS = (
@@ -43,6 +97,18 @@ _REQUIRED_KEYS = (
     "stage_retries",
     "history",
     "errors",
+)
+
+# Application / Agents pipeline envelope stage sections (always present).
+_STAGE_SECTION_KEYS = (
+    "ocr",
+    "classification",
+    "extraction",
+    "validation",
+    "rag",
+    "summary",
+    "routing",
+    "writing",
 )
 
 # State content that must never be written to logs.
@@ -72,28 +138,89 @@ class StateManager:
     def initialize(self, request: Dict[str, Any]) -> GraphState:
         """Build the initial GraphState for one incoming request.
 
-        `request` is whatever the caller (process_service / main.py)
-        received from Application; it is copied into `state["request"]`
-        and its recognizable fields are lifted to the top level so
-        existing Agents (e.g. OCRAgent, which expects document_id /
-        document_path / question at the top level) keep working unchanged.
+        Accepts either:
+          * Application envelope fields mixed into the seed
+            (``request`` = {success, question, document} plus optional
+            empty ``ocr``/``classification``/… sections), or
+          * a legacy flat dict (document_id / document_path / question).
+
+        ``state["request"]`` is always normalized to the Application
+        contract shape. Stage sections start as ``{}`` unless the caller
+        already supplied them. Flat fields are still lifted to the top
+        level so OCR path resolution keeps working.
         """
 
-        document_id = str(request.get("document_id") or uuid.uuid4().hex)
+        nested = request.get("request")
+        if isinstance(nested, dict) and (
+            "document" in nested or "question" in nested or "success" in nested
+        ):
+            request_section = dict(nested)
+            document = (
+                dict(request_section["document"])
+                if isinstance(request_section.get("document"), dict)
+                else {}
+            )
+            document_id = str(
+                document.get("document_id")
+                or request.get("document_id")
+                or uuid.uuid4().hex
+            )
+            document.setdefault("document_id", document_id)
+            request_section["document"] = document
+            request_section.setdefault("success", True)
+            request_section.setdefault(
+                "question",
+                str(
+                    request.get("question")
+                    or request.get("accompanying_text")
+                    or request.get("text")
+                    or ""
+                ),
+            )
+        else:
+            document_id = str(request.get("document_id") or uuid.uuid4().hex)
+            document = (
+                dict(request["document"])
+                if isinstance(request.get("document"), dict)
+                else {}
+            )
+            document.setdefault("document_id", document_id)
+            if request.get("document_path") and not document.get("document_path"):
+                document["document_path"] = request["document_path"]
+            request_section = {
+                "success": bool(request.get("success", True)),
+                "question": str(
+                    request.get("question")
+                    or request.get("accompanying_text")
+                    or request.get("text")
+                    or ""
+                ),
+                "document": document,
+            }
+
         state: GraphState = empty_state()
         state.update(
             {
                 "workflow_id": self.workflow_id,
                 "document_id": document_id,
-                "request": dict(request),
+                "request": request_section,
                 "created_at": _now(),
                 "updated_at": _now(),
                 "current_agent": None,
                 "final_decision": {},
             }
         )
+
+        for key in _STAGE_SECTION_KEYS:
+            value = request.get(key)
+            state[key] = dict(value) if isinstance(value, dict) else {}  # type: ignore[literal-required]
+
         for key in ("document_path", "accompanying_text", "question", "text"):
             value = request.get(key)
+            if not value and key == "question":
+                value = request_section.get("question")
+            if not value and key == "document_path":
+                value = (request_section.get("document") or {}).get("document_path")
             if value:
                 state[key] = value
 
@@ -142,9 +269,62 @@ class StateManager:
             section_key = STATE_SECTION_BY_STAGE.get(stage.value)
             if section_key:
                 state[section_key] = result.data  # type: ignore[literal-required]
-            # Legacy/back-compat mirror for the OCR stage only.
-            if stage == Stage.OCR and "ocr_status" not in result.data:
+            # Dual-key mirror: keep the unified short section alongside the
+            # Orchestration wire key (classification / validation / …).
+            if stage == Stage.OCR:
+                if isinstance(result.data, dict) and is_contract_envelope(result.data):
+                    # Mock / legacy Agents still return the wire envelope as data.
+                    state["ocr_result"] = result.data  # type: ignore[literal-required]
+                    state["ocr"] = unified_ocr_from_wire(result.data)  # type: ignore[literal-required]
+                    data_list = result.data.get("Data") or []
+                    if isinstance(data_list, list) and data_list and isinstance(data_list[0], dict):
+                        full_text = str(data_list[0].get("full_text") or "")
+                        if full_text.strip():
+                            state["document_text"] = full_text
+                elif isinstance(result.data, dict):
+                    state["ocr"] = result.data  # type: ignore[literal-required]
+                    # Preserve wire mirror so process_service can still seed Data[0].
+                    if not is_contract_envelope(state.get("ocr_result")):
+                        state["ocr_result"] = wire_ocr_from_unified(  # type: ignore[literal-required]
+                            result.data,
+                            document_id=str(state.get("document_id") or ""),
+                            question=str(state.get("question") or ""),
+                        )
+                    ocr_data = result.data.get("ocr_data") if isinstance(result.data.get("ocr_data"), dict) else {}
+                    full_text = str(ocr_data.get("full_text") or "")
+                    if full_text.strip():
+                        state["document_text"] = full_text
                 state["ocr_status"] = "completed"
+            elif stage == Stage.CLASSIFICATION:
+                state["classification"] = result.data  # type: ignore[literal-required]
+                state["classification_status"] = "completed"
+            elif stage == Stage.EXTRACTION:
+                state["extraction"] = result.data  # type: ignore[literal-required]
+                state["extraction_status"] = "completed"
+            elif stage == Stage.VALIDATION:
+                state["validation"] = result.data  # type: ignore[literal-required]
+            elif stage == Stage.RAG:
+                # Prefer unified short slot; keep rag_result in SummaryAgent RAGResult shape.
+                state["rag"] = result.data  # type: ignore[literal-required]
+                if isinstance(result.data, dict) and "rag_data" in result.data:
+                    state["rag_result"] = {
+                        "success": bool(result.data.get("success")),
+                        "data": result.data.get("rag_data"),
+                        "error": result.data.get("error"),
+                    }
+                state["rag_status"] = (
+                    "completed" if isinstance(result.data, dict) and result.data.get("success") else "failed"
+                )
+        elif stage == Stage.RAG and isinstance(result.data, dict) and result.data:
+            # Persist soft/hard RAG failures so Presentation never sees rag:{}.
+            state["rag"] = result.data  # type: ignore[literal-required]
+            if "rag_data" in result.data:
+                state["rag_result"] = {
+                    "success": bool(result.data.get("success")),
+                    "data": result.data.get("rag_data"),
+                    "error": result.data.get("error"),
+                }
+            state["rag_status"] = "failed"
 
         if not result.is_success:
             self.record_error(

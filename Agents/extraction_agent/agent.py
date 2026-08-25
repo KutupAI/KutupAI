@@ -1,29 +1,26 @@
 """
---------
-Information Extraction Agent - main class.
+extraction_agent -- extracts flat contact/document fields for Orchestration.
 
-Contract (Agents/base/base_agent.py):
-    class BaseAgent(ABC):
-        name: str
-        description: str
-        def run(self, state: Dict[str, Any]) -> Dict[str, Any]: ...
+Pipeline: OCR -> Classification -> [THIS] -> Validation -> ...
 
-Pipeline position (per the task report):
-    OCR Agent -> Classification Agent -> [THIS AGENT] -> Validation Agent -> ...
+Unified pipeline envelope contract (read / write):
 
-Expected input in `state` (defensive - tries several common key names so
-this plugs in regardless of exact key naming used by teammates):
-    - OCR output   : state["ocr_result"] | state["ocr_output"]
-                     -> either a dict shaped like UnifiedOCRResult.to_dict()
-                        (has "full_text" / "lines") or a plain string.
-    - Classification: state["classification_result"] | state["classification"]
-                     -> dict with a "document_type" / "label" key (optional).
-    - Image (opt.)  : state["document_image_b64"] - base64 PNG/JPEG, only used
-                     when OCR flags has_signature/has_handwritten_signature or
-                     a table was detected, per report section 7.
+  Input  (extraction empty):
+    {request, ocr, classification, extraction: {}, validation,
+     rag, summary, routing, writing}
 
-Output written to state:
-    state["extraction_result"] = ExtractionResult.to_state_dict()
+  Output (same envelope, extraction filled):
+    extraction: {
+      "success": bool,
+      "sender": str | null,
+      "date": str | null,
+      "address": str | null,
+      "phone": str | null,
+      "email": str | null
+    }
+
+Also writes Orchestration wire key extraction_result with the same contract
+payload. Never calls Storage; never runs OCR itself.
 """
 
 from __future__ import annotations
@@ -31,21 +28,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-try:  # real repo layout
-    from Agents.base.agent_registry import register
-    from Agents.base.base_agent import BaseAgent
-except ImportError:  
-    from abc import ABC, abstractmethod
-
-    class BaseAgent(ABC):  # type: ignore[no-redef]
-        name: str = "base_agent"
-        description: str = ""
-
-        @abstractmethod
-        def run(self, state: Dict[str, Any]) -> Dict[str, Any]: ...
-
-    def register(cls):  # type: ignore[no-redef]
-        return cls
+from Agents.base.agent_registry import register
+from Agents.base.base_agent import BaseAgent
 
 from .config import DEFAULT_CONFIG, ExtractionAgentConfig
 from .models import (
@@ -63,65 +47,107 @@ from .tools import HybridSemanticExtractor, NEREngine, RegexExtractor, VisionFie
 
 logger = logging.getLogger("extraction_agent")
 
+# Canonical keys written to state["extraction"] (unified contract).
+EXTRACTION_CONTRACT_KEYS = ("success", "sender", "date", "address", "phone", "email")
 
-# Defensive state readers - tolerate key-naming drift between teammates
-# 
-def _get_ocr_text_and_flags(state: Dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    ocr = state.get("ocr_result") or state.get("ocr_output") or {}
-    if isinstance(ocr, str):
-        return ocr, {}
-    if not isinstance(ocr, dict):
-        # dataclass instance (UnifiedOCRResult) - try to_dict()
-        to_dict = getattr(ocr, "to_dict", None)
+
+def _as_dict(value: Any) -> Dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _resolve_ocr_payload(state: Dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Prefer unified ``state["ocr"]["ocr_data"]``, then legacy ``ocr_result``."""
+    ocr = _as_dict(state.get("ocr"))
+    ocr_data = _as_dict(ocr.get("ocr_data"))
+    if ocr_data.get("full_text") is not None or ocr_data.get("pages") is not None:
+        text = str(ocr_data.get("full_text") or "")
+        if not text.strip():
+            pages = ocr_data.get("pages") or []
+            text = "\n".join(
+                str(p.get("text") or "") for p in pages if isinstance(p, dict)
+            )
+        vision = _as_dict(ocr_data.get("vision"))
+        signature = _as_dict(vision.get("signature"))
+        flags = {
+            "has_signature": bool(signature.get("detected")),
+            "has_handwritten_signature": bool(signature.get("handwritten")),
+            "has_articles": False,
+        }
+        return text, flags
+
+    ocr_legacy = state.get("ocr_result") or state.get("ocr_output") or {}
+    if isinstance(ocr_legacy, str):
+        return ocr_legacy, {}
+    if not isinstance(ocr_legacy, dict):
+        to_dict = getattr(ocr_legacy, "to_dict", None)
         if callable(to_dict):
-            ocr = to_dict()
+            ocr_legacy = to_dict()
         else:
             return "", {}
 
-    text = ocr.get("full_text") or "\n".join(ocr.get("lines", []) or [])
-    flags = {
-        "has_signature": ocr.get("has_signature", False),
-        "has_handwritten_signature": ocr.get("has_handwritten_signature", False),
-        "has_articles": ocr.get("has_articles", False),
+    # Wire envelope: { Success, Data: [document, ...] }
+    data = ocr_legacy.get("Data") or ocr_legacy.get("data")
+    if isinstance(data, list) and data and isinstance(data[0], dict):
+        doc = data[0]
+        text = str(doc.get("full_text") or "")
+        vision = _as_dict(doc.get("vision"))
+        signature = _as_dict(vision.get("signature"))
+        return text, {
+            "has_signature": bool(
+                signature.get("detected") or doc.get("has_signature", False)
+            ),
+            "has_handwritten_signature": bool(
+                signature.get("handwritten") or doc.get("has_handwritten_signature", False)
+            ),
+            "has_articles": bool(doc.get("has_articles", False)),
+        }
+
+    text = ocr_legacy.get("full_text") or "\n".join(ocr_legacy.get("lines", []) or [])
+    return str(text or ""), {
+        "has_signature": bool(ocr_legacy.get("has_signature", False)),
+        "has_handwritten_signature": bool(ocr_legacy.get("has_handwritten_signature", False)),
+        "has_articles": bool(ocr_legacy.get("has_articles", False)),
     }
-    return text or "", flags
 
 
 def _get_classification_hint(state: Dict[str, Any]) -> Optional[str]:
-    clf = state.get("classification_result") or state.get("classification") or {}
-    if isinstance(clf, dict):
-        return clf.get("document_type") or clf.get("label") or clf.get("evrak_turu")
-    return None
+    clf = _as_dict(state.get("classification")) or _as_dict(state.get("classification_result"))
+    return clf.get("document_type") or clf.get("label") or clf.get("evrak_turu")
 
 
 def _get_document_image_b64(state: Dict[str, Any]) -> Optional[str]:
-    return state.get("document_image_b64") or state.get("document_image")
+    image = state.get("document_image_b64") or state.get("document_image")
+    if isinstance(image, str) and image.strip():
+        return image
+    return None
 
 
-def _to_unified_contract(result: "ExtractionResult") -> dict[str, Any]:
-    """Flatten ExtractionResult into the short-key contract validation_agent
-    reads (state["extraction"]): {success, sender, date, address, phone,
-    email}. This mirrors ocr_agent's own dual-key convention (state["ocr"]
-    unified + state["ocr_result"] wire) -- extraction_agent previously only
-    wrote the wire key (state["extraction_result"]), so validation_agent's
-    EXTRACTION_FIELDS lookup always saw an empty dict regardless of how the
-    run actually went.
-    """
+def _first_field_value(values: list) -> Optional[str]:
+    for fv in values:
+        if getattr(fv, "value", None):
+            return fv.value
+    return None
 
-    def _first(values: list) -> Optional[str]:
-        for fv in values:
-            if fv.value:
-                return fv.value
-        return None
 
+def _extraction_contract(result: ExtractionResult) -> Dict[str, Any]:
+    """Exact unified-contract shape for state['extraction']."""
     return {
-        "success": result.meta.success,
-        "sender": _first(result.entities.person.ad_soyad),
+        "success": bool(result.meta.success),
+        "sender": _first_field_value(result.entities.person.ad_soyad),
         "date": result.document.tarih.value,
-        "address": _first(result.entities.person.adres),
-        "phone": _first(result.entities.person.telefon),
-        "email": _first(result.entities.person.eposta),
+        "address": _first_field_value(result.entities.person.adres),
+        "phone": _first_field_value(result.entities.person.telefon),
+        "email": _first_field_value(result.entities.person.eposta),
     }
+
+
+def _merge_result(state: Dict[str, Any], result: ExtractionResult) -> Dict[str, Any]:
+    contract = _extraction_contract(result)
+    state["extraction"] = contract
+    # Dual-key convention (same as classification / validation): unified short
+    # key + Orchestration wire key carry the same contract payload.
+    state["extraction_result"] = contract
+    return state
 
 
 @register
@@ -131,52 +157,52 @@ class ExtractionAgent(BaseAgent):
     name = "extraction_agent"
     description = (
         "OCR ciktisindaki ham metni analiz ederek yapilandirilmis, guvenilir "
-        "JSON verisi (evrak/kisi/kurum/anlamsal bilgiler) uretir."
+        "JSON verisi (sender/date/address/phone/email) uretir."
     )
 
-    def __init__(self, config: ExtractionAgentConfig = DEFAULT_CONFIG):
-        self.cfg = config
-        self.regex = RegexExtractor(config)
-        self.ner = NEREngine(config)
-        # HybridSemanticExtractor = LLMSemanticExtractor (request_type/topic/
-        # intent/keywords, unchanged) + LangExtract-grounded persons/
-        # organizations when config.llm.use_langextract is True. Same
-        # .extract() contract either way, so nothing else below changes.
-        self.llm = HybridSemanticExtractor(config)
-        self.vision = VisionFieldExtractor(config)
+    def __init__(self, config: ExtractionAgentConfig | None = None):
+        self.cfg = config or DEFAULT_CONFIG
+        self.regex = RegexExtractor(self.cfg)
+        self.ner = NEREngine(self.cfg)
+        self.llm = HybridSemanticExtractor(self.cfg)
+        self.vision = VisionFieldExtractor(self.cfg)
 
-    # ------------------------------------------------------------------
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        """Orchestration / envelope entry point.
+
+        Accepts the unified pipeline envelope (``request`` / ``ocr`` /
+        ``classification``) or legacy GraphState wire keys. Writes only
+        ``extraction`` (+ ``extraction_result`` mirror); all other envelope
+        keys pass through.
+        """
+        if not isinstance(state, dict):
+            raise TypeError("ExtractionAgent.run expects GraphState / envelope as a dict")
+
+        updated = dict(state)
         errors: list[str] = []
         warnings: list[str] = []
 
-        text, ocr_flags = _get_ocr_text_and_flags(state)
+        text, ocr_flags = _resolve_ocr_payload(state)
         if not text.strip():
             warnings.append("OCR metni bos ya da bulunamadi - extraction atlandi")
-            result = ExtractionResult(meta=ExtractionMeta(success=False, warnings=warnings, low_confidence=True))
-            state["extraction_result"] = result.to_state_dict()
-            state["extraction"] = _to_unified_contract(result)
-            return state
+            result = ExtractionResult(
+                meta=ExtractionMeta(success=False, warnings=warnings, low_confidence=True)
+            )
+            return _merge_result(updated, result)
 
         classification_hint = _get_classification_hint(state)
 
-        # 1) Rule-Based
         regex_out = self.regex.extract_all(text)
 
-        # 2) NLP (NER) - devre disi varsayilan olarak (bkz. config.py NERConfig).
-        # Aktif edilirse ayri bir model yuklenir; degilse sessizce bos doner.
         ner_out = self.ner.extract_entities(text)
         ner_used = self.cfg.ner.enabled and self.ner.load_error is None
         if self.cfg.ner.enabled and self.ner.load_error:
             warnings.append(self.ner.load_error)
 
-        # 3) LLM semantic (persons/organizations da bu adimda LLM'den geliyor -
-        # ayri bir NER modeli kurmadan Qwen-VL uzerinden kisi/kurum cikarimi).
         llm_out = self.llm.extract(text, classification_hint=classification_hint)
         if llm_out.get("error"):
             warnings.append(str(llm_out["error"]))
 
-        # 4) Vision (only if signature/handwriting flagged and image provided)
         vision_info = VisionInfo()
         needs_vision = ocr_flags.get("has_signature") or ocr_flags.get("has_handwritten_signature")
         image_b64 = _get_document_image_b64(state)
@@ -194,9 +220,10 @@ class ExtractionAgent(BaseAgent):
                 form_fields=vdata.get("form_fields", {}) or {},
             )
         elif needs_vision and not image_b64:
-            warnings.append("Imza/el yazisi tespit edildi ama gorsel state'te bulunamadi (document_image_b64)")
+            warnings.append(
+                "Imza/el yazisi tespit edildi ama gorsel state'te bulunamadi (document_image_b64)"
+            )
 
-        # ---- merge into standard schema ----
         document = DocumentInfo(
             evrak_turu=classification_hint,
             tarih=regex_out["dates"][0] if regex_out["dates"] else FieldValue.empty(),
@@ -220,10 +247,6 @@ class ExtractionAgent(BaseAgent):
                 if not name:
                     continue
                 span = spans[i] if i < len(spans) else None
-                # Grounded (LangExtract char-aligned) values get a higher,
-                # verified confidence than the plain LLM guess -- the span
-                # match itself is evidence the text literally contains this
-                # value, not a paraphrase/hallucination.
                 confidence = 0.95 if (langextract_used and span) else llm_conf
                 values.append(
                     FieldValue(
@@ -245,7 +268,6 @@ class ExtractionAgent(BaseAgent):
 
         entities = Entities(
             person=PersonInfo(
-                
                 ad_soyad=ner_out.get("person", []) + llm_persons,
                 telefon=regex_out["phones"],
                 eposta=regex_out["emails"],
@@ -280,19 +302,23 @@ class ExtractionAgent(BaseAgent):
             warnings=warnings,
         )
 
-        result = ExtractionResult(document=document, entities=entities, request=request, vision=vision_info, meta=meta)
-        state["extraction_result"] = result.to_state_dict()
-        # Unified short-key contract for validation_agent, mirroring the
-        # same dual-key convention ocr_agent already uses
-        # (state["ocr"] short/unified + state["ocr_result"] wire format).
-        # extraction_result's nested schema (document/entities/request) was
-        # never mirrored into a flat "extraction" key before this, so
-        # validation_agent always read an empty {} and reported
-        # extraction_result_missing even on successful runs.
-        state["extraction"] = _to_unified_contract(result)
-        return state
+        result = ExtractionResult(
+            document=document,
+            entities=entities,
+            request=request,
+            vision=vision_info,
+            meta=meta,
+        )
+        return _merge_result(updated, result)
 
-    # ------------------------------------------------------------------
+    def process(self, envelope: Dict[str, Any]) -> Dict[str, Any]:
+        """Standalone envelope entry (same contract as ``run``).
+
+        Input : {request, ocr, classification, extraction: {}, …}
+        Output: same envelope with ``extraction`` filled per contract.
+        """
+        return self.run(envelope)
+
     @staticmethod
     def _compute_overall_confidence(regex_out: dict, ner_out: dict, request: SemanticInfo) -> float:
         scores: list[float] = [request.confidence] if request.confidence else []
@@ -305,3 +331,8 @@ class ExtractionAgent(BaseAgent):
         if not scores:
             return 0.0
         return round(sum(scores) / len(scores), 3)
+
+
+def process(envelope: Dict[str, Any], agent: Optional[ExtractionAgent] = None) -> Dict[str, Any]:
+    """Module-level envelope entry matching classification_agent.process style."""
+    return (agent or ExtractionAgent()).process(envelope)

@@ -15,6 +15,47 @@ def test_initialize_sets_required_keys():
     assert state["history"] == []
     assert state["errors"] == []
     assert mgr.validate(state) == []
+    # Application contract shape
+    assert state["request"]["success"] is True
+    assert state["request"]["document"]["document_id"] == "doc-1"
+    assert state["ocr"] == {}
+    assert state["classification"] == {}
+    assert state["writing"] == {}
+
+
+def test_initialize_from_application_envelope():
+    mgr = StateManager(workflow_id="wf-env")
+    state = mgr.initialize(
+        {
+            "document_id": "DOC-001",
+            "document_path": "/tmp/Elektrik sozlesmesi.pdf",
+            "request": {
+                "success": True,
+                "question": "bu ne sozlesmesi",
+                "document": {
+                    "document_id": "DOC-001",
+                    "file_name": "Elektrik sozlesmesi.pdf",
+                    "file_type": "pdf",
+                    "document_path": "/tmp/Elektrik sozlesmesi.pdf",
+                },
+            },
+            "ocr": {},
+            "classification": {},
+            "extraction": {},
+            "validation": {},
+            "rag": {},
+            "summary": {},
+            "routing": {},
+            "writing": {},
+        }
+    )
+
+    assert state["document_id"] == "DOC-001"
+    assert state["request"]["question"] == "bu ne sozlesmesi"
+    assert state["request"]["document"]["file_type"] == "pdf"
+    assert state["request"]["document"]["file_name"] == "Elektrik sozlesmesi.pdf"
+    assert state["ocr"] == {}
+    assert state["rag"] == {}
 
 
 def test_initialize_generates_document_id_when_missing():

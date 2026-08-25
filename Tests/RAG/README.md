@@ -5,11 +5,22 @@ nihai cevap üretimi bu katmanın sorumluluğu olmadığı için burada test edi
 
 | Dosya | Kontrol ettiği alan |
 |---|---|
+| `manual_test_rag.py` | Tam envelope giriş/çıkış + sözleşme kontrolü (`rag` dolu state) |
 | `test_layer_contract.py` | Katmanlar arası state sözleşmesi ve `rag.results` çıktısı |
 | `test_pipeline.py` | Kaynakların yüklenmesi, parçalama ve indeksleme akışı |
 | `test_ingestion_regressions.py` | Yeni kaynak eklenince ingestion davranışının bozulmaması |
 | `test_retrieval.py` | Vektör/hybrid retrieval ile kaynaklı parça dönmesi |
 | `test_query_router.py` | Sorunun uygun retrieval yoluna yönlendirilmesi |
+
+RAG 
+
+```powershell
+# Offline (mock retrieve) — sözleşme şeklini gör
+python Tests/RAG/manual_test_rag.py
+
+# Canlı indeks üzerinde gerçek retrieval
+python Tests/RAG/manual_test_rag.py --live
+```
 
 Yerel, çok turlu LLM deneme aracı `run_llm_evaluation.py`'dır; otomatik test
 değildir ve teslimde zorunlu değildir.

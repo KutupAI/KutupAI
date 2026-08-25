@@ -1,5 +1,8 @@
 import { ApiResponse } from "../models/ApiResponse";
-import { ChatMessageModel } from "../models/ChatMessage";
+import {
+  normalizePipelineState,
+  PipelineState,
+} from "../models/AnalysisResult";
 import { CHAT_CONFIG } from "../config/chatConfig";
 import { http } from "./http";
 
@@ -15,13 +18,19 @@ export interface SendMessageRequestModel {
 
 export interface SendMessageResponseData {
   ChatId: string;
-  Answer: string;
+  /** Filled unified pipeline envelope from Application AdditionalData.State */
+  State: PipelineState;
 }
 
+type WireAdditional = {
+  ChatId?: string;
+  State?: unknown;
+  Data?: unknown[];
+};
+
 /**
- * يرسل سؤال المستخدم (+ ملف اختياري + معرف المحادثة) إلى Application Layer.
- * منطق الذكاء الاصطناعي بالكامل خارج React — هذه الدالة تمرر الطلب فقط
- * وتعيد النتيجة عبر callback بنفس نمط باقي المشروع.
+ * يرسل سؤال المستخدم (+ ملف اختياري + معرف المحادثة) إلى Application Layer
+ * (`POST /api/Chat/SendMessage`) ويعيد State الموحّد عبر callback.
  */
 export const sendChatMessage = (
   chatId: string | null,
@@ -38,17 +47,32 @@ export const sendChatMessage = (
       : null,
   };
 
-  http.post<SendMessageResponseData>(
+  http.post<WireAdditional>(
     CHAT_CONFIG.endpoints.sendMessage,
     model,
     (res) => {
-      if (res.Success && res.AdditionalData) {
-        onSuccess(res.AdditionalData);
-      } else {
-        onError(res);
+      if (!res.Success) {
+        onError(res as ApiResponse<SendMessageResponseData>);
+        return;
       }
+
+      const raw = res.AdditionalData ?? {};
+      let stateRaw: unknown = raw.State;
+
+      // Fallback: legacy { Data: [doc] } nested or top-level
+      if (stateRaw == null && Array.isArray(raw.Data) && raw.Data[0]) {
+        stateRaw = raw.Data[0];
+      }
+
+      const state = normalizePipelineState(stateRaw);
+      const resolvedChatId =
+        typeof raw.ChatId === "string" && raw.ChatId
+          ? raw.ChatId
+          : chatId ||
+            state.request.document?.document_id ||
+            `chat-${Date.now()}`;
+
+      onSuccess({ ChatId: resolvedChatId, State: state });
     }
   );
 };
-
-export type { ChatMessageModel };

@@ -63,9 +63,10 @@ export const useChat = () => {
           const assistantMessage: ChatMessageModel = {
             id: generateId(),
             role: "assistant",
-            content: data.Answer,
+            content: data.State.writing.answer,
             createdAt: Date.now(),
             status: "sent",
+            pipelineState: data.State,
           };
           setCurrentChat((prev) => ({
             ...prev,

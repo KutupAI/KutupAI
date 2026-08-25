@@ -1,0 +1,44 @@
+.git
+.gitignore
+.venv
+.vs
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Local environment
+.env
+
+# Python caches
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Build outputs
+build
+dist
+*.egg-info
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Local test data
+Storage/files/temp_processing/*
+
+# Large model files are mounted separately
+Inference/models/*.gguf
+Inference/models/*.bin
+Inference/models/*.safetensors
+
+# RAG local vector data
+RAG/chroma/*

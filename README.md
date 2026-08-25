@@ -167,3 +167,58 @@ python Tests/Inference/test_llama_client.py
 | كتالوج Agents | `Documentation/agent_catalog.md` |
 | مرجع API | `Documentation/api_reference.md` |
 | دليل RAG | `RAG/README.md` |
+
+
+PaddleOCR-VL — المنفذ 8111
+cd D:\AI\KutupAI\Inference
+.\start_paddleocr_vl.bat
+انتظر حتى يظهر أن السيرفر جاهز على http://127.0.0.1:8111
+
+2) Gemma (Inference) — المنفذ 8080
+للتصنيف / الاستخراج / الملخص / الكتابة:
+
+cd D:\AI\KutupAI\Inference\llama_server
+.\server_launcher.bat
+انتظر حتى يصبح جاهزاً على :8080
+
+3) Orchestration — المنفذ 8000
+cd D:\AI\KutupAI
+$env:ORCHESTRATION_PORT="8000"
+python -m Orchestration.main
+تحقق: http://127.0.0.1:8000/health
+
+4) Application — المنفذ 8082
+(لا تستخدم 8080 — محجوز لـ Gemma)
+
+أولاً إن لزم أعد البناء (أوقف أي SmartGovernmentAI_Application.exe شغّال):
+
+cd D:\AI\KutupAI\Application
+cmake --build build --config Release --target SmartGovernmentAI_Application
+ثم التشغيل:
+
+cd D:\AI\KutupAI\Application
+$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
+$env:APP_TEMP_UPLOAD_ROOT_DIR="D:\AI\KutupAI\Storage\files\temp_processing"
+$env:APP_SERVER_PORT="8082"
+.\build\Release\SmartGovernmentAI_Application.exe
+5) الواجهة — المنفذ 5173
+cd D:\AI\KutupAI\Tests\Presentation
+npm run dev
+افتح: http://localhost:5173
+
+ملخص المنافذ
+الخدمة	المنفذ
+PaddleOCR-VL
+8111
+Gemma (llama)
+8080
+Orchestration
+8000
+Application
+8082
+Presentation
+5173
+بعد ما الخمسة يشتغلوا: ارفع الملف من الواجهة + اكتب سؤال → أرسل.
+
+cd D:\AI\KutupAI
+python -m RAG.ingestion.pipeline --reset

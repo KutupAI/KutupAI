@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
 
     DTOs/ApiResponseDTO.cpp
     DTOs/ChatDTO.cpp
+    DTOs/LayerStateDTO.cpp
 
     Validators/DocumentValidator.cpp
 

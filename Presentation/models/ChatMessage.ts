@@ -1,3 +1,5 @@
+import { PipelineState } from "./AnalysisResult";
+
 export type ChatRole = "user" | "assistant";
 
 export type MessageStatus = "sending" | "sent" | "error";
@@ -19,4 +21,7 @@ export interface ChatMessageModel {
   createdAt: number;
   file?: Pick<ChatFileAttachment, "name" | "type" | "previewUrl">;
   status: MessageStatus;
+  /** Filled 9-key pipeline envelope (assistant only). When present, UI shows
+   *  Structured Response Format via AnalysisResultCard — never raw JSON. */
+  pipelineState?: PipelineState;
 }

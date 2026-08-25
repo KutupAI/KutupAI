@@ -1,1 +1,24 @@
-# # local development environment overrides
+services:
+
+  orchestration:
+    image: kutupai-orchestration:latest
+    container_name: kutupai-orchestration
+    ports:
+      - "8000:8000"
+    environment:
+      ORCHESTRATION_HOST: 0.0.0.0
+      ORCHESTRATION_PORT: 8000
+      INFERENCE_BASE_URL: http://inference:8080/v1/chat/completions
+    depends_on:
+      - inference
+    volumes:
+      - ./Storage/files:/app/Storage/files
+      - ./RAG/chroma:/app/RAG/chroma
+
+  inference:
+    image: kutupai-inference:latest
+    container_name: kutupai-inference
+    expose:
+      - "8080"
+    volumes:
+      - ./Inference/models:/models

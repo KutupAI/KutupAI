@@ -114,12 +114,12 @@ def _advance(stage: Stage, state: GraphState, config: WorkflowConfig) -> Decisio
     """Business-level branching on top of the default linear sequence."""
 
     if stage == Stage.CLASSIFICATION:
-        classification = state.get("classification_result") or {}
+        classification = state.get("classification") or state.get("classification_result") or {}
         if isinstance(classification, dict) and classification.get("requires_rag") is False:
             return Decision(Action.CONTINUE, Stage.EXTRACTION, "classification: proceeding to extraction")
 
     if stage == Stage.VALIDATION:
-        validation = state.get("validation_result") or {}
+        validation = state.get("validation") or state.get("validation_result") or {}
         if isinstance(validation, dict) and validation.get("requires_rag") is False:
             return Decision(Action.CONTINUE, Stage.SUMMARY, "validation: RAG not required, skipping to summary")
 

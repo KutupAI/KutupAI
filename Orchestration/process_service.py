@@ -3,8 +3,13 @@ Application-facing Orchestration entry point.
 
 Single path: `run_workflow` runs the full stage graph
 (OCR → Classification → … → Writing). Stages that are disabled in
-config.yaml are skipped (never faked). Today only OCR is enabled, so the
-graph still starts at OCRAgent like every other Agent stage.
+config.yaml are skipped (never faked). All stages are enabled by default.
+
+Accepts either:
+  * the unified Application layer envelope
+    { request: {success, question, document}, ocr:{}, … writing:{} }
+    (+ optional flat document_path / document_id for the temp-file hop), or
+  * the legacy flat payload { document_id, document_path, question, … }.
 
 Returns the unified layer contract: { "Success": bool, "Data": [ document, ... ] }.
 
@@ -24,10 +29,76 @@ from Orchestration.messages.message_schema import (
     is_contract_envelope,
     normalize_document,
 )
+from Orchestration.state.state_manager import unified_ocr_from_wire
 from Orchestration.workflow.workflow_builder import AgentProtocol, build_workflow
 from Orchestration.workflow.workflow_config import WorkflowConfig
 
 logger = logging.getLogger("Orchestration.process_service")
+
+_STAGE_KEYS = (
+    "ocr",
+    "classification",
+    "extraction",
+    "validation",
+    "rag",
+    "summary",
+    "routing",
+    "writing",
+)
+
+
+def _is_layer_envelope(payload: Dict[str, Any]) -> bool:
+    request = payload.get("request")
+    return isinstance(request, dict) and (
+        "document" in request or "question" in request or "success" in request
+    )
+
+
+def _file_type_from_path(path: Path) -> str:
+    return path.suffix.lstrip(".").lower()
+
+
+def _build_request_section(
+    *,
+    document_id: str,
+    document_path: Optional[str],
+    question: str,
+    file_name: str = "",
+    file_type: str = "",
+    success: bool = True,
+    existing: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Normalize Application's `request` section for GraphState / Agents."""
+
+    base = dict(existing) if isinstance(existing, dict) else {}
+    document = dict(base.get("document") or {}) if isinstance(base.get("document"), dict) else {}
+
+    document.setdefault("document_id", document_id)
+    if file_name and not document.get("file_name"):
+        document["file_name"] = file_name
+    if file_type and not document.get("file_type"):
+        document["file_type"] = file_type
+    if document_path and not document.get("document_path"):
+        document["document_path"] = document_path
+
+    if not document.get("file_name") and document_path:
+        document["file_name"] = Path(document_path).name
+    if not document.get("file_type") and document_path:
+        document["file_type"] = _file_type_from_path(Path(document_path))
+
+    return {
+        "success": bool(base.get("success", success)),
+        "question": str(base.get("question") if base.get("question") is not None else question),
+        "document": document,
+    }
+
+
+def _seed_stage_sections(state_seed: Dict[str, Any], payload: Dict[str, Any]) -> None:
+    """Ensure every pipeline stage key exists (empty object when Application sent {})."""
+
+    for key in _STAGE_KEYS:
+        value = payload.get(key)
+        state_seed[key] = dict(value) if isinstance(value, dict) else {}
 
 
 def run_workflow(
@@ -37,10 +108,16 @@ def run_workflow(
     accompanying_text: Optional[str] = None,
     agent_overrides: Optional[Dict[Stage, AgentProtocol]] = None,
     config: Optional[WorkflowConfig] = None,
+    layer_state: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Run the Orchestration graph for one request; return { Success, Data }."""
+    """Run the Orchestration graph for one request; return { Success, Data }.
+
+    `layer_state` is the Application envelope when present; otherwise a fresh
+    empty envelope is built from the flat arguments.
+    """
 
     question = accompanying_text or ""
+    payload = dict(layer_state) if isinstance(layer_state, dict) else {}
 
     if not document_path:
         logger.info("process_skip document_id=%s reason=missing_document_path", document_id)
@@ -64,23 +141,41 @@ def run_workflow(
             ],
         )
 
-    request = {
+    existing_request = payload.get("request") if _is_layer_envelope(payload) else None
+    request_section = _build_request_section(
+        document_id=document_id,
+        document_path=str(path),
+        question=question,
+        file_name=path.name,
+        file_type=_file_type_from_path(path),
+        success=True,
+        existing=existing_request if isinstance(existing_request, dict) else None,
+    )
+
+    # Flat fields Agents / StateManager still lift to the top level.
+    workflow_request: Dict[str, Any] = {
         "document_id": document_id,
         "document_path": str(path),
         "accompanying_text": question or None,
         "question": question or None,
         "text": question or None,
+        "success": request_section["success"],
+        "document": request_section["document"],
+        # Nested Application contract (Agents read state["request"]).
+        "request": request_section,
     }
+    _seed_stage_sections(workflow_request, payload)
 
     logger.info(
-        "workflow_start document_id=%s path=%s has_text=%s",
+        "workflow_start document_id=%s path=%s has_text=%s envelope=%s",
         document_id,
         path.name,
         bool(question),
+        _is_layer_envelope(payload),
     )
 
     workflow = build_workflow(config=config, agent_overrides=agent_overrides)
-    result = workflow.run(request)
+    result = workflow.run(workflow_request)
     state = result.state
 
     ocr_payload = state.get("ocr_result")
@@ -100,6 +195,7 @@ def run_workflow(
     if not doc.get("file_type"):
         doc["file_type"] = path.suffix.lstrip(".")
 
+    # Prefer unified short keys; fall back to Orchestration wire mirrors.
     for extra_key, state_key in (
         ("classification", "classification_result"),
         ("extraction", "extraction_result"),
@@ -109,16 +205,59 @@ def run_workflow(
         ("routing", "routing"),
         ("writing", "writing"),
     ):
-        value = state.get(state_key)
+        value = state.get(extra_key) or state.get(state_key)
         # Legacy mirror while older mocks still wrote routing_decision.
         if extra_key == "routing" and not value:
             value = state.get("routing_decision")
+        # Prefer unified rag {success, rag_data} over wire {success, data}.
+        if extra_key == "rag":
+            short = state.get("rag")
+            if isinstance(short, dict) and short:
+                value = short
+            elif isinstance(value, dict) and "rag_data" not in value and "data" in value:
+                value = {
+                    "success": bool(value.get("success")),
+                    "rag_data": value.get("data")
+                    if isinstance(value.get("data"), dict)
+                    else {
+                        "operation": "retrieve",
+                        "query": "",
+                        "results": value.get("data") if isinstance(value.get("data"), list) else [],
+                    },
+                }
+            # Always emit a rag object (never omit / leave seeded {}).
+            if not value:
+                value = {
+                    "success": False,
+                    "rag_data": {"operation": "retrieve", "query": "", "results": []},
+                    "error": {
+                        "code": "rag_missing",
+                        "message": "RAG stage did not produce a payload.",
+                    },
+                }
         if value:
             doc[extra_key] = value
 
+    # Final safety: rag key must exist on the document returned to Application.
+    if not isinstance(doc.get("rag"), dict) or not doc.get("rag"):
+        doc["rag"] = {
+            "success": False,
+            "rag_data": {"operation": "retrieve", "query": "", "results": []},
+            "error": {
+                "code": "rag_missing",
+                "message": "RAG stage did not produce a payload.",
+            },
+        }
+
+    # Always attach unified `ocr` for Application / Presentation.
+    if isinstance(state.get("ocr"), dict) and state["ocr"]:
+        doc["ocr"] = state["ocr"]
+    elif is_contract_envelope(ocr_payload):
+        doc["ocr"] = unified_ocr_from_wire(ocr_payload)
+
     success = result.completed and not result.terminated
-    # OCR-only configs: treat a successful OCR envelope as overall success
-    # when later stages were skipped (not failed).
+    # Treat a successful OCR envelope as overall success when later stages
+    # were skipped (not failed).
     if not success and is_contract_envelope(ocr_payload) and ocr_payload.get("Success"):
         success = True
 
@@ -130,6 +269,45 @@ def run_workflow(
         len(state.get("history", [])),
     )
     return contract_envelope(success, [doc])
+
+
+def run_workflow_from_application(payload: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
+    """Entry used by FastAPI: accept Application envelope or legacy flat body."""
+
+    payload = dict(payload or {})
+    question = ""
+    for key in ("accompanying_text", "text", "question"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            question = value.strip()
+            break
+
+    document_id = str(payload.get("document_id") or "")
+    document_path = payload.get("document_path")
+    layer_state: Optional[Dict[str, Any]] = None
+
+    if _is_layer_envelope(payload):
+        layer_state = payload
+        request = payload.get("request") or {}
+        document = request.get("document") if isinstance(request, dict) else {}
+        if isinstance(document, dict):
+            if not document_id:
+                document_id = str(document.get("document_id") or "")
+            if not document_path:
+                document_path = document.get("document_path")
+            if not question and isinstance(request.get("question"), str):
+                question = request["question"]
+
+    if not document_id:
+        document_id = "unknown"
+
+    return run_workflow(
+        document_id=document_id,
+        document_path=str(document_path) if document_path else None,
+        accompanying_text=question or None,
+        layer_state=layer_state,
+        **kwargs,
+    )
 
 
 # Backward-compatible name used by older imports/docs.

@@ -56,14 +56,21 @@ curl http://localhost:8092/v1/chat/completions \
 
 ### 4 · Agent'ı çalıştır (yeni terminal, proje kökünden)
 ```bash
-python -m Agents.classification_agent.test_all_samples
+# Offline demo (unified envelope, mocked model)
+python Tests/Agents/manual_test_classification.py
+
+# Live Inference Gemma (Inference/llama_server on :8080)
+python Tests/Agents/manual_test_classification.py --live
+
+# Contract unit tests
+pytest Tests/Agents/test_classification_agent.py -q
 ```
-Fast classifier'ı atlayıp direkt Gemma 3'ü test etmek istersen:
+Fast classifier'ı kapatmak istersen:
 ```bash
 # PowerShell
-$env:CLASSIFICATION_USE_FAST_CLASSIFIER = "false"; python -m Agents.classification_agent.test_all_samples
+$env:CLASSIFICATION_USE_FAST_CLASSIFIER = "false"; python Tests/Agents/manual_test_classification.py --live
 # bash
-CLASSIFICATION_USE_FAST_CLASSIFIER=false python -m Agents.classification_agent.test_all_samples
+CLASSIFICATION_USE_FAST_CLASSIFIER=false python Tests/Agents/manual_test_classification.py --live
 ```
 
 ### 5 · (Opsiyonel) Etiketli veri hazırlığı

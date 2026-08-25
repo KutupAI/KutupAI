@@ -1,135 +1,233 @@
 # Application Layer
 
-**اللغة:** C++ · **الإطار:** Drogon  
-**المسؤولية:** استقبال طلبات Presentation عبر REST، التحقق من الملف/السؤال، حفظ الملف مؤقتًا، استدعاء Orchestration، وإرجاع النتيجة الجاهزة.
+**C++ · Drogon** — استقبال طلبات Presentation، التحقق، بناء عقد الحالة، استدعاء Orchestration، إرجاع النتيجة.  
+**لا تحتوي أي منطق AI.**
 
-هذه الطبقة **لا تحتوي أي منطق AI**. لا تصنيف، لا OCR، لا RAG.
-
-القناة الحية الحالية: `POST /api/Chat/SendMessage`.  
-القنوات Document/Auth/User/Status موجودة كهيكل ولم تُربَط في `CMakeLists.txt` بعد.
+القناة الحية: `POST /api/Chat/SendMessage` → المنفذ **8080** (يحتاج Orchestration على **8000**).
 
 ---
 
-## التدفق
+## كيف تعمل الطبقة (باختصار)
 
 ```text
-Presentation  POST /api/Chat/SendMessage
-      ↓
-Routes/ChatRoutes.cpp
-      ↓
-Controllers/ChatController.cpp     تحليل JSON هيكلي
-      ↓
-Validators/DocumentValidator.cpp   نوع الملف / الحجم / السؤال
-      ↓
-Services/ChatService.cpp           فك Base64 + ملف مؤقت
-      ↓
-Services/OrchestrationClient.cpp   POST http://127.0.0.1:8000/process
-      ↓
-إرجاع { Success, Data } كما وصل من Orchestration
-      ↓
-حذف المجلد المؤقت
+Presentation
+  → تحقق الشكل (JSON / ChatDTO)
+  → تحقق العمل (سؤال / نوع / حجم الملف)
+  → حفظ ملف مؤقت (Base64 → disk)
+  → بناء عقد الحالة { request, ocr:{}, … writing:{} }
+  → POST Orchestration /process
+  → إرجاع { Success, AdditionalData: { ChatId, State } }
+  → حذف الملف المؤقت دائمًا
 ```
 
-العقد المُرجَع إلى Presentation هو نفسه عقد OCR/Orchestration:
+| المدخل من Presentation | ما تفعله Application | المخرج إلى Presentation |
+|---|---|---|
+| `{ ChatId, Question, File? }` | تحقق + عقد + استدعاء Orchestration | `{ Success, AdditionalData: { ChatId, State } }` |
 
-```json
-{ "Success": true, "Data": [ { "document_id": "", "full_text": "", "pages": [], "...": "" } ] }
-```
-
-`Success = true` إذا اكتملت المعالجة. `false` إذا فشل الطلب (مسار ناقص، مهلة، ملف غير صالح).
+`File` = **ملف واحد فقط** (كائن وليس مصفوفة). لا دعم لرفع عدة صور دفعة واحدة في هذا العقد.
 
 ---
 
-## تشغيل الطبقة
+## المدخلات والمخرجات
 
-المتطلبات في `requirements.txt`. بعد تثبيت vcpkg + Drogon:
+### مدخل (من الواجهة)
+
+```json
+{
+  "ChatId": null,
+  "Question": "bu ne sozlesmesi",
+  "File": {
+    "FileName": "Elektrik sozlesmesi.pdf",
+    "FileType": "application/pdf",
+    "FileBase64": "<base64 بدون data: prefix>"
+  }
+}
+```
+
+- بدون ملف: أرسل `"File": null` و`Question` غير فارغ.
+- مع ملف: `Question` يمكن أن يكون `""`.
+
+### ما يُرسل إلى Orchestration (عقد الطبقة)
+
+```json
+{
+  "request": {
+    "success": true,
+    "question": "bu ne sozlesmesi",
+    "document": {
+      "document_id": "req-...",
+      "file_name": "Elektrik sozlesmesi.pdf",
+      "file_type": "pdf"
+    }
+  },
+  "ocr": {},
+  "classification": {},
+  "extraction": {},
+  "validation": {},
+  "rag": {},
+  "summary": {},
+  "routing": {},
+  "writing": {}
+}
+```
+
+(+ `document_path` داخليًا لمسار الملف المؤقت — لا يُعاد للواجهة.)
+
+### مخرج (إلى الواجهة)
+
+```json
+{
+  "Success": true,
+  "AdditionalData": {
+    "ChatId": "req-...",
+    "State": {
+      "request": {
+        "success": true,
+        "question": "bu ne sozlesmesi",
+        "document": {
+          "document_id": "req-...",
+          "file_name": "Elektrik sozlesmesi.pdf",
+          "file_type": "pdf"
+        }
+      },
+      "ocr": {},
+      "classification": {},
+      "extraction": {},
+      "validation": {},
+      "rag": {},
+      "summary": {},
+      "routing": {},
+      "writing": {}
+    }
+  }
+}
+```
+
+عند الفشل: `{ "Success": false, "Message": "...", "Code": "APPLICATION_…" }` وغالبًا HTTP 400 (تحقق) أو 502 (Orchestration).
+
+Orchestration داخليًا ما زال يستخدم `{ Success, Data }` — Application تحوّله إلى `AdditionalData.State` قبل الرد للواجهة.
+
+---
+
+## تجربة المدخلات والمخرجات
+
+### 1) شغّل الطبقات
 
 ```powershell
-cd Application
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake"
-cmake --build build --config Release
+# طرفية 1 — Orchestration
+cd D:\AI\KutupAI
+$env:ORCHESTRATION_PORT="8000"
+python -m Orchestration.main
 
+# طرفية 2 — Application
+cd D:\AI\KutupAI\Application
 $env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
-$env:APP_TEMP_UPLOAD_ROOT_DIR="C:\Users\SSCPrgWeb\Desktop\SmartGovernmentAI\Storage\files\temp_processing"
+$env:APP_TEMP_UPLOAD_ROOT_DIR="D:\AI\KutupAI\Storage\files\temp_processing"
 $env:APP_SERVER_PORT="8080"
 .\build\Release\SmartGovernmentAI_Application.exe
 ```
 
-المنفذ **8080**. يحتاج Orchestration على **8000**.
+### 2) حالات تجريبية (PowerShell)
 
-لا تستخدم مسارًا فيه `C:\...` — ضع المسار الكامل لمجلد `Storage\files\temp_processing`.
+**أ) سؤال فقط — يُرفض لاحقًا من Orchestration (لا مسار ملف):**
+```powershell
+Invoke-RestMethod http://127.0.0.1:8080/api/Chat/SendMessage -Method POST -ContentType "application/json" `
+  -Body '{"ChatId":null,"Question":"bu ne sozlesmesi","File":null}'
+```
+
+**ب) ملف صالح + سؤال (المسار السعيد):**
+```powershell
+$b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("D:\path\to\sample.pdf"))
+$body = @{
+  ChatId = $null
+  Question = "bu ne sozlesmesi"
+  File = @{ FileName = "sample.pdf"; FileType = "application/pdf"; FileBase64 = $b64 }
+} | ConvertTo-Json -Depth 5
+Invoke-RestMethod http://127.0.0.1:8080/api/Chat/SendMessage -Method POST -ContentType "application/json" -Body $body
+```
+
+**ج) ملف أكبر من الحد (افتراضي 10MB) → رفض في Application:**
+```powershell
+# أي ملف > 10MB
+# الرسالة: File exceeds maximum allowed size of 10MB.
+# HTTP 400
+```
+
+**د) نوع غير مدعوم (مثل `.exe` / `application/zip`) → رفض:**
+```powershell
+# الرسالة: Unsupported file type: ...
+# HTTP 400
+```
+
+**هـ) عدة صور:** العقد يقبل `File` كائنًا واحدًا فقط. إرسال مصفوفة `File: [ ... ]` → خطأ شكل الطلب (400). لرفع أكثر من صورة يجب دمجها خارجيًا (PDF واحد) أو إرسال طلب منفصل لكل ملف.
+
+غيّر الحد عبر البيئة: `$env:APP_MAX_UPLOAD_SIZE_MB="20"`
 
 ---
 
-## وظيفة كل ملف
+## الشروط التي تتحقق منها الطبقة
 
-### الجذر
+كل الشروط **قبل** استدعاء Orchestration.
 
-| الملف | الوظيفة |
+### شكل الطلب
+| الحالة | النتيجة |
 |---|---|
-| `main.cpp` | تشغيل خادم Drogon: تحميل الإعدادات، بناء ChatService/Controller، تسجيل المسارات، الاستماع على المنفذ. |
-| `CMakeLists.txt` | بناء التنفيذي وربط Drogon. الملفات المعلّقة هي الهياكل غير المربوطة بعد. |
-| `requirements.txt` | متطلبات C++ / vcpkg / متغيرات البيئة. |
-| `README.md` | هذا الملف. |
+| JSON غير صالح / `Question` ليست نصًا | 400 |
+| `File` مصفوفة أو نوع خاطئ (ليس object/null) | 400 |
+| `File` موجود لكن ينقص `FileName` / `FileType` / `FileBase64` | 400 |
 
-### `Controllers/`
-
-| الملف | الوظيفة |
+### قواعد العمل
+| الحالة | النتيجة |
 |---|---|
-| `ChatController.h/.cpp` | استقبال `SendMessage`، تحويل الجسم إلى DTO، استدعاء ChatService، إرجاع `{ Success, Data }`. |
-| `DocumentController.h/.cpp` | هيكل رفع/استعلام وثيقة عبر Storage (غير مربوط حاليًا). |
-| `AuthController.h/.cpp` | هيكل تسجيل الدخول وإصدار التوكن. |
-| `UserController.h/.cpp` | هيكل عمليات المستخدم. |
-| `StatusController.h/.cpp` | هيكل قراءة حالة معالجة وثيقة من Storage. |
+| لا ملف + سؤال فارغ/مسافات فقط | رفض — السؤال مطلوب |
+| لا سؤال ولا ملف | رفض |
+| **أكثر من ملف / مصفوفة صور** | غير مدعوم — `File` واحد فقط |
+| نوع MIME/امتداد غير مسموح | رفض (`Unsupported file type`) |
+| `FileBase64` فارغ | رفض |
+| الحجم بعد الفك التقديري **> 10MB** (أو `APP_MAX_UPLOAD_SIZE_MB`) | رفض (`File exceeds maximum…`) |
+| مسار خبيث في `FileName` (`../`) | يُؤخذ اسم الملف فقط (تعقيم) |
 
-### `Routes/`
+**الأنواع المسموحة:** PDF, DOCX, PPTX, TXT, وصور (`image/*` أو امتدادات jpg/png/gif/webp/tiff/bmp/heic…).
 
-| الملف | الوظيفة |
+### بعد التحقق
+| الحالة | النتيجة |
 |---|---|
-| `ChatRoutes.h/.cpp` | ربط `POST /api/Chat/SendMessage` بـ `ChatController::sendMessage`. |
-| `ApiRoutes.h` | تجميع تسجيل كل الـ Routes. |
-| `DocumentRoutes.cpp` | هيكل مسارات الوثائق. |
-| `AuthRoutes.cpp` | هيكل مسارات المصادقة. |
+| فشل فك Base64 / الكتابة على القرص | `APPLICATION_TEMP_STORAGE_FAILED` |
+| Orchestration لا يرد / مهلة 300s | `APPLICATION_ORCHESTRATION_UNREACHABLE` → 502 |
+| رد ليس `{ Success, Data[] }` | `ORCHESTRATION_ERROR` |
 
-### `DTOs/`
+---
 
-| الملف | الوظيفة |
+## التشغيل والبناء
+
+```powershell
+cd D:\AI\KutupAI\Application
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake"
+cmake --build build --config Release
+```
+
+| متغير | افتراضي |
 |---|---|
-| `ChatDTO.h/.cpp` | شكل الطلب من الواجهة: `ChatId`, `Question`, `File { FileName, FileType, FileBase64 }`. الاستجابة تمرّر عقد `{ Success, Data }`. |
-| `ApiResponseDTO.h/.cpp` | غلاف العقد: `documentEnvelope` / `emptyDocumentEnvelope`. دوال `success`/`failure` القديمة للقنوات الأخرى. |
-| `DocumentRequestDTO.h` · `DocumentResponseDTO.h` | هيكل DTO رفع الوثيقة. |
-| `AuthDTO.h` | هيكل DTO المصادقة. |
-| `UserDTO.h` | هيكل DTO المستخدم. |
+| `APP_SERVER_PORT` | `8080` |
+| `ORCHESTRATION_BASE_URL` | `http://127.0.0.1:8000` |
+| `APP_TEMP_UPLOAD_ROOT_DIR` | مسار كامل لـ `Storage/files/temp_processing` |
+| `ORCHESTRATION_TIMEOUT_SECONDS` | `300` |
+| `APP_MAX_UPLOAD_SIZE_MB` | `10` |
 
-### `Services/`
+لا تضع مسارًا فيه `...` — استخدم المسار الكامل.
 
-| الملف | الوظيفة |
+---
+
+## الملفات الأساسية
+
+| الملف | الدور |
 |---|---|
-| `ChatService.h/.cpp` | مسار الدردشة: تحقق → حفظ مؤقت → Orchestration → تنظيف. الجسر الوحيد لهذه القناة نحو Orchestration. |
-| `OrchestrationClient.h/.cpp` | العميل الوحيد الذي يعرف `POST /process`. يمرّر `{ document_id, question, document_path }` وينتظر `{ Success, Data }`. |
-| `DocumentProcessingService.h/.cpp` | هيكل جسر قناة الرفع المعتمدة على Storage. |
-| `AuthService.h/.cpp` | هيكل منطق الهوية والجلسات. |
-| `UserService.h/.cpp` | هيكل منطق المستخدم. |
+| `Controllers/ChatController` | استقبال الطلب وإرجاع `{ Success, Data }` |
+| `Validators/DocumentValidator` | نوع/حجم/سؤال |
+| `DTOs/LayerStateDTO` | عقد `{ request, ocr, … writing }` |
+| `DTOs/ChatDTO` | شكل مدخل الواجهة |
+| `Services/ChatService` | تدفق كامل: تحقق → temp → عقد → Orchestration → تنظيف |
+| `Services/OrchestrationClient` | `POST /process` فقط |
+| `Configuration/AppConfig` | المنافذ، المهلة، حد الحجم |
 
-### `Validators/`
-
-| الملف | الوظيفة |
-|---|---|
-| `DocumentValidator.h/.cpp` | نوع MIME/الامتداد، حجم الملف، أن السؤال غير فارغ إذا لم يُرفق ملف. |
-| `RequestValidator.h/.cpp` | تحقق هيكلي عام للطلبات. |
-
-### `Middleware/`
-
-| الملف | الوظيفة |
-|---|---|
-| `AuthMiddleware.h/.cpp` | هيكل التحقق من التوكن قبل الـ Controllers. |
-| `LoggingMiddleware.h/.cpp` | هيكل تسجيل الطلب/الاستجابة. |
-| `ErrorHandlingMiddleware.h/.cpp` | هيكل توحيد أخطاء HTTP. |
-| `CorsMiddleware.h/.cpp` | هيكل CORS. |
-
-### `Configuration/`
-
-| الملف | الوظيفة |
-|---|---|
-| `AppConfig.h/.cpp` | المنفذ، عنوان Orchestration، مهلة الانتظار (300 ثانية)، مجلد الرفع المؤقت، الحد الأقصى لحجم الملف. يتجاهل المسارات الناقصة التي تحتوي `...`. |
-| `DatabaseConfig.h` | هيكل إعدادات قاعدة البيانات. |
+باقي Controllers/Routes (Document/Auth/User/Status) هياكل غير مربوطة في البناء بعد.

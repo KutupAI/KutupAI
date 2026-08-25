@@ -13,10 +13,11 @@ TEMPERATURE = 0.2
 TOP_P = 0.9
 MAX_TOKENS = 512
 
-# Hard cap on characters copied from summary.rag_summary_text into the
+# Hard cap on characters copied from summary / OCR text into the
 # compact model context. Keeps the prompt small even if an upstream
-# Agent produces an unexpectedly long summary.
+# Agent produces an unexpectedly long document.
 MAX_SUMMARY_CHARS = 2000
+MAX_OCR_CHARS = 4000
 
 # Informational only (matches Inference/models/model_registry.json).
 # Not used to load or select a model -- Writer Agent never touches

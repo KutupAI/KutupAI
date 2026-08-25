@@ -24,6 +24,7 @@ class WriterContext:
     question: str
     document_type: str = ""
     summary: str = ""
+    document_text: str = ""
     extracted_data: Dict[str, Any] = field(default_factory=dict)
     validation: Dict[str, Any] = field(default_factory=dict)
 

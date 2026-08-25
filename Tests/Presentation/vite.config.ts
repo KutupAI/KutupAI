@@ -16,5 +16,12 @@ export default defineConfig({
     fs: {
       allow: [path.resolve(__dirname, "../..")],
     },
+    // Proxy Presentation → Application (Drogon). Keep llama-server on :8080.
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8082",
+        changeOrigin: true,
+      },
+    },
   },
 });

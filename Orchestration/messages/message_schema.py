@@ -134,11 +134,13 @@ class AgentResult:
         status: ExecutionStatus,
         error: str,
         error_type: Optional[str] = None,
+        data: Optional[Any] = None,
         **meta: Any,
     ) -> "AgentResult":
         return cls(
             stage=stage,
             status=status,
+            data=data,
             error=error,
             error_type=error_type or status.value,
             metadata=meta,

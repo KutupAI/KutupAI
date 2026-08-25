@@ -1,1 +1,18 @@
-Dockerfile that builds llama-server.
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /models
+
+ENV MODEL_DIR=/models
+ENV INFERENCE_PORT=8080
+
+EXPOSE 8080
+
+CMD ["sleep", "infinity"]

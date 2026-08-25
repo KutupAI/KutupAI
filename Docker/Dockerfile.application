@@ -1,1 +1,44 @@
-Dockerfile for the Application layer.
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    curl \
+    pkg-config \
+    ca-certificates \
+    zip \
+    unzip \
+    tar \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install vcpkg
+RUN git clone --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg \
+    && /opt/vcpkg/bootstrap-vcpkg.sh
+
+# Install Drogon
+RUN /opt/vcpkg/vcpkg install drogon:x64-linux
+
+WORKDIR /app
+
+# Copy Application source
+COPY Application /app/Application
+
+# Build Application
+RUN cmake -S /app/Application \
+    -B /app/Application/build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake \
+    && cmake --build /app/Application/build --config Release -j$(nproc)
+
+ENV APP_SERVER_PORT=8080
+ENV ORCHESTRATION_BASE_URL=http://orchestration:8000
+ENV ORCHESTRATION_TIMEOUT_SECONDS=300
+ENV APP_TEMP_UPLOAD_ROOT_DIR=/app/Storage/files/temp_processing
+ENV APP_MAX_UPLOAD_SIZE_MB=10
+
+EXPOSE 8080
+
+CMD ["/app/Application/build/SmartGovernmentAI_Application"]

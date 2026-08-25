@@ -10,18 +10,40 @@ using Application::DTOs::SendMessageRequestDTO;
 
 namespace Application::Controllers {
 
+namespace {
+
+drogon::HttpResponsePtr jsonResponse(const Json::Value& body, drogon::HttpStatusCode status) {
+    auto resp = drogon::HttpResponse::newHttpJsonResponse(body);
+    resp->setStatusCode(status);
+    resp->addHeader("Access-Control-Allow-Origin", "*");
+    resp->addHeader("Access-Control-Allow-Headers", "Content-Type");
+    resp->addHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    return resp;
+}
+
+drogon::HttpResponsePtr jsonBodyResponse(const std::string& body, drogon::HttpStatusCode status) {
+    auto resp = drogon::HttpResponse::newHttpResponse();
+    resp->setStatusCode(status);
+    resp->setBody(body);
+    resp->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+    resp->addHeader("Access-Control-Allow-Origin", "*");
+    resp->addHeader("Access-Control-Allow-Headers", "Content-Type");
+    resp->addHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    return resp;
+}
+
+} // namespace
+
 ChatController::ChatController(std::shared_ptr<Application::Services::ChatService> chatService)
     : chatService_(std::move(chatService)) {}
 
 void ChatController::sendMessage(const drogon::HttpRequestPtr& req,
                                   std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
-    // --- 1) Parse body (structural only) ---
     auto jsonBody = req->getJsonObject();
     if (!jsonBody) {
-        auto resp = drogon::HttpResponse::newHttpJsonResponse(
-            ApiResponseDTO::emptyDocumentEnvelope(false));
-        resp->setStatusCode(drogon::k400BadRequest);
-        callback(resp);
+        callback(jsonResponse(
+            ApiResponseDTO::failure("Request body must be JSON", ErrorStage::MalformedRequest),
+            drogon::k400BadRequest));
         return;
     }
 
@@ -30,48 +52,31 @@ void ChatController::sendMessage(const drogon::HttpRequestPtr& req,
         request = SendMessageRequestDTO::fromJson(*jsonBody);
     } catch (const MalformedRequestError& e) {
         LOG_WARN << "ChatController: malformed request: " << e.what();
-        auto resp = drogon::HttpResponse::newHttpJsonResponse(
-            ApiResponseDTO::emptyDocumentEnvelope(false));
-        resp->setStatusCode(drogon::k400BadRequest);
-        callback(resp);
+        callback(jsonResponse(ApiResponseDTO::failure(e.what(), ErrorStage::MalformedRequest),
+                              drogon::k400BadRequest));
         return;
     }
 
-    // --- 2) Delegate to ChatService (validation + Orchestration call live there) ---
-    // NOTE: ChatService::sendMessage is currently synchronous/blocking
-    // (OrchestrationClient blocks internally on the Orchestration round
-    // trip). This is acceptable for now given llama.cpp/OCR turnaround
-    // times, but should move to Drogon's coroutine handlers
-    // (drogon::Task<...>) if concurrent chat volume grows.
     try {
         const auto result = chatService_->sendMessage(request);
 
         if (!result.success) {
             LOG_ERROR << "ChatController: " << result.errorStage << " " << result.errorMessage;
-            auto resp = drogon::HttpResponse::newHttpJsonResponse(result.data.toJson());
-            // Validation/malformed-input failures are client errors; anything
-            // past that boundary (temp storage, Orchestration) is a server-side
-            // condition from the client's point of view.
-            resp->setStatusCode(result.errorStage == ErrorStage::ValidationFailed
-                                     ? drogon::k400BadRequest
-                                     : drogon::k502BadGateway);
-            callback(resp);
+            const auto status = result.errorStage == ErrorStage::ValidationFailed
+                                    ? drogon::k400BadRequest
+                                    : drogon::k502BadGateway;
+            callback(jsonResponse(
+                ApiResponseDTO::failure(result.errorMessage, result.errorStage), status));
             return;
         }
 
-        auto resp = drogon::HttpResponse::newHttpJsonResponse(result.data.toJson());
-        resp->setStatusCode(drogon::k200OK);
-        callback(resp);
+        // Ordered wire format: Success first, then State in pipeline stage order.
+        callback(jsonBodyResponse(result.data.toOrderedJsonString(), drogon::k200OK));
     } catch (const std::exception& e) {
-        // Nothing below this should be able to throw past ChatService, but
-        // this backstop guarantees Presentation always gets a well-formed
-        // ApiResponse instead of a raw 500/connection reset, per the
-        // "every hop reports success/failure with a traceable stage" requirement.
         LOG_ERROR << "ChatController::sendMessage unexpected exception: " << e.what();
-        auto resp = drogon::HttpResponse::newHttpJsonResponse(
-            ApiResponseDTO::emptyDocumentEnvelope(false));
-        resp->setStatusCode(drogon::k500InternalServerError);
-        callback(resp);
+        callback(jsonResponse(
+            ApiResponseDTO::failure(e.what(), ErrorStage::InternalError),
+            drogon::k500InternalServerError));
     }
 }
 

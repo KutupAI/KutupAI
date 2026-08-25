@@ -49,6 +49,14 @@
   border-bottom-left-radius: 4px;
 }
 
+/* Wider panel for Structured Explanatory responses */
+.bubbleStructured {
+  max-width: min(720px, 92%);
+  background: var(--kutup-bg-elevated);
+  border-color: var(--kutup-border-strong);
+  padding: 16px 18px;
+}
+
 .senderLabel {
   font-family: var(--font-display);
   font-weight: 700;

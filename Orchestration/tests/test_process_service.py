@@ -71,7 +71,7 @@ def test_run_workflow_success_with_all_mocks():
         Path(path).unlink(missing_ok=True)
 
 
-def test_run_workflow_defaults_to_ocr_only():
+def test_run_workflow_defaults_to_ocr_through_validation():
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
         f.write(b"%PDF-1.4 fake")
         path = f.name
@@ -79,11 +79,70 @@ def test_run_workflow_defaults_to_ocr_only():
         envelope = run_workflow(
             document_id="doc-1",
             document_path=path,
-            agent_overrides={Stage.OCR: MockOCRAgent()},
+            agent_overrides={
+                Stage.OCR: MockOCRAgent(),
+                # Enabled stages mocked to avoid live Inference.
+                Stage.CLASSIFICATION: MockClassificationAgent(),
+                Stage.EXTRACTION: MockExtractionAgent(),
+            },
         )
         assert envelope["Success"] is True
         doc = envelope["Data"][0]
         assert "writing" not in doc
-        assert "classification" not in doc
+        assert doc["classification"] == {
+            "success": True,
+            "document_type": "invoice",
+            "classification_confidence": 0.95,
+        }
+        assert doc["extraction"] == {
+            "success": True,
+            "sender": None,
+            "date": None,
+            "address": None,
+            "phone": None,
+            "email": None,
+        }
+        assert "validation" in doc
+        assert set(doc["validation"].keys()) == {"success", "is_complete", "errors", "warnings"}
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
+def test_run_workflow_from_application_envelope():
+    from Orchestration.process_service import run_workflow_from_application
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+        f.write(b"%PDF-1.4 fake")
+        path = f.name
+    try:
+        payload = {
+            "document_id": "DOC-001",
+            "document_path": path,
+            "request": {
+                "success": True,
+                "question": "bu ne sozlesmesi",
+                "document": {
+                    "document_id": "DOC-001",
+                    "file_name": "Elektrik sozlesmesi.pdf",
+                    "file_type": "pdf",
+                    "document_path": path,
+                },
+            },
+            "ocr": {},
+            "classification": {},
+            "extraction": {},
+            "validation": {},
+            "rag": {},
+            "summary": {},
+            "routing": {},
+            "writing": {},
+        }
+        envelope = run_workflow_from_application(
+            payload,
+            agent_overrides={Stage.OCR: MockOCRAgent()},
+        )
+        assert envelope["Success"] is True
+        assert envelope["Data"][0]["document_id"] == "DOC-001"
+        assert envelope["Data"][0]["question"] == "bu ne sozlesmesi"
     finally:
         Path(path).unlink(missing_ok=True)

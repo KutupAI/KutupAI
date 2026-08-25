@@ -7,9 +7,8 @@ config.yaml controls, per stage: whether its Agent is enabled/integrated,
 retry count, timeout, and fallback policy - i.e. exactly the policies the
 brief calls out ("enabled Agents, retries, fallbacks and timeouts").
 
-If config.yaml is missing or empty, sane defaults are used (only OCR is
-enabled by default, matching the current state of Agent integration; every
-other stage is configured but disabled until its Agent is connected).
+If config.yaml is missing or empty, sane defaults are used (all pipeline
+stages enabled: OCR → … → Writing).
 """
 
 from __future__ import annotations
@@ -75,11 +74,7 @@ class WorkflowConfig:
 
 
 # ---------------------------------------------------------------------------
-# Defaults: only OCR is wired to a real Agent today. Every other stage is
-# declared (so the graph/topology is complete and ready) but disabled until
-# `module`/`class_name` are pointed at the real Agent and `enabled: true`
-# is set in config.yaml - see README "Required future Agent integration
-# points".
+# Defaults: full pipeline OCR → … → Writing wired to real Agents.
 # ---------------------------------------------------------------------------
 def _default_stages() -> Dict[Stage, StageConfig]:
     return {
@@ -94,25 +89,25 @@ def _default_stages() -> Dict[Stage, StageConfig]:
         ),
         Stage.CLASSIFICATION: StageConfig(
             stage=Stage.CLASSIFICATION,
-            enabled=False,
+            enabled=True,
             module="Agents.classification_agent",
             class_name="ClassificationAgent",
             retries=1,
-            timeout_seconds=60,
+            timeout_seconds=300,
             fallback=FallbackPolicy.SKIP,
         ),
         Stage.EXTRACTION: StageConfig(
             stage=Stage.EXTRACTION,
-            enabled=False,
+            enabled=True,
             module="Agents.extraction_agent",
             class_name="ExtractionAgent",
             retries=1,
-            timeout_seconds=60,
+            timeout_seconds=300,
             fallback=FallbackPolicy.SKIP,
         ),
         Stage.VALIDATION: StageConfig(
             stage=Stage.VALIDATION,
-            enabled=False,
+            enabled=True,
             module="Agents.validation_agent",
             class_name="ValidationAgent",
             retries=1,
@@ -121,7 +116,7 @@ def _default_stages() -> Dict[Stage, StageConfig]:
         ),
         Stage.RAG: StageConfig(
             stage=Stage.RAG,
-            enabled=False,
+            enabled=True,
             module="Agents.rag_agent",
             class_name="RAGAgent",
             retries=1,
@@ -130,7 +125,7 @@ def _default_stages() -> Dict[Stage, StageConfig]:
         ),
         Stage.SUMMARY: StageConfig(
             stage=Stage.SUMMARY,
-            enabled=False,
+            enabled=True,
             module="Agents.summary_agent",
             class_name="SummaryAgent",
             retries=1,
@@ -139,7 +134,7 @@ def _default_stages() -> Dict[Stage, StageConfig]:
         ),
         Stage.ROUTING: StageConfig(
             stage=Stage.ROUTING,
-            enabled=False,
+            enabled=True,
             module="Agents.routing_agent",
             class_name="RoutingAgent",
             retries=1,
@@ -148,7 +143,7 @@ def _default_stages() -> Dict[Stage, StageConfig]:
         ),
         Stage.WRITING: StageConfig(
             stage=Stage.WRITING,
-            enabled=False,
+            enabled=True,
             module="Agents.writer_agent",
             class_name="WriterAgent",
             retries=1,
@@ -182,8 +177,7 @@ def load_config(path: Optional[Path] = None) -> WorkflowConfig:
     """Load config.yaml, falling back to defaults for any missing section.
 
     An empty or absent config.yaml is valid and results in the default
-    configuration (OCR-only enabled), matching the current integration
-    state of the Agents layer.
+    configuration (full pipeline enabled).
     """
 
     path = path or _CONFIG_PATH
