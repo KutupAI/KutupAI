@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_CHAT_DEMO?: string;
+  readonly VITE_APP_API_BASE_URL?: string;
 }
 
 interface ImportMeta {
