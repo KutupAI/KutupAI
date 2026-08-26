@@ -26,18 +26,16 @@ from langchain_core.documents import Document
 # Projenin kendi konfigürasyonunu kullanarak chunk boyutlarını dinamik tutuyoruz
 from RAG.configuration.rag_config_loader import chunking_config
 
-# ============================================================
-# Regex Tanımları (Türk Hukuk Yapısı İçin)
-# ============================================================
+# Türk hukuk metni düzenli ifadeleri
 
-# Standart madde başlangıçları (Örn: "Madde 3-", "MADDE 5 –", "Madde 7 7 –")
+# Standart madde başlangıçları.
 ARTICLE_PATTERN = re.compile(
     r"(?im)(?<!\w)Madde\s+"
     r"(\d+(?:\s+\d+)?)" # Birden fazla rakamı da yakala (Örn: Madde 7 7)
     r"\s*(?:[-–—.:])?"
 )
 
-# Özel madde türleri (Örn: "Ek Madde 1", "Geçici Madde 5", "Madde 10 ilâ 15")
+# Ek ve geçici madde başlangıçları.
 ADDITIONAL_ARTICLE_PATTERN = re.compile(
     r"(?im)(?<!\w)"
     r"(Ek\s+Madde|Geçici\s+Madde|Muvakkat\s+Madde|Madde\s+\d+\s+ilâ\s+\d+)"
@@ -45,10 +43,10 @@ ADDITIONAL_ARTICLE_PATTERN = re.compile(
     r"\s*(?:[-–—.:])?"
 )
 
-# Fıkra tespiti (Örn: "(1) ", "(2) ")
+# Fıkra başlangıçları.
 PARAGRAPH_PATTERN = re.compile(r"(?m)^\s*\((\d+)\)\s+")
 
-# Bent tespiti (Örn: "a) ", "b) ", "c) ", "1 - ", "2 - ")
+# Bent ve numaralı liste başlangıçları.
 CLAUSE_PATTERN = re.compile(r"(?m)(?:^|\s)([a-zA-ZçğıöşüÇĞİÖŞÜ])\)\s+|(?:^|\s)(\d+)\s*[-–]\s+")
 PAGE_MARKER_PATTERN = re.compile(r"\[\[RAG_PAGE:(\d+)\]\]")
 _ACCEPTANCE_DATE_PATTERN = re.compile(r"Kabul\s+Tarihi\s*[:\-]\s*(\d{1,2}[./]\d{1,2}[./]\d{4})", re.IGNORECASE)
@@ -76,9 +74,7 @@ def _heading_start_before_article(text: str, previous_end: int, article_start: i
         return article_start
     return previous_end + match.start(1)
 
-# ============================================================
-# Metin Temizleme Fonksiyonları (Data Validation & Cleaning)
-# ============================================================
+# Metin temizleme
 
 def normalize_whitespace(text: str) -> str:
     """Gereksiz boşlukları ve satır sonlarını standartlaştırır."""
@@ -94,13 +90,10 @@ def clean_text(text: str) -> str:
     """
     if not text: return ""
     
-    # 1. Sayfa ayırıcı çizgileri temizle (Örn: ——————————)
     text = re.sub(r"\n?\s*[—\-]{5,}\s*\n?", "\n", text)
     
-    # 2. Tek başına kalan sayfa numaralarını temizle (Örn: 749, 750, 760-1)
     text = re.sub(r"(?m)^\s*\d{1,4}(?:-\d{1,2})?\s*$", "", text)
     
-    # 3. Satır sonlarındaki dipnotları (1), (2) metnin içine akıcı şekilde yedir
     text = re.sub(r"\s*\((\d+)\)\s*\n", r" (\1) ", text)
     
     return normalize_whitespace(text)
@@ -218,9 +211,7 @@ def _locate_chunk_span(
         return first
     return first[0], max(first[1], last[1])
 
-# ============================================================
-# Madde Tespiti ve Yapısal Bölme (Structural Extraction)
-# ============================================================
+# Madde tespiti ve yapısal bölme
 
 def split_articles(document: Document) -> List[Dict[str, Any]]:
     """
@@ -229,7 +220,6 @@ def split_articles(document: Document) -> List[Dict[str, Any]]:
     text = clean_text(document.page_content)
     if not text: return []
 
-    # 🚀 VALIDATION: Kanun sonundaki devasa değişiklik cetvellerini ve listeleri atla
     # Bu kısımlar RAG için gürültü oluşturur (Örn: 1076, 7068 sayılı kanunların sonundaki cetveller)
     table_match = re.search(
         r"(?i)("
@@ -467,7 +457,7 @@ def chunk_article(article: Dict[str, Any], max_size: int, overlap_size: int) -> 
     if current_chunk:
         raw_chunks.append(current_chunk.strip())
 
-    # Çok küçük chunk'ları birleştirme (Min Chunk Size Logic)
+    # Küçük parçaları birleştirme
     final_chunks = []
     min_chunk_size = 250 # 250 karakterden küçük parçaları yanındakiyle birleştir
     for raw_chunk in raw_chunks:
@@ -486,9 +476,7 @@ def chunk_article(article: Dict[str, Any], max_size: int, overlap_size: int) -> 
         for chunk in final_chunks if chunk.strip()
     ]
 
-# ============================================================
-# Ana Fonksiyonlar (LangChain Uyumlu)
-# ============================================================
+# Ana işlevler
 
 _LAW_NUMBER_HEADER_RE = re.compile(
     r"\bKanun\s*(?:Numarası|Numarasi|No\.?|N[oº])\s*[:\-]?\s*(\d{2,8})\b",
@@ -601,7 +589,7 @@ def split_documents(documents: List[Document]) -> List[Document]:
 
                 chunk_id = _build_chunk_id(metadata, article_no, chunk_index, content)
 
-                # 🚀 KRİTİK: Hybrid Retriever'daki Metadata Filtrelemesi için law_number ve article_no string olarak ekleniyor
+                # Filtreleme için kanun ve madde bilgisini sakla.
                 law_no = _resolve_law_number(metadata)
 
                 metadata.update({
@@ -619,7 +607,7 @@ def split_documents(documents: List[Document]) -> List[Document]:
                 metadata.update(_chunk_structure(article_no, content))
                 metadata.update(_document_dates(normalized_document_text))
 
-                # 🚀 FİLTRELEME: Çok kısa veya anlamsız chunk'ları atla (Örn: sadece "Ek", "Geçici", tablo başlıkları)
+                # Çok kısa veya anlamsız parçaları atla.
                 # Mülga maddeler genellikle 40-50 karakterdir, bu yüzden 20 sınırı güvenlidir.
                 if len(content.strip()) > 30:
                     all_chunks.append(Document(page_content=content, metadata=metadata))

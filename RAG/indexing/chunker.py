@@ -18,9 +18,7 @@ class RawChunk:
     article_number: str  
     part_index: int      
 
-# ============================================================
-# KutupAI Akıllı Regex Tanımları
-# ============================================================
+# KutupAI düzenli ifadeleri
 ARTICLE_PATTERN = re.compile(r"(?im)(?<!\w)Madde\s+(\d+)\s*(?:[-–—.:])?")
 ADDITIONAL_ARTICLE_PATTERN = re.compile(r"(?im)(?<!\w)(Ek\s+Madde|Geçici\s+Madde|Muvakkat\s+Madde)\s*(\d+)?\s*(?:[-–—.:])?")
 PARAGRAPH_PATTERN = re.compile(r"(?m)^\s*\((\d+)\)\s+")
@@ -45,7 +43,7 @@ def _split_by_article(full_text: str) -> List[Dict[str, Any]]:
     text = clean_text(full_text)
     if not text: return [{"content": text, "article_number": "", "type": "legal_document"}]
 
-    # Tabloları atla (Validation)
+    # Tabloları atla.
     table_match = re.search(r"(?i)(DEĞİŞİKLİKLER CETVELİ|YÜRÜRLÜKTEN KALDIRDIĞI KANUN|YÜRÜRLÜĞE GİRİŞ TARİHİNİ GÖSTER)", text)
     if table_match:
         text = text[:table_match.start()].strip()

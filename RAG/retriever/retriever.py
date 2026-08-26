@@ -265,6 +265,32 @@ def _ensure_structured_evidence(
     return selected[:top_k]
 
 
+def _complete_amendment_bundle(
+    final: List[SearchResult],
+    *,
+    structured: List[SearchResult],
+    ledger: List[SearchResult],
+    frame: QueryFrame,
+) -> tuple[List[SearchResult], bool]:
+    """Her değişiklik için kanıt varsa yalnız eşleşen kanıtları döndürür."""
+    required_slots = [slot for slot in frame.slots if slot.kind == "amendment"]
+    if not required_slots:
+        return final, False
+
+    candidates = _deduplicate(structured + ledger + final)
+    selected: List[SearchResult] = []
+    selected_ids: Set[str] = set()
+    for slot in required_slots:
+        evidence = next((item for item in candidates if _matches_slot(item, slot)), None)
+        if evidence is None:
+            return final, False
+        evidence_id = str(evidence["id"])
+        if evidence_id not in selected_ids:
+            selected.append(evidence)
+            selected_ids.add(evidence_id)
+    return selected, True
+
+
 def _ensure_reference_title_evidence(
     final: List[SearchResult], reference_hits: List[SearchResult], *, top_k: int
 ) -> List[SearchResult]:
@@ -316,6 +342,23 @@ def retrieve(
     candidate_k = min(max(k * 3, retrieval_config.candidate_k), retrieval_config.max_candidate_k)
     where = default_source_where(query, where)
     frame = build_query_frame(query)
+
+    # Hedef kanun yoksa değişiklik sorusunda tahmin yapma.
+    if (
+        frame.needs_amendment_evidence
+        and frame.amending_numbers
+        and not frame.target_law_numbers
+    ):
+        if trace is not None:
+            trace.update({
+                "input_query": query.strip(),
+                "top_k": k,
+                "query_intent": frame.intent.kind,
+                "evidence_slots": [slot.key for slot in frame.slots],
+                "no_evidence_reason": "amendment_target_law_missing",
+                "final_result_count": 0,
+            })
+        return []
 
     strategy = expansion_strategy
     if strategy is None and query_expansion_config.enabled:
@@ -578,6 +621,22 @@ def retrieve(
         required_types=requested_source_types,
         top_k=k,
     )
+    final, amendment_bundle_complete = _complete_amendment_bundle(
+        final,
+        structured=structured_hits,
+        ledger=ledger_hits,
+        frame=frame,
+    )
+    # Top-K arama, soru corpus dışı olsa dahi en yakın parçaları döndürür.
+    # Tüm sonuçlar zayıfsa alakasız hukuk metni vermek yerine boş kanıt dönülür.
+    best_final_score = max((float(item["score"]) for item in final), default=None)
+    low_confidence = bool(
+        best_final_score is not None
+        and retrieval_config.min_final_score > 0.0
+        and best_final_score < retrieval_config.min_final_score
+    )
+    if low_confidence:
+        final = []
     if trace is not None:
         trace.update({
             "reranker_enabled": use_reranker is not False,
@@ -589,6 +648,10 @@ def retrieve(
             "structured_evidence_results": len(structured_hits),
             "source_coverage_types": sorted(requested_source_types),
             "final_source_types": sorted({str(item["metadata"].get("source_type") or "") for item in final}),
+            "best_final_score": best_final_score,
+            "min_final_score": retrieval_config.min_final_score,
+            "low_confidence_rejected": low_confidence,
+            "amendment_bundle_complete": amendment_bundle_complete,
             "total_retrieval_ms": round((perf_counter() - pipeline_started) * 1000, 3),
         })
     return final

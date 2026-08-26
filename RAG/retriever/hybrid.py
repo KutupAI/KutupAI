@@ -22,7 +22,7 @@ from RAG.retriever.query_metadata import get_query_metadata_extractor
 from RAG.vector_store.chroma_store import get_vector_store
 from RAG.vector_store.vector_store_interface import SearchResult, VectorStoreInterface
 
-# Logger tanımlama
+# Günlük kaydını yapılandır.
 logger = logging.getLogger(__name__)
 
 
@@ -39,14 +39,13 @@ def _rrf_fuse(
     for results, weight in zip(lists, weights):
         for rank, item in enumerate(results, start=1):
             key = item["id"] or str(hash(item["text"]))
-            # RRF Skoru Hesaplama: 1 / (k + rank)
+            # RRF puanını hesapla: 1 / (k + rank)
             scores[key] = scores.get(key, 0.0) + weight * (1.0 / (rrf_k + rank))
             
-            # En yüksek skora sahip ögeyi sakla (metadata için gerekli olabilir)
+            # Aynı sonuç için en yüksek puanlı kaydı koru.
             if key not in payload or item["score"] > payload[key]["score"]:
                 payload[key] = item
 
-    # Skorlara göre sıralama ve ilk top_k elemanı alma
     ordered = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:top_k]
     
     return [
@@ -65,7 +64,7 @@ def _filter(results: List[SearchResult], where: Optional[dict]) -> List[SearchRe
     if not where:
         return results
     
-    # Basit eşleşme kontrolü
+    # Basit eşleşmeyi denetle.
     filtered_results = []
     for r in results:
         match = True
@@ -118,12 +117,10 @@ def _vector_search(
         SearchResults listesi.
     """
     try:
-        # Normal arama denemesi
         results = store.similarity_search(query, top_k, where=where)
         return results
         
     except Exception as e:
-        # Hata yakalandı
         if not auto_filter or not where:
             # Eğer filtre manuel geldiyse veya filtre yoksa, hatayı fırlat (kritik hata)
             logger.error(f"Vector search failed with explicit/no filter: {e}", exc_info=True)
@@ -162,10 +159,9 @@ def hybrid_search(
     - 'hybrid': Her ikisini RRF ile birleştirir (Varsayılan).
     """
     mode = (mode or retrieval_config.mode).lower()
-    # Aday havuzunu biraz daha geniş tutuyoruz ki RRF iyi çalışabilsin
     k = max(top_k, retrieval_config.candidate_k)
 
-    # 🚀 CLASSIFICATION AGENT MANTIĞI: Filtre sağlanmadıysa sorgudan otomatik çıkar
+    # Filtre sağlanmadıysa sorgudan otomatik çıkar
     explicit_where = dict(where or {})
     auto_filter = False
     extractor = get_query_metadata_extractor()
@@ -186,17 +182,14 @@ def hybrid_search(
     if trace is not None:
         trace.update({"mode": mode, "metadata_filter": where or {}, "auto_filter": auto_filter})
 
-    # 🚀 CHROMADB FIX: Birden fazla filtre varsa $and operatörü ile sarmala
+    # Birden fazla filtre varsa $and operatörü ile sarmala
     # ChromaDB tek bir dict içinde birden fazla key kabul etmez, $and gerektirir.
     store = vector_store or get_vector_store()
     is_chroma = store.__class__.__name__ == "ChromaStore"
     chroma_where = _to_chroma_where(where) if is_chroma else where
     fallback_chroma_where = _to_chroma_where(explicit_where) if is_chroma else (explicit_where or None)
 
-    # --- ARAMA MODLARINA GÖRE DALMA ---
-
     if mode == "vector":
-        # Sadece Vektörel Arama
         started = perf_counter()
         results = _vector_search(store, query, k, where=chroma_where, auto_filter=auto_filter, fallback_where=fallback_chroma_where)
         if trace is not None:
@@ -204,27 +197,20 @@ def hybrid_search(
         return results[:top_k]
 
     if mode == "bm25":
-        # Sadece BM25 Arama
-        # BM25 kendi _filter fonksiyonumuzu kullanır, o düz dict kabul eder
         started = perf_counter()
         results = get_bm25_index().search(query, k, where=where)
         if trace is not None:
             trace.update({"bm25_ms": round((perf_counter() - started) * 1000, 3), "bm25_candidates": len(results), "result_count": min(len(results), top_k)})
         return results[:top_k]
 
-    # --- HİBRİT MOD (VARSAYILAN) ---
-    
-    # 1. Vektörel Arama (Güvenli Wrapper ile)
     started = perf_counter()
     vec_results = _vector_search(store, query, k, where=chroma_where, auto_filter=auto_filter, fallback_where=fallback_chroma_where)
     vector_ms = (perf_counter() - started) * 1000
     
-    # 2. BM25 Arama
     started = perf_counter()
     lex_results = get_bm25_index().search(query, k, where=where)
     bm25_ms = (perf_counter() - started) * 1000
     
-    # 3. RRF ile Birleştirme
     started = perf_counter()
     fused_results = _rrf_fuse(
         [vec_results, lex_results],

@@ -57,7 +57,7 @@ def enrich_chunks(
 
     enriched: list[EnrichedChunk] = []
     for chunk in raw_chunks:
-        # 🚀 KutupAI Hibrit Filtreleme Uyumluluğu: article_no alanını ekle
+        # KutupAI Hibrit Filtreleme Uyumluluğu: article_no alanını ekle
         art_no_val = chunk.article_number if chunk.article_number else None
         
         metadata = {

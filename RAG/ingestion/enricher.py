@@ -16,7 +16,7 @@ from langchain_core.documents import Document
 
 from RAG.metadata.schema import ChunkMetadata
 
-# Madde tespiti için yedek regex (Eğer chunker'dan gelmezse kullanılır)
+# Madde tespiti için yedek düzenli ifade.
 _ARTICLE_RE = re.compile(r"(?:MADDE|Madde)\s+(\d+)", re.UNICODE)
 
 
@@ -45,11 +45,10 @@ def enrich_documents(chunks: List[Document]) -> List[Document]:
             isinstance(page, str) and str(page).isdigit()
         ) else None
 
-        # 🚀 KRİTİK: KutupAI chunker'ı article_no üretiyorsa onu kullan, yoksa regex'e düş
+        # Chunker verisi yoksa madde numarasını metinden çıkar.
         kutupai_article_no = meta.get("article_no")
         final_article_number = str(kutupai_article_no) if kutupai_article_no is not None else str(meta.get("article_number") or _article(chunk.page_content))
         
-        # 🚀 KRİTİK: law_number'ı chunker'dan veya metadata'dan al
         final_law_number = str(meta.get("law_number", "unknown"))
 
         chunk_meta = ChunkMetadata(
@@ -67,14 +66,12 @@ def enrich_documents(chunks: List[Document]) -> List[Document]:
         
         clean = chunk_meta.to_chroma_dict()
         
-        # 🚀 KutupAI'a özgü ek alanları (article_no, article_type vb.) temiz sözlüğe geri ekle
-        # Böylece hybrid.py'deki filtreleme (where={"article_no": "3"}) çalışmaya devam eder
+        # Filtreleme alanlarını Chroma metadatasında koru.
         kutupai_specific_keys = ["article_no", "article_type", "content_type", "chunk_length"]
         for key in kutupai_specific_keys:
             if key in meta and meta[key] is not None:
                 clean[key] = str(meta[key]) if not isinstance(meta[key], (int, float, bool)) else meta[key]
 
-        # Diğer standart metadata alanlarını da koru
         for key, value in meta.items():
             if key not in clean and isinstance(value, (str, int, float, bool)):
                 clean[key] = value

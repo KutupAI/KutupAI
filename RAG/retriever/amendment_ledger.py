@@ -15,7 +15,7 @@ _DATE = re.compile(r"\b(\d{1,2}/\d{1,2}/\d{4})\b")
 _LAW_FILE = re.compile(r"^(\d{3,4})[_ -]")
 _NUMBER = re.compile(r"\b\d{3,4}\b")
 _STRONG_HINTS = (
-    "degisiklik", "degistir", "iptal", "mulga", "mevzuat listesi",
+    "degisiklik", "degistir", "etkile", "iptal", "mulga", "mevzuat listesi",
     "mevzuat tablosu", "degisiklik tablosu", "cetvel",
     "khk", "anayasa mahkemesi", "yuksek mahkeme", "gecersiz kil", "iptal karari",
 )
