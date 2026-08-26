@@ -14,8 +14,9 @@ const getExtension = (fileName: string): string =>
  */
 export const validateChatFile = (file: File): FileValidationResult => {
   const extension = getExtension(file.name);
+  const allowed = CHAT_CONFIG.upload.allowedExtensions as readonly string[];
 
-  if (!CHAT_CONFIG.upload.allowedExtensions.includes(extension)) {
+  if (!allowed.includes(extension)) {
     return {
       isValid: false,
       errorMessage:

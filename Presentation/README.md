@@ -1,28 +1,26 @@
 # Presentation Layer
 
-TypeScript / React. `services/` is the only place that calls the Application API.
+TypeScript / React / Vite. `services/` is the only place that calls the Application API.
 
-## Live against Application
+## Stack (used in code)
 
-```powershell
-# Terminal 1 — Orchestration :8000
-cd D:\AI\KutupAI
-$env:ORCHESTRATION_PORT="8000"
-python -m Orchestration.main
+| Package | Role |
+|---|---|
+| `react` / `react-dom` | UI |
+| `vite` + `@vitejs/plugin-react` | bundler / HMR |
+| `typescript` | types |
 
-# Terminal 2 — Application :8080
-cd D:\AI\KutupAI\Application
-$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
-$env:APP_TEMP_UPLOAD_ROOT_DIR="D:\AI\KutupAI\Storage\files\temp_processing"
-$env:APP_SERVER_PORT="8080"
-.\build\Release\SmartGovernmentAI_Application.exe
+No router, state library, or HTTP client packages — chat uses React hooks + native `fetch`.
 
-# Terminal 3 — UI
-cd D:\AI\KutupAI\Tests\Presentation
+## Run
+
+```bash
+cd Presentation
 npm install
-npm run dev
+npm run dev          # http://localhost:5173 — proxies /api → :8080
+npm run build        # typecheck + production bundle
 ```
 
-Vite proxies `/api` → `http://127.0.0.1:8080`. Endpoint: `POST /api/Chat/SendMessage`.
+Demo without backend: `VITE_CHAT_DEMO=true npm run dev`
 
-Demo without backend: set `VITE_CHAT_DEMO=true` (see `Tests/Presentation/.env.demo`).
+Live stack: Orchestration `:8000` → Application `:8080` → this UI. Endpoint: `POST /api/Chat/SendMessage`.
