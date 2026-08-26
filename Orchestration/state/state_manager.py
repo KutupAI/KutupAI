@@ -215,12 +215,12 @@ class StateManager:
             value = request.get(key)
             state[key] = dict(value) if isinstance(value, dict) else {}  # type: ignore[literal-required]
 
-        for key in ("document_path", "accompanying_text", "question", "text"):
+        for key in ("document_path", "file_name", "file_type", "accompanying_text", "question", "text"):
             value = request.get(key)
             if not value and key == "question":
                 value = request_section.get("question")
-            if not value and key == "document_path":
-                value = (request_section.get("document") or {}).get("document_path")
+            if not value and key in ("document_path", "file_name", "file_type"):
+                value = (request_section.get("document") or {}).get(key)
             if value:
                 state[key] = value
 

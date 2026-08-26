@@ -74,7 +74,7 @@ class VLMClient:
         self,
         # Same shared Inference endpoint as LlamaClient / summary_agent
         # (Inference/llama_server → gemma3.gguf on :8080).
-        base_url: str = "http://127.0.0.1:8080/v1/chat/completions",
+        base_url: str = "http://127.0.0.1:8111/v1/chat/completions",
         timeout: int = 300,
     ) -> None:
         self.base_url = base_url

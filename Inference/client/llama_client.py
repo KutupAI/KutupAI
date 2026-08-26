@@ -8,7 +8,7 @@ class LlamaClient:
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8080/v1/chat/completions",
+        base_url: str = "http://127.0.0.1:8082/v1/chat/completions",
         timeout: int = 300,#إذا لم يجب Gemma خلال 300 ثانية فشل الاتصال يعطيه 
     ):
         self.base_url = base_url
