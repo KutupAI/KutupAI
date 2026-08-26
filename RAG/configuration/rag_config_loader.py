@@ -124,6 +124,7 @@ class RetrievalConfig:
     rrf_k: int
     vector_weight: float
     bm25_weight: float
+    min_final_score: float
 
 
 @dataclass(frozen=True)
@@ -293,6 +294,7 @@ retrieval_config = RetrievalConfig(
     rrf_k=int(_ret.get("rrf_k", 60)),
     vector_weight=float(_ret.get("vector_weight", 0.55)),
     bm25_weight=float(_ret.get("bm25_weight", 0.45)),
+    min_final_score=float(_ret.get("min_final_score", 0.05)),
 )
 
 _prf = _raw.get("prf", {})

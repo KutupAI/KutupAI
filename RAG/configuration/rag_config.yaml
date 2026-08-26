@@ -1,6 +1,4 @@
-# ============================================================================
 # Hukukî RAG çalışma ayarları
-# ============================================================================
 # Bu dosya, deney yapılırken değiştirilecek tek merkezdir. Değişiklikten sonra
 # çalışan Python sürecini kapatıp tekrar başlatın; ayarlar modül açılışında okunur.
 
@@ -62,6 +60,9 @@ retrieval:
   rrf_k: 60
   vector_weight: 0.55
   bm25_weight: 0.45
+  # En iyi sonuç bu puanın altındaysa Top-K zorla sonuç döndürmez.
+  # 0.0 kapatır; yalnız alakasız sorguları elemek için düşük tutulur.
+  min_final_score: 0.05
 
 observability:
   # Sorgu ekranındaki tanı bilgileri. false yapıldığında yalnız nihai kaynaklar gösterilir.

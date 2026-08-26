@@ -10,11 +10,11 @@ from __future__ import annotations
 import re
 from typing import List
 
-# Türkçe karakterleri ve rakamları yakalayan Regex
+# Türkçe karakterleri ve rakamları yakala.
 _TOKEN_RE = re.compile(r"[0-9A-Za-zÀ-ÖØ-öø-ÿĞğİıŞşÇçÜüÖö]+", re.UNICODE)
 _TURKISH_ASCII = str.maketrans("çğıöşüÇĞİÖŞÜ", "cgiosuCGIOSU")
 
-# 🚀 "madde", "kanun", "sayılı" kelimeleri listeden çıkarıldı çünkü hukuki aramada kritiktirler.
+# Hukukî aramada önemli sözcükleri durdurma listesine ekleme.
 STOPWORDS = {
     "ve", "ile", "bir", "bu", "için", "icin", "olan", "olarak", "veya", "de", "da",
     "ki", "mi", "mı", "mu", "mü", "the", "and", "or", "of", "to", "in", "on",

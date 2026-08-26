@@ -6,7 +6,11 @@ from dataclasses import dataclass
 import re
 from typing import Literal
 
-from RAG.retriever.query_metadata import QueryIntent, get_query_metadata_extractor
+from RAG.retriever.query_metadata import (
+    QueryIntent,
+    _coordinated_law_numbers,
+    get_query_metadata_extractor,
+)
 from RAG.retriever.text_utils import fold_turkish, tokenize
 
 
@@ -46,10 +50,10 @@ def build_query_frame(question: str, *, extractor: object | None = None) -> Quer
     intent = extractor.extract_intent(question)
     normalized = fold_turkish(question).casefold()
     amendment_terms = (
-        "degisiklik", "degistir", "iptal", "mulga", "mevzuat tablosu", "mevzuat listesi",
+        "degisiklik", "degistir", "etkile", "iptal", "mulga", "mevzuat tablosu", "mevzuat listesi",
         "degisiklik tablosu", "degisiklik cetveli", "khk", "anayasa mahkemesi", "yuksek mahkeme",
         "gecersiz kil", "iptal karari", "kanun yoluyla", "sayili kanun ile",
-        "ile yapilan duzenleme", "yururluge giris",
+        "ile yapilan duzenleme", "duzenlem", "yururluge giris",
     )
     comparison_terms = ("karsilastir", "karsilastirma", "arasindaki fark", "fark nedir", "ayrimi", "kiyasla")
     duration_terms = ("kac saat", "kac gun", "kac ay", "ne kadar sure", "en gec")
@@ -66,7 +70,10 @@ def build_query_frame(question: str, *, extractor: object | None = None) -> Quer
         value for value in (str(strict_filters.get("law_number") or ""),) if value
     )
     khk_numbers = tuple(re.findall(r"\bkhk\s*[-/]?\s*(\d{2,5})\b", normalized, flags=re.IGNORECASE))
-    numbered_laws = tuple(re.findall(r"\b(\d{2,5})\s*(?:sayili|numarali)\b", normalized))
+    numbered_laws = tuple(dict.fromkeys((
+        *_coordinated_law_numbers(question),
+        *re.findall(r"\b(\d{2,5})\s*(?:sayili|numarali)\b", normalized),
+    )))
     # "2911 sayılı ... Kanunu ile 5187 sayılı ... Kanunu" gibi ifadelerde iki
     # numara da hedef kanundur; bunları değiştirici düzenleme diye yorumlamak
     # ikinci kanunun cetvel kanıtını kaybettiriyordu. Başlığı açıkça yazılmış
@@ -82,8 +89,26 @@ def build_query_frame(question: str, *, extractor: object | None = None) -> Quer
         number for number, title in titled_law_matches
         if any(token not in generic_title_terms for token in tokenize(title, min_len=3))
     ))
-    target_laws = tuple(dict.fromkeys((*strict_laws, *titled_laws)))
-    candidate_amendments = (*intent.amending_law_numbers, *khk_numbers, *numbered_laws)
+    # "7547 ... 4483 sayılı Kanunda" ifadesinde hedef 4483'tür.
+    explicit_targets = tuple(dict.fromkeys(re.findall(
+        r"\b(\d{2,5})\s+say[ıi]l[ıi]\s+kanun(?:da|nda|daki|undaki)\b",
+        normalized,
+        flags=re.IGNORECASE,
+    )))
+    # Adapter'ın eklediği hedef bilgisi ilk düzenleme numarasını geçer.
+    contextual_targets = tuple(dict.fromkeys(re.findall(
+        r"\bhedef\s+kanun\s*:\s*(\d{2,5})\s+say[ıi]l[ıi]\s+kanun\b",
+        normalized,
+        flags=re.IGNORECASE,
+    )))
+    inferred_targets = tuple(dict.fromkeys((*strict_laws, *titled_laws)))
+    # Birden çok düzenleme numarası, açık hedef yoksa hedef sayılmaz.
+    if needs_amendment and len(numbered_laws) > 1 and not (explicit_targets or contextual_targets or titled_laws):
+        target_laws = ()
+    else:
+        target_laws = explicit_targets or contextual_targets or inferred_targets
+    # Düzenlemeleri kullanıcının yazdığı sırada tut.
+    candidate_amendments = (*numbered_laws, *intent.amending_law_numbers, *khk_numbers)
     # Açık hedef kanun, düzenleme numarası değildir. Hedef belirsizse bütün
     # numaralar structured tabloda aranır; SQL sonucu doğru hedefi belirler.
     amending = tuple(dict.fromkeys(

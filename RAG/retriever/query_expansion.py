@@ -13,9 +13,7 @@ from RAG.configuration.rag_config_loader import query_expansion_config
 from RAG.retriever.hybrid import hybrid_search
 from RAG.retriever.prf import expand_query_with_prf
 
-# ============================================================
-# 1. Sözlük Tabanlı Eş Anlamlılar (Synonym Expansion)
-# ============================================================
+# Eş anlamlı sözlüğü.
 _SYNONYMS: Dict[str, List[str]] = {
     "ihbar": ["bildirim", "fesih bildirimi"],
     "fesih": ["sona erdirme", "işten çıkarma"],
@@ -42,9 +40,7 @@ def expand_synonyms(query: str, max_extra: int | None = None) -> str:
     return f"{query.strip()} {' '.join(extra)}".strip() if extra else query
 
 
-# ============================================================
-# 2. Kural Tabanlı Akıllı Genişletme (Rule-Based Smart Expansion)
-# ============================================================
+# Kural tabanlı genişletme.
 def expand_rule_based(query: str) -> List[str]:
     expanded_queries = [query]
     article_match = re.search(r"(\d+)\.\s*maddes", query, re.IGNORECASE)
@@ -58,9 +54,7 @@ def expand_rule_based(query: str) -> List[str]:
     return expanded_queries
 
 
-# ============================================================
-# 3. Ana Strateji Uygulayıcı (Strategy Applier)
-# ============================================================
+# Genişletme stratejisi.
 def apply_strategy(query: str, strategy: str | None = None) -> str:
     strategy = (strategy or query_expansion_config.selected_strategy or "none").lower()
     

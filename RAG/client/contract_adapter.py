@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import re
 from time import perf_counter
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
@@ -21,6 +22,21 @@ from RAG.retriever.retriever import retrieve
 
 
 ContractPayload = Mapping[str, Any]
+_HUKUKI_ATIF = re.compile(
+    r"\b(?:\d{3,5}\s*(?:sayılı|sayili)|KHK\s*[-/]?\s*\d+|\d+\s*(?:inci|ıncı|uncu|üncü)\s*madde)\b",
+    re.IGNORECASE,
+)
+_KANUN_ATFI = re.compile(r"\b(\d{3,5})\s*(?:sayılı|sayili)\b", re.IGNORECASE)
+_HEDEF_KANUN_BAGLAMI = re.compile(
+    r"\b(\d{3,5})\s*(?:sayılı|sayili)\b.{0,120}?\bkanun(?:un|u|ın|in)?\s+"
+    r"(?:bakımından|icin|için|kapsamında|kapsaminda|degisiklik\s+cetvelinde|değişiklik\s+cetvelinde)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+_DEGISIKLIK_SORUSU = re.compile(
+    r"\b(?:değişiklik|degisiklik|değiştiren|degistiren|etkil(?:eyen|ediği|edigi)|"
+    r"yürürlüğe\s+giriş|yururluge\s+giris|düzenlem\w*|duzenlem\w*|cetvel)\b",
+    re.IGNORECASE,
+)
 
 
 def _error(code: str, message: str, *, details: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -197,22 +213,44 @@ def _contract_result(result: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _ocr_hedef_kanun(question: str, full_text: str) -> str | None:
+    """OCR'deki tek açık hedef kanunu kısa sorgu bağlamına taşır."""
+    if not question or not full_text or not _DEGISIKLIK_SORUSU.search(question):
+        return None
+    question_laws = {match.group(1) for match in _KANUN_ATFI.finditer(question)}
+    candidates = {
+        match.group(1)
+        for match in _HEDEF_KANUN_BAGLAMI.finditer(full_text)
+        if match.group(1) not in question_laws
+    }
+    return next(iter(candidates)) if len(candidates) == 1 else None
+
+
 def _state_query(state: Mapping[str, Any]) -> str:
     """State içindeki soru ve belge sinyallerinden LLM'siz retrieval sorgusu kurar."""
     request = state.get("request")
     question = _clean_text(request.get("question")) if isinstance(request, Mapping) else ""
+    # Değişiklik sorusunda OCR'den yalnız açık hedef kanunu al.
+    is_legal_question = bool(question and _HUKUKI_ATIF.search(question))
+
     classification = state.get("classification")
     document_type = ""
     if isinstance(classification, Mapping) and classification.get("success"):
         document_type = _clean_text(classification.get("document_type"))
     ocr = state.get("ocr")
+    ocr_full_text = ""
     full_text = ""
     if isinstance(ocr, Mapping) and ocr.get("success"):
         ocr_data = ocr.get("ocr_data")
         if isinstance(ocr_data, Mapping):
             # Belge metninin tümünü sorguya koymak yerine sınırlı bir kesit kullanılır;
             # bu, OCR içeriğinin retrieval'a katkı sağlamasını ve gecikmenin sabit kalmasını sağlar.
-            full_text = _clean_text(ocr_data.get("full_text"))[:1200]
+            # Tüm metin hedef kanunu bulmak için okunur, sorguya eklenmez.
+            ocr_full_text = _clean_text(ocr_data.get("full_text"))
+            full_text = ocr_full_text[:1200]
+    if is_legal_question:
+        target_law = _ocr_hedef_kanun(question, ocr_full_text)
+        return f"{question}\nHedef kanun: {target_law} sayılı Kanun" if target_law else question
     parts = [question]
     if document_type:
         parts.append(f"Belge türü: {document_type}")

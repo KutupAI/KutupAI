@@ -21,14 +21,11 @@ def format_context(results: List[SearchResult]) -> str:
     for i, r in enumerate(results, start=1):
         m = r["metadata"]
         
-        # 🚀 KutupAI metadata yapısına uyum (article_no veya article_number)
         art_no = m.get('article_no') or m.get('article_number', '?')
         
-        # 🚀 Kanun adını çıkar: Önce law_name'e bak, yoksa source_file'dan türet
         law_name = m.get('law_name')
         if not law_name or law_name == 'unknown':
             source_file = m.get('source_file') or m.get('source', '')
-            # Dosya adından uzantıyı at ve kanun adını al (Örn: "1076_Yedek Subaylar Kanunu")
             law_name = source_file.replace('.pdf', '').replace('_', ' ') if source_file else 'Bilinmeyen Kanun'
             
         source_file = m.get('source_file') or m.get('source', '?')

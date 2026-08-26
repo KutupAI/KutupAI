@@ -111,9 +111,23 @@ def reset_query_metadata_cache() -> None:
     _law_from_index.cache_clear()
     _law_catalog.cache_clear()
 
+
+def _coordinated_law_numbers(query: str) -> list[str]:
+    """``7196 ve 7547 sayılı`` gibi ortak ekli numaraları ayrı atıflara böler."""
+    numbers: list[str] = []
+    pattern = re.compile(
+        r"\b((?:\d{2,5}\s*(?:,|\bve\b|\bveya\b)\s*)+\d{2,5})\s*(?:sayılı|sayili)\b",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(query):
+        for value in re.findall(r"\d{2,5}", match.group(1)):
+            if value not in numbers:
+                numbers.append(value)
+    return numbers
+
 class QueryMetadataExtractor:
     def __init__(self):
-        # 🚀 Geliştirilmiş Regex: 2-4 haneli rakamları ve "sayılı/sayili" varyasyonlarını yakala
+        # Geliştirilmiş Regex: 2-4 haneli rakamları ve "sayılı/sayili" varyasyonlarını yakala
         # Örnek: "1076 sayılı", "4857 Sayılı", "5510 SAYILI", "213 sayili"
         self.law_pattern = re.compile(r"(\b\d{2,5}\b)\s*(?:sayılı|Sayılı|SAYILI|sayili|Sayili)", re.IGNORECASE)
         # Resmî başlıklarda sık görülen "Kanun No: 5326" biçimi, sayıdan
@@ -177,16 +191,16 @@ class QueryMetadataExtractor:
             # tahmini ve kısa adlar bunu hiçbir zaman geçemez.
             if law_no:
                 filters["law_number"] = law_no.group(1)
+            elif raw_law:
+                # Kullanıcının açıkça yazdığı numara, başlık/anahtar kelime
+                # kataloğundan çıkarılan hiçbir tahminden zayıf değildir.
+                filters["law_number"] = raw_law.group(1)
             elif named_law:
                 filters["law_number"] = named_law
             elif alias_law:
                 filters["law_number"] = alias_law
-            elif raw_law and raw_law.start() <= 5:
-                filters["law_number"] = raw_law.group(1)
             elif unique_named_law:
                 filters["law_number"] = unique_named_law
-            elif raw_law:
-                filters["law_number"] = raw_law.group(1)
             
         # Madde Numarasını Çıkar
         extra_article_match = self.extra_article_pattern.search(query)
@@ -230,7 +244,7 @@ class QueryMetadataExtractor:
 
         # Değişiklik sorusunda tek "X sayılı Kanun" çoğu zaman hedef kanun
         # değil, değiştiren düzenlemedir. Hedef açık değilse geniş arama yapılır.
-        amendment_words = ("degisiklik", "degistir", "iptal", "mulga", "khk", "yururluk", "degisiklik cetveli")
+        amendment_words = ("degisiklik", "degistir", "etkile", "iptal", "mulga", "khk", "yururluk", "degisiklik cetveli")
         is_amendment = any(word in lowered for word in amendment_words)
         explicit_target = bool(
             raw_laws
@@ -253,6 +267,9 @@ class QueryMetadataExtractor:
         )
         if law_no_match:
             filters["law_number"] = law_no_match.group(1)
+        elif raw_laws:
+            # Açık numaralı atıf, katalogdan türetilmiş adaydan önceliklidir.
+            filters["law_number"] = raw_laws[0].group(1)
         elif explicit_target:
             # Açık numaralı hedef atıf, başlıktan türetilmiş bir adaydan güçlüdür.
             filters["law_number"] = raw_laws[0].group(1)
@@ -283,6 +300,7 @@ class QueryMetadataExtractor:
         legacy = self.extract(query)
         raw_laws = [match.group(1) for match in self.law_pattern.finditer(query)]
         raw_laws.extend(match.group(1) for match in self.law_no_pattern.finditer(query))
+        raw_laws.extend(_coordinated_law_numbers(query))
         compact = self._compact_citation(query)
         if compact:
             raw_laws.insert(0, compact.group(1))
@@ -304,7 +322,7 @@ class QueryMetadataExtractor:
             articles.insert(0, str(legacy["article_no"]))
 
         amendment_terms = (
-            "degisiklik", "degistir", "mevzuat listesi", "mevzuat tablosu",
+            "degisiklik", "degistir", "etkile", "mevzuat listesi", "mevzuat tablosu",
             "degisiklik tablosu", "degisiklik cetveli", "iptal", "mulga", "yururluge giris",
         )
         comparison_terms = ("arasindaki fark", "farklar", "fark nedir", "karsilastir", "hangisi", "ayrimi")

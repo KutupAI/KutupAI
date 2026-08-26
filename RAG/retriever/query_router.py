@@ -28,17 +28,15 @@ def choose_query_plan(question: str) -> QueryPlan:
     }
     intent = frame.intent
     normalized = fold_turkish(question).casefold()
-    # Bir karşılaştırma aynı zamanda "değişiklik" kelimesini içerebilir. Bu
-    # durumda cetvel tek başına yeterli değildir; iki kanıt havuzu gerekir.
+    if frame.needs_amendment_evidence:
+        return QueryPlan("amendment_lookup", "hybrid", True, True, False,
+                         "Değişiklik/iptal/yürürlük sorusu: kanun retrieval + değişiklik cetveli.")
     if frame.kind == "comparison":
         return QueryPlan("comparison_lookup", "hybrid", True, True, False,
                          "Karşılaştırma sorusu: her hukukî taraf için dengeli kanıt havuzu.")
     if frame.kind == "multi_law_relation":
         return QueryPlan("multi_law_relation", "hybrid", True, True, "full",
                          "Birden fazla kanun/atıf: her kanun için ayrı aday havuzu + Graph-RAG.")
-    if frame.needs_amendment_evidence:
-        return QueryPlan("amendment_lookup", "hybrid", True, True, False,
-                         "Değişiklik/iptal/yürürlük sorusu: kanun retrieval + değişiklik cetveli.")
     if metadata.get("law_number") and metadata.get("article_no"):
         return QueryPlan("exact_citation", "vector", False, True, None,
                          "Açık kanun ve madde bulundu: metadata filtresi + hassas sıralama.")
