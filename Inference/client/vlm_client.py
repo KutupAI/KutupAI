@@ -108,6 +108,8 @@ class VLMClient:
             "top_p": request.top_p,
             "max_tokens": request.max_tokens,
             "stream": request.stream,
+            # Same as LlamaClient: keep answers in message.content for Gemma-4.
+            "chat_template_kwargs": {"enable_thinking": False},
         }
         if request.model:
             payload["model"] = request.model
@@ -117,10 +119,15 @@ class VLMClient:
             response.raise_for_status()
             data = response.json()
             usage = data.get("usage", {})
+            message = data["choices"][0]["message"]
+            content = message.get("content")
+            if not (isinstance(content, str) and content.strip()):
+                reasoning = message.get("reasoning_content")
+                content = reasoning if isinstance(reasoning, str) else (content or "")
 
             return InferenceResponse(
                 success=True,
-                text=data["choices"][0]["message"]["content"],
+                text=content if isinstance(content, str) else str(content or ""),
                 model=data.get("model"),
                 prompt_tokens=usage.get("prompt_tokens", 0),
                 completion_tokens=usage.get("completion_tokens", 0),

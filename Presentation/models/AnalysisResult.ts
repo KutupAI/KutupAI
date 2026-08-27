@@ -305,5 +305,8 @@ export const toStructuredDisplay = (state: PipelineState): StructuredDisplayMode
     email: state.extraction.email,
   },
   department: state.routing.department,
-  answer: state.writing.answer,
+  // Prefer writing.answer; fall back to summary so a skipped writer still shows text.
+  answer: state.writing.answer?.trim()
+    || state.summary.rag_summary_text?.trim()
+    || "",
 });

@@ -115,9 +115,13 @@ export const http = {
         try {
           data = (await r.json()) as WireResponse<TData>;
         } catch {
+          const hint =
+            r.status === 413
+              ? "Dosya çok büyük (HTTP 413). Lütfen 10MB altı bir dosya deneyin."
+              : `Invalid JSON from Application (HTTP ${r.status})`;
           onResult({
             Success: false,
-            Message: `Invalid JSON from Application (HTTP ${r.status})`,
+            Message: hint,
             Code: r.status,
           });
           return;

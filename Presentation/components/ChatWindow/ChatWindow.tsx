@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatMessage from "../ChatMessage/ChatMessage";
 import WelcomeState from "../WelcomeState/WelcomeState";
 import PoleStarIcon from "../icons/PoleStarIcon";
@@ -12,6 +12,63 @@ interface ChatWindowProps {
   error: string | null;
   onSuggestionClick: (text: string) => void;
 }
+
+const STAGE_INTERVAL_MS = 4500;
+
+const ThinkingIndicator: React.FC = () => {
+  const stages = CHAT_CONFIG.ui.thinkingStages;
+  const [stageIndex, setStageIndex] = useState(0);
+  const [elapsedSec, setElapsedSec] = useState(0);
+
+  useEffect(() => {
+    const stageTimer = window.setInterval(() => {
+      setStageIndex((i) => (i + 1) % stages.length);
+    }, STAGE_INTERVAL_MS);
+
+    const clockTimer = window.setInterval(() => {
+      setElapsedSec((s) => s + 1);
+    }, 1000);
+
+    return () => {
+      window.clearInterval(stageTimer);
+      window.clearInterval(clockTimer);
+    };
+  }, [stages.length]);
+
+  const progress = ((stageIndex + 1) / stages.length) * 100;
+  const mm = String(Math.floor(elapsedSec / 60)).padStart(2, "0");
+  const ss = String(elapsedSec % 60).padStart(2, "0");
+
+  return (
+    <div className={styles.thinkingRow} role="status" aria-live="polite">
+      <div className={styles.thinkingAvatar}>
+        <PoleStarIcon size={16} animated />
+      </div>
+      <div className={styles.thinkingBubble}>
+        <div className={styles.thinkingTop}>
+          <span className={styles.thinkingLabel} key={stageIndex}>
+            {stages[stageIndex]}
+          </span>
+          <span className={styles.thinkingTime}>{mm}:{ss}</span>
+        </div>
+        <div className={styles.progressTrack} aria-hidden="true">
+          <div
+            className={styles.progressFill}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className={styles.thinkingHint}>
+          <span className={styles.dots} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span>{CHAT_CONFIG.ui.thinkingLabel}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
@@ -37,21 +94,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <ChatMessage key={message.id} message={message} />
           ))}
 
-          {isLoading && (
-            <div className={styles.thinkingRow}>
-              <div className={styles.thinkingAvatar}>
-                <PoleStarIcon size={16} animated />
-              </div>
-              <div className={styles.thinkingBubble}>
-                <span>{CHAT_CONFIG.ui.thinkingLabel}</span>
-                <span className={styles.dots} aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </div>
-            </div>
-          )}
+          {isLoading && <ThinkingIndicator />}
 
           {error && (
             <div className={styles.errorBanner} role="alert">

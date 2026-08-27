@@ -234,8 +234,13 @@ class LLMSemanticExtractor:
                 ],
                 temperature=self.cfg.temperature,
                 max_tokens=self.cfg.max_tokens,
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
             )
-            return resp.choices[0].message.content
+            msg = resp.choices[0].message
+            text = msg.content
+            if not (isinstance(text, str) and text.strip()):
+                text = getattr(msg, "reasoning_content", None)
+            return text if isinstance(text, str) else None
         except Exception as exc:  # noqa: BLE001
             logger.warning("LLM cagrisi basarisiz: %s", exc)
             return None
@@ -507,8 +512,12 @@ class VisionFieldExtractor:
                     },
                 ],
                 max_tokens=500,
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
             )
-            raw = resp.choices[0].message.content
+            msg = resp.choices[0].message
+            raw = msg.content
+            if not (isinstance(raw, str) and raw.strip()):
+                raw = getattr(msg, "reasoning_content", None)
             parsed = safe_json_loads(raw)
             out["used"] = True
             out["data"] = parsed or {}

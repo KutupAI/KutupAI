@@ -60,10 +60,14 @@ export const useChat = () => {
           ? { name: pendingFile.name, type: pendingFile.type, base64: pendingFile.base64 }
           : null,
         (data) => {
+          const answer =
+            data.State.writing.answer?.trim()
+            || data.State.summary.rag_summary_text?.trim()
+            || "";
           const assistantMessage: ChatMessageModel = {
             id: generateId(),
             role: "assistant",
-            content: data.State.writing.answer,
+            content: answer,
             createdAt: Date.now(),
             status: "sent",
             pipelineState: data.State,

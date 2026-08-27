@@ -21,5 +21,14 @@ export const CHAT_CONFIG = {
     tagline: "Türkiye için akıllı yapay zeka",
     thinkingLabel: "KutupAI düşünüyor...",
     genericErrorLabel: "Bir hata oluştu",
+    /** Shown in order while waiting (no live progress from backend). */
+    thinkingStages: [
+      "Belge okunuyor...",
+      "İçerik çıkarılıyor...",
+      "Sınıflandırılıyor...",
+      "Mevzuat aranıyor...",
+      "Özet hazırlanıyor...",
+      "Yanıt yazılıyor...",
+    ],
   },
 } as const;
