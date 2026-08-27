@@ -1,17 +1,73 @@
+
+
 /**
- * KutupAI — Global Design Tokens
+ * KutupAI — Global Reset
  * ---------------------------------------------------------------
- * الهوية البصرية: Black + Red، مستوحاة من "Kutup Yıldızı" (نجمة القطب/الشمالية)
- * كإشارة بصرية موجّهة (guidance) تعكس اسم المنتج وفكرة "الذكاء الذي يرشدك".
- * لا تُستخدم رموز سياحية (علم/معالم)، فقط لمسة مفاهيمية subtle.
- *
- * يُفترض تحميل هذا الملف مرة واحدة على مستوى التطبيق (App.tsx / main.tsx
- * الحاليين في المشروع) دون المساس بأي ستايل عام آخر — كل كلاسات
- * الكومبوننتس هنا معرّفة عبر CSS Modules فلا يوجد تعارض أسماء.
+ * Proje HİÇBİR global reset içermiyordu (html/body/#root) -- tarayıcının
+ * varsayılan `body { margin: 8px }` değeri, `.shell`in tam `100vh`
+ * yüksekliğiyle birleşince sayfanın kendisini (sidebar + navbar dahil
+ * HER ŞEYİ) kaydırılabilir hale getiriyordu. Normalde sadece ChatWindow
+ * içindeki mesaj listesi kaymalı; header/sidebar sabit kalmalı. Bu blok
+ * o sızıntıyı kapatır: body kaydırılamaz, tüm yükseklik #root'a devredilir,
+ * ve box-sizing tutarlı hale gelir.
  */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+/* --- Kaydırma çubuğu (scrollbar): tarayıcı varsayılanı (Windows'ta kalın,
+   yukarı/aşağı ok düğmeli) tema ile hiç uyuşmuyordu. İnce, şeffaf izli,
+   ok düğmesiz özel bir çubukla değiştirildi -- her kaydırılabilir alanda
+   (sidebar geçmişi, mesaj penceresi, textarea...) otomatik uygulanır. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--kutup-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--kutup-border-strong);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--kutup-gray-dim);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
 
 :root {
-  /* --- الألوان الأساسية --- */
   --kutup-bg: #0a0a0c;
   --kutup-bg-elevated: #141417;
   --kutup-surface: #1c1c20;
@@ -28,22 +84,77 @@
   --kutup-gray: #9a9aa4;
   --kutup-gray-dim: #5c5c66;
 
-  /* --- الطباعة --- */
+  --kutup-starlight: #cfe0ff;
+  --kutup-starlight-dim: rgba(207, 224, 255, 0.14);
+  --kutup-starlight-glow: rgba(207, 224, 255, 0.28);
+
+ 
+  --kutup-amber: #f0c15a;
+  --kutup-amber-dim: rgba(240, 193, 90, 0.14);
+
   --font-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, sans-serif;
 
-  /* --- الأشكال والحواف --- */
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
   --radius-full: 999px;
 
-  /* --- الظلال --- */
   --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.45);
   --shadow-glow-red: 0 0 24px var(--kutup-red-glow);
+  --shadow-glow-starlight: 0 0 28px var(--kutup-starlight-glow);
+
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* --- نجمة القطب: الحركة التوقيعية المستخدمة في Loading / Welcome --- */
+
+.kutup-skyfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--kutup-bg);
+}
+
+.kutup-skyfield::before,
+.kutup-skyfield::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background-repeat: repeat;
+  background-image:
+    radial-gradient(1.4px 1.4px at 8% 12%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 22% 38%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.6px 1.6px at 39% 8%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 54% 62%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1.3px 1.3px at 68% 24%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 78% 71%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 88% 45%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 15% 82%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1.2px 1.2px at 46% 90%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 95% 88%, rgba(255, 255, 255, 0.3), transparent);
+  background-size: 100% 100%;
+  animation: kutup-sky-drift 140s linear infinite;
+  opacity: 0.5;
+}
+
+.kutup-skyfield::after {
+  background-position: 37% 61%;
+  animation-duration: 200s;
+  animation-direction: reverse;
+  opacity: 0.32;
+}
+
+@keyframes kutup-sky-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-4%, -3%, 0);
+  }
+}
+
 @keyframes kutup-star-pulse {
   0%,
   100% {
@@ -66,8 +177,31 @@
   }
 }
 
-/* يُستخدم لإخفاء عناصر input الأصلية بصرياً مع بقائها متاحة للوحة المفاتيح
-   وقارئات الشاشة (مثال: input[type=file] خلف زر 📎 مخصص). */
+
+@keyframes kutup-starlight-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes kutup-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 .visually-hidden {
   position: absolute;
   width: 1px;

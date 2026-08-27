@@ -6,68 +6,160 @@
   text-align: center;
   padding: 48px 20px;
   margin: auto;
-  max-width: 560px;
+  max-width: 620px;
 }
 
 .starWrap {
-  width: 72px;
-  height: 72px;
+  position: relative;
+  width: 96px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: radial-gradient(circle, var(--kutup-red-dim) 0%, transparent 70%);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  animation: kutup-rise-in 0.6s var(--ease-out-soft) both;
+}
+
+
+.orbitRing {
+  position: absolute;
+  inset: -8px;
+  border-radius: var(--radius-full);
+  border: 1px dashed var(--kutup-starlight-dim);
+  animation: kutup-orbit-spin 18s linear infinite;
+}
+
+@keyframes kutup-orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .title {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.7rem;
+  font-size: 1.85rem;
   color: var(--kutup-white);
-  letter-spacing: -0.01em;
-  margin-bottom: 8px;
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+  animation: kutup-rise-in 0.6s var(--ease-out-soft) 0.08s both;
+}
+
+
+.brandWord {
+  background: linear-gradient(90deg, var(--kutup-red-hover), var(--kutup-starlight));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .subtitle {
   font-family: var(--font-body);
   color: var(--kutup-gray);
-  font-size: 1rem;
-  margin-bottom: 28px;
+  font-size: 1.02rem;
+  margin-bottom: 32px;
+  animation: kutup-rise-in 0.6s var(--ease-out-soft) 0.16s both;
+}
+
+.suggestionsLabel {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--kutup-gray-dim);
+  animation: kutup-rise-in 0.6s var(--ease-out-soft) 0.16s both;
 }
 
 .suggestions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
-  justify-content: center;
+  width: 100%;
 }
 
-.suggestionChip {
+.suggestionCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  text-align: start;
   background: var(--kutup-surface);
   border: 1px solid var(--kutup-border);
-  color: var(--kutup-white);
-  border-radius: var(--radius-full);
-  padding: 9px 16px;
-  font-size: 0.85rem;
-  font-family: var(--font-body);
-  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  transition: border-color 0.2s var(--ease-out-soft), background 0.2s var(--ease-out-soft),
+    transform 0.2s var(--ease-out-soft), box-shadow 0.2s var(--ease-out-soft);
+  animation: kutup-rise-in 0.5s var(--ease-out-soft) both;
 }
 
-.suggestionChip:hover,
-.suggestionChip:focus-visible {
+.suggestionIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--kutup-bg-elevated);
+  color: var(--kutup-gray);
+  transition: background 0.2s var(--ease-out-soft), color 0.2s var(--ease-out-soft);
+}
+
+.suggestionText {
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--kutup-white);
+  padding-top: 5px;
+}
+
+.suggestionCard:hover,
+.suggestionCard:focus-visible {
   border-color: var(--kutup-red);
   background: var(--kutup-surface-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
-.suggestionChip:focus-visible {
+.suggestionCard:hover .suggestionIcon,
+.suggestionCard:focus-visible .suggestionIcon {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
+}
+
+.suggestionCard:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.suggestionCard:focus-visible {
   outline: 2px solid var(--kutup-red);
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .starWrap,
+  .title,
+  .subtitle,
+  .suggestionsLabel,
+  .suggestionCard,
+  .orbitRing {
+    animation: none;
+  }
+}
+
 @media (max-width: 480px) {
+  .starWrap {
+    width: 76px;
+    height: 76px;
+  }
+
   .title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
   }
 
   .subtitle {
@@ -76,5 +168,9 @@
 
   .welcome {
     padding: 32px 14px;
+  }
+
+  .suggestions {
+    grid-template-columns: 1fr;
   }
 }

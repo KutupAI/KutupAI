@@ -91,9 +91,46 @@ export const http = {
               },
               rag: {
                 success: true,
-                rag_data: { operation: "retrieve", query: question, results: [] },
+                rag_data: {
+                  operation: "retrieve",
+                  query: question,
+                  // Not: gerçek Application/RAG servisi henüz sonuç
+                  // döndürmüyorsa "Kaynak" kutusu boş kalır (kart
+                  // gizlenir) -- bu demo verisi sadece Presentation'ı
+                  // yalıtılmış olarak test edebilmek için örnek içerik
+                  // sağlar.
+                  results: [
+                    {
+                      chunk_id: "demo-chunk-1",
+                      law_number: "6098",
+                      article_no: "1",
+                      source_file: "6098_Turk Borclar Kanunu.pdf",
+                      page_start: 12,
+                      page_end: 12,
+                      snippet:
+                        "Sözleşme, tarafların iradelerini karşılıklı ve birbirine uygun olarak açıklamalarıyla kurulur.",
+                      score: 0.91,
+                    },
+                    {
+                      chunk_id: "demo-chunk-2",
+                      law_number: "6098",
+                      article_no: "27",
+                      source_file: "6098_Turk Borclar Kanunu.pdf",
+                      page_start: 15,
+                      page_end: 16,
+                      snippet: null,
+                      score: 0.82,
+                    },
+                  ],
+                },
               },
-              summary: { success: true, rag_summary_text: "" },
+              summary: {
+                success: true,
+                rag_summary_text:
+                  `Bu, "${question || "belirtilmeyen soru"}" sorusu için üretilen ` +
+                  `önizleme özetidir (Tests/Presentation demo). Gerçek entegrasyonda ` +
+                  `bu alan Application katmanındaki özetleme adımından gelir.`,
+              },
               routing: { success: true, department: "Musteri Hizmetleri" },
               writing: { success: true, answer },
             },

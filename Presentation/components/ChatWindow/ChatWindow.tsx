@@ -42,7 +42,7 @@ const ThinkingIndicator: React.FC = () => {
   return (
     <div className={styles.thinkingRow} role="status" aria-live="polite">
       <div className={styles.thinkingAvatar}>
-        <PoleStarIcon size={16} animated />
+        <PoleStarIcon size={16} animated glow />
       </div>
       <div className={styles.thinkingBubble}>
         <div className={styles.thinkingTop}>

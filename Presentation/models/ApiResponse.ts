@@ -1,7 +1,5 @@
 /**
- * يطابق شكل الاستجابة المستخدم فعلياً في المشروع (كما ورد في نمط http.post
- * الحالي): Success / Message / Code / AdditionalData / CarryOnData.
- * لا تُنشئ أي شكل استجابة جديد — كل خدمة جديدة يجب أن تُرجع/تتوقع هذا الشكل.
+ * : Success / Message / Code / AdditionalData / CarryOnData.
  */
 export interface ApiResponse<TData = unknown> {
   Success: boolean;

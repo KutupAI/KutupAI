@@ -1,0 +1,305 @@
+.sidebar {
+  --sidebar-width: 272px;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px;
+  background: rgba(10, 10, 12, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--kutup-border);
+  overflow: hidden;
+  transition: width 0.24s var(--ease-out-soft), padding 0.24s var(--ease-out-soft),
+    border-color 0.24s var(--ease-out-soft);
+}
+
+/* Masaüstünde varsayılan durum "kapalı" (genişlik 0) -- isOpen prop'u
+   `.sidebarOpen` sınıfıyla genişletir. Mobilde ayrı bir kural (aşağıda,
+   media query içinde) devraldığı için bu satır orada geçersiz kılınır. */
+.sidebar:not(.sidebarOpen) {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-right-color: transparent;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px 14px;
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--kutup-white);
+  letter-spacing: -0.01em;
+}
+
+/* "Yeni Sohbet" — ghost/bordered stil: kalıcı olarak ekranda duran bir
+   navigasyon öğesi olduğu için tam dolgu kırmızı fazla ağır kaçıyordu.
+   Şimdi kenarlıklı, ikon + metin hover'da kırmızıya geçiyor -- marka
+   rengi hâlâ orada ama daha sakin, sidebar'ın geri kalanıyla uyumlu. */
+.newChatBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--kutup-surface);
+  color: var(--kutup-white);
+  border: 1px solid var(--kutup-border-strong);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+  transition: background 0.2s var(--ease-out-soft), border-color 0.2s var(--ease-out-soft),
+    color 0.2s var(--ease-out-soft), transform 0.2s var(--ease-out-soft);
+}
+
+.newChatBtn svg {
+  flex-shrink: 0;
+  color: var(--kutup-red-hover);
+}
+
+.newChatBtn:hover,
+.newChatBtn:focus-visible {
+  background: var(--kutup-red-dim);
+  border-color: var(--kutup-red);
+  transform: translateY(-1px);
+}
+
+.newChatBtn:focus-visible {
+  outline: 2px solid var(--kutup-red);
+  outline-offset: 2px;
+}
+
+.searchWrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--kutup-gray-dim);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background: var(--kutup-surface);
+  border: 1px solid var(--kutup-border);
+  border-radius: var(--radius-md);
+  color: var(--kutup-white);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  padding: 8px 30px 8px 32px;
+  transition: border-color 0.2s var(--ease-out-soft);
+}
+
+.searchInput::placeholder {
+  color: var(--kutup-gray-dim);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--kutup-starlight-dim);
+}
+
+.searchClear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--kutup-gray-dim);
+  font-size: 1rem;
+  line-height: 1;
+  transition: background 0.16s var(--ease-out-soft), color 0.16s var(--ease-out-soft);
+}
+
+.searchClear:hover,
+.searchClear:focus-visible {
+  background: var(--kutup-surface-hover);
+  color: var(--kutup-white);
+}
+
+.history {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+  margin: 0 -4px;
+  padding-inline: 4px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 10px,
+    #000 calc(100% - 10px),
+    transparent 100%
+  );
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.groupLabel {
+  margin: 0 0 4px;
+  padding: 0 8px;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kutup-gray-dim);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 8px 8px 10px;
+  text-align: start;
+  color: var(--kutup-gray);
+  transition: background 0.16s var(--ease-out-soft), color 0.16s var(--ease-out-soft);
+}
+
+.item:hover {
+  background: var(--kutup-surface-hover);
+  color: var(--kutup-white);
+}
+
+.item:hover .deleteBtn {
+  opacity: 1;
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--kutup-starlight);
+  outline-offset: -2px;
+}
+
+.itemActive {
+  background: var(--kutup-surface);
+  color: var(--kutup-white);
+  box-shadow: inset 2px 0 0 var(--kutup-red);
+}
+
+.itemTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+}
+
+.deleteBtn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--kutup-gray-dim);
+  opacity: 0;
+  transition: opacity 0.16s var(--ease-out-soft), background 0.16s var(--ease-out-soft),
+    color 0.16s var(--ease-out-soft);
+}
+
+.deleteBtn:hover {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
+}
+
+.deleteBtnConfirm {
+  opacity: 1;
+  background: var(--kutup-red);
+  color: var(--kutup-white);
+}
+
+.emptyState {
+  margin: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 8px;
+  color: var(--kutup-gray-dim);
+  opacity: 0.6;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* --- Masaüstü: sabit sütun (yukarıdaki .sidebar:not(.sidebarOpen) ile
+   genişlik 0'a inip çıkıyor). Mobil: kaydırmalı overlay panel. --- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    width: var(--sidebar-width);
+    padding: 16px 12px;
+    border-right-color: var(--kutup-border);
+    transform: translateX(-100%);
+    transition: transform 0.28s var(--ease-out-soft);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 39;
+    animation: kutup-rise-in 0.2s var(--ease-out-soft) both;
+  }
+}
+
+@media (min-width: 769px) {
+  .scrim {
+    display: none;
+  }
+}

@@ -28,10 +28,7 @@ type WireAdditional = {
   Data?: unknown[];
 };
 
-/**
- * يرسل سؤال المستخدم (+ ملف اختياري + معرف المحادثة) إلى Application Layer
- * (`POST /api/Chat/SendMessage`) ويعيد State الموحّد عبر callback.
- */
+
 export const sendChatMessage = (
   chatId: string | null,
   question: string,

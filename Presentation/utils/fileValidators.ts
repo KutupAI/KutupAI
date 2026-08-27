@@ -8,10 +8,7 @@ export interface FileValidationResult {
 const getExtension = (fileName: string): string =>
   fileName.split(".").pop()?.toLowerCase() ?? "";
 
-/**
- * يتحقق من امتداد ونوع وحجم الملف قبل السماح برفعه في الواجهة.
- * لا يعتمد فقط على MIME type لأن بعض المتصفحات لا ترسله بدقة لملفات .txt
- */
+
 export const validateChatFile = (file: File): FileValidationResult => {
   const extension = getExtension(file.name);
   const allowed = CHAT_CONFIG.upload.allowedExtensions as readonly string[];
@@ -37,7 +34,6 @@ export const validateChatFile = (file: File): FileValidationResult => {
 export const isImageFile = (fileName: string): boolean =>
   ["jpg", "jpeg", "png"].includes(getExtension(fileName));
 
-/** يحوّل الملف إلى Base64 نقي (بدون data:mime;base64, prefix) لإرساله ضمن JSON body. */
 export const fileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();

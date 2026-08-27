@@ -1,0 +1,160 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--kutup-border-strong);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  /* Starlight (bardan) — kaynaklar bir "aksiyon" değil, güvenilirlik
+     sinyali; kırmızıyla karışmasın diye ayrı bir renk dili kullanılır. */
+  color: var(--kutup-starlight);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--kutup-starlight-dim);
+  color: var(--kutup-starlight);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: start;
+  background: var(--kutup-bg-elevated);
+  border: 1px solid var(--kutup-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: border-color 0.2s var(--ease-out-soft), background 0.2s var(--ease-out-soft);
+}
+
+.card:not(:disabled) {
+  cursor: pointer;
+}
+
+.card:disabled {
+  cursor: default;
+}
+
+.card:hover:not(:disabled),
+.card:focus-visible {
+  border-color: var(--kutup-starlight-dim);
+  background: var(--kutup-surface-hover);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--kutup-starlight);
+  outline-offset: 2px;
+}
+
+.badgeNum {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--kutup-starlight-dim);
+  color: var(--kutup-starlight);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cardTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--kutup-white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--kutup-gray);
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--kutup-gray);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.snippet {
+  margin: 6px 0 0 36px;
+  padding: 10px 12px;
+  border-inline-start: 2px solid var(--kutup-starlight-dim);
+  background: var(--kutup-surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--kutup-gray);
+  font-style: italic;
+  animation: kutup-rise-in 0.2s var(--ease-out-soft) both;
+}
+
+@media (max-width: 480px) {
+  .snippet {
+    margin-inline-start: 0;
+  }
+
+  .cardTitle {
+    white-space: normal;
+  }
+}
