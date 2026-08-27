@@ -33,5 +33,5 @@ MODEL_NAME = "gemma3"
 
 # Writer tek başına EVREN'e taşınabilir. Diğer Agent'lar mevcut yerel
 # inference ayarlarını kullanmaya devam eder.
-INFERENCE_BACKEND = os.getenv("WRITER_INFERENCE_BACKEND", "local").strip().casefold()
+INFERENCE_BACKEND = os.getenv("WRITER_INFERENCE_BACKEND", "evren").strip().casefold()
 EVREN_MODEL = os.getenv("WRITER_EVREN_MODEL", "llm-large").strip() or "llm-large"

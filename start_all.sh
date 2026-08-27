@@ -30,6 +30,17 @@ fi
 export PATH="${VENV}/bin:${PATH}"
 export VIRTUAL_ENV="${VENV}"
 
+# Load local secrets / backend selection (never commit `.env`).
+if [[ -f "${ROOT}/.env" ]]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "${ROOT}/.env"
+  set +a
+  echo "[OK] Loaded ${ROOT}/.env"
+else
+  echo "[WARN] No ${ROOT}/.env — EVREN backends need EVREN_LLM_* keys there"
+fi
+
 # OCR on GPU (Paddle 3.x). Skip model-host connectivity check on startup.
 export OCR_DEVICE="${OCR_DEVICE:-gpu:0}"
 export PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK="${PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK:-True}"

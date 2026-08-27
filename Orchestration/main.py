@@ -25,6 +25,14 @@ _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+# Ensure project `.env` is visible to EvrenClient / agent configs.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(_ROOT / ".env")
+except Exception:
+    pass
+
 from fastapi import FastAPI, HTTPException
 
 from Orchestration.process_service import run_workflow_from_application
@@ -36,10 +44,65 @@ logging.basicConfig(
 )
 logger = logging.getLogger("Orchestration")
 
+_OCR_READY = False
 
-app = FastAPI(title="SmartGovernmentAI Orchestration", version="0.1.0")
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _warmup_ocr_in_process() -> None:
+    """Load PaddleOCR weights into this process (shared engine singleton)."""
+    global _OCR_READY
+
+    if not _env_flag("OCR_WARMUP_ON_STARTUP", True):
+        logger.info("OCR warm-up skipped (OCR_WARMUP_ON_STARTUP=0)")
+        return
+
+    os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+    started = time.perf_counter()
+    logger.info(
+        "OCR warm-up starting in-process (device=%s)…",
+        os.getenv("OCR_DEVICE", "gpu"),
+    )
+    try:
+        from Agents.ocr_agent.config import OCRConfig
+        from Agents.ocr_agent.engines.paddle_engine import get_shared_engine
+
+        cfg = OCRConfig.from_env()
+        engine = get_shared_engine(cfg)
+        engine._ensure_paddle()
+        elapsed = time.perf_counter() - started
+        _OCR_READY = True
+        logger.info(
+            "OCR warm-up done in %.1fs (engine=%s device=%s) — first request skips init",
+            elapsed,
+            engine.engine_name,
+            engine._resolved_device,
+        )
+    except Exception:
+        elapsed = time.perf_counter() - started
+        logger.exception(
+            "OCR warm-up failed after %.1fs — first OCR request will init lazily",
+            elapsed,
+        )
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    _warmup_ocr_in_process()
+    yield
+
+
+app = FastAPI(
+    title="SmartGovernmentAI Orchestration",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 conversation_store = ConversationStore()
-
 
 
 @app.get("/health")

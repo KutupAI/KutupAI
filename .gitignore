@@ -179,3 +179,5 @@ llama.zip
 llama-ui.tar.gz
 *.tar.gz
 Inference/models/.cache/
+
+*.pid

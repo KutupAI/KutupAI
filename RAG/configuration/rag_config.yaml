@@ -126,7 +126,7 @@ query_transform:
   # `use_llm` yalnız ayrı 8081 Qwen dönüşüm servisi çalışıyorsa açılmalıdır;
   # kapalıyken sistem gecikmesiz, kural tabanlı dönüşüm kullanır.
   enabled: true
-  use_llm: true
+  use_llm: false
   base_url: "http://127.0.0.1:8081/v1/chat/completions"
   max_queries: 3
   max_query_chars: 320
