@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import FileUpload, { SelectedFilePreview } from "../FileUpload/FileUpload";
 import { fileToBase64, validateChatFile } from "../../utils/fileValidators";
+import { SendIcon } from "../icons/SectionIcons";
 import styles from "./MessageInput.module.css";
 
 interface PendingFile extends SelectedFilePreview {
@@ -18,10 +19,25 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, prefillT
   const [text, setText] = useState(prefillText ?? "");
   const [pendingFile, setPendingFile] = useState<PendingFile | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Textarea, yazılan satır sayısına göre otomatik büyür (CSS'teki
+  // max-height'a kadar) -- sabit tek satırlık kutuda kaydırmaya
+  // zorlamak yerine, mesaj kutusu içeriği takip eder.
+  const resizeTextarea = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
 
   React.useEffect(() => {
     if (prefillText) setText(prefillText);
   }, [prefillText]);
+
+  React.useEffect(() => {
+    resizeTextarea();
+  }, [text]);
 
   const handleFileSelect = async (file: File) => {
     const validation = validateChatFile(file);
@@ -85,6 +101,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, prefillT
 
       <div className={styles.row}>
         <textarea
+          ref={textareaRef}
           className={styles.textarea}
           placeholder="Mesajınızı yazın..."
           value={text}
@@ -102,7 +119,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, prefillT
           aria-label="Gönder"
           title="Gönder"
         >
-          ➤
+          <SendIcon size={17} />
         </button>
       </div>
     </form>

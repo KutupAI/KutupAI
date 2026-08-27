@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { CHAT_CONFIG } from "../../config/chatConfig";
 import { formatFileSize, isImageFile } from "../../utils/fileValidators";
+import { PaperclipIcon, FileIcon, CloseIcon } from "../icons/SectionIcons";
 import styles from "./FileUpload.module.css";
 
 export interface SelectedFilePreview {
@@ -51,7 +52,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           disabled={disabled}
           title="Dosya yükle"
         >
-          📎
+          <PaperclipIcon size={17} />
         </button>
       )}
 
@@ -65,7 +66,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             />
           ) : (
             <span className={styles.fileIcon} aria-hidden="true">
-              📄
+              <FileIcon size={18} />
             </span>
           )}
           <div className={styles.fileMeta}>
@@ -81,7 +82,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             aria-label="Dosyayı kaldır"
             title="Dosyayı kaldır"
           >
-            ×
+            <CloseIcon size={14} />
           </button>
         </div>
       )}

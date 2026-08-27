@@ -27,6 +27,8 @@ from Agents.classification_agent.prompts import (
     build_user_prompt,
 )
 from Agents.classification_agent.taxonomy import UNCERTAIN_CODE, is_valid_code
+from Inference.client.evren_client import EvrenClient
+from Inference.client.inference_request import InferenceRequest, Message
 from Inference.client.vlm_client import VLMClient, VLMRequest
 from Optimization.services.fast_classification_service import (
     FastClassificationResult,
@@ -72,18 +74,31 @@ def run_vlm_classification(
         top_k_alternatives=config.top_k_alternatives,
     )
 
-    client = VLMClient(base_url=config.vlm_base_url, timeout=config.vlm_timeout_s)
-    request = VLMRequest(
-        text_prompt=user_prompt,
-        system_prompt=SYSTEM_PROMPT,
-        image_bytes=image_bytes if config.send_image else None,
-        model=config.vlm_model_name,
-        temperature=config.vlm_temperature,
-        max_tokens=config.vlm_max_tokens,
-    )
-
     started = time.monotonic()
-    response = client.generate(request)
+    if config.inference_backend == "evren":
+        # API istemcisi aynı OpenAI mesaj biçimini kullanır; state sözleşmesi değişmez.
+        response = EvrenClient(model=config.evren_model, timeout=config.vlm_timeout_s).generate(
+            InferenceRequest(
+                messages=[
+                    Message(role="system", content=SYSTEM_PROMPT),
+                    Message(role="user", content=user_prompt),
+                ],
+                temperature=config.vlm_temperature,
+                max_tokens=config.vlm_max_tokens,
+            )
+        )
+    else:
+        client = VLMClient(base_url=config.vlm_base_url, timeout=config.vlm_timeout_s)
+        response = client.generate(
+            VLMRequest(
+                text_prompt=user_prompt,
+                system_prompt=SYSTEM_PROMPT,
+                image_bytes=image_bytes if config.send_image else None,
+                model=config.vlm_model_name,
+                temperature=config.vlm_temperature,
+                max_tokens=config.vlm_max_tokens,
+            )
+        )
     elapsed_ms = (time.monotonic() - started) * 1000
 
     if not response.success:

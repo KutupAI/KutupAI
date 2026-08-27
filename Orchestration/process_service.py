@@ -19,10 +19,12 @@ Kept free of FastAPI so unit/integration tests can import without the HTTP stack
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from Orchestration.graph.graph_definition import Stage
+from Orchestration.conversation_store import ConversationStore
 from Orchestration.messages.message_schema import (
     contract_envelope,
     empty_document,
@@ -31,9 +33,10 @@ from Orchestration.messages.message_schema import (
 )
 from Orchestration.state.state_manager import unified_ocr_from_wire
 from Orchestration.workflow.workflow_builder import AgentProtocol, build_workflow
-from Orchestration.workflow.workflow_config import WorkflowConfig
+from Orchestration.workflow.workflow_config import FallbackPolicy, WorkflowConfig, load_config
 
 logger = logging.getLogger("Orchestration.process_service")
+_conversation_store: Optional[ConversationStore] = None
 
 _STAGE_KEYS = (
     "ocr",
@@ -101,6 +104,26 @@ def _seed_stage_sections(state_seed: Dict[str, Any], payload: Dict[str, Any]) ->
         state_seed[key] = dict(value) if isinstance(value, dict) else {}
 
 
+def _question_only_config(config: Optional[WorkflowConfig]) -> WorkflowConfig:
+    """Run a question without a file through RAG → summary → writing only."""
+
+    base = config or load_config()
+    stages = dict(base.stages)
+    for stage in (Stage.OCR, Stage.CLASSIFICATION, Stage.EXTRACTION, Stage.VALIDATION, Stage.ROUTING):
+        stages[stage] = replace(base.stage(stage), enabled=False, fallback=FallbackPolicy.SKIP)
+    return replace(base, stages=stages)
+
+
+def _document_upload_config(config: Optional[WorkflowConfig]) -> WorkflowConfig:
+    """Belge sorusuz yüklendiğinde kanıt araması yerine belge özeti üretir."""
+
+    base = config or load_config()
+    stages = dict(base.stages)
+    for stage in (Stage.RAG, Stage.SUMMARY):
+        stages[stage] = replace(base.stage(stage), enabled=False, fallback=FallbackPolicy.SKIP)
+    return replace(base, stages=stages)
+
+
 def run_workflow(
     *,
     document_id: str,
@@ -109,6 +132,7 @@ def run_workflow(
     agent_overrides: Optional[Dict[Stage, AgentProtocol]] = None,
     config: Optional[WorkflowConfig] = None,
     layer_state: Optional[Dict[str, Any]] = None,
+    conversation_store: Optional[ConversationStore] = None,
 ) -> Dict[str, Any]:
     """Run the Orchestration graph for one request; return { Success, Data }.
 
@@ -116,18 +140,44 @@ def run_workflow(
     empty envelope is built from the flat arguments.
     """
 
+    global _conversation_store
     question = accompanying_text or ""
     payload = dict(layer_state) if isinstance(layer_state, dict) else {}
+    if conversation_store is None:
+        if _conversation_store is None:
+            _conversation_store = ConversationStore()
+        conversation_store = _conversation_store
 
-    if not document_path:
+    # Application geçici upload klasörünü işlem sonunda siler. İlk mesajda
+    # dosyayı kalıcı hafızaya kopyalamak, sonraki soruların aynı belgeyle
+    # çalışmasını sağlar.
+    if document_path:
+        try:
+            document_path = conversation_store.bind_document(document_id, document_path)
+        except Exception as exc:  # Ana workflow, hafıza hatası yüzünden durmaz.
+            logger.warning("conversation_document_not_saved document_id=%s error=%s", document_id, type(exc).__name__)
+    else:
+        document_path = conversation_store.document_path(document_id)
+
+    # Yeni bir sohbette dosya olmadan gelen soru doğrudan RAG'a gider.
+    # Aynı sohbetin daha önce kaydedilmiş belgesi varsa yukarıdaki satır
+    # belge yolunu geri getirir ve normal belge akışı kullanılır.
+    question_only = not document_path
+    if question_only and not question:
         logger.info("process_skip document_id=%s reason=missing_document_path", document_id)
         return contract_envelope(
             False,
             [empty_document(document_id=document_id, question=question)],
         )
+    if question_only:
+        try:
+            conversation_store.ensure_conversation(document_id)
+        except Exception as exc:
+            logger.warning("conversation_not_initialized document_id=%s error=%s", document_id, type(exc).__name__)
 
-    path = Path(document_path)
-    if not path.is_file():
+    path = Path(document_path) if document_path else None
+    document_upload_only = path is not None and not question
+    if path is not None and not path.is_file():
         logger.info("process_skip document_id=%s reason=path_missing", document_id)
         return contract_envelope(
             False,
@@ -144,18 +194,26 @@ def run_workflow(
     existing_request = payload.get("request") if _is_layer_envelope(payload) else None
     request_section = _build_request_section(
         document_id=document_id,
-        document_path=str(path),
+        document_path=str(path) if path is not None else None,
         question=question,
-        file_name=path.name,
-        file_type=_file_type_from_path(path),
+        file_name=path.name if path is not None else "",
+        file_type=_file_type_from_path(path) if path is not None else "",
         success=True,
         existing=existing_request if isinstance(existing_request, dict) else None,
     )
+    memory_context = conversation_store.search(document_id, question)
+    document_hash = conversation_store.document_hash(document_id) if path is not None else ""
+    cached_ocr = None
+    if path is not None:
+        try:
+            cached_ocr = conversation_store.get_ocr_cache(document_hash)
+        except Exception as exc:  # OCR cache ana workflow'u engellemez.
+            logger.warning("ocr_cache_read_failed document_id=%s error=%s", document_id, type(exc).__name__)
 
     # Flat fields Agents / StateManager still lift to the top level.
     workflow_request: Dict[str, Any] = {
         "document_id": document_id,
-        "document_path": str(path),
+        "document_path": str(path) if path is not None else "",
         "accompanying_text": question or None,
         "question": question or None,
         "text": question or None,
@@ -163,18 +221,48 @@ def run_workflow(
         "document": request_section["document"],
         # Nested Application contract (Agents read state["request"]).
         "request": request_section,
+        # Bu alanlar sadece Orchestration içindedir; dış katman sözleşmesine
+        # eklenmez. Zayıf eşleşmede boş kalır ve geçmiş kullanılmaz.
+        "conversation_memory": memory_context.for_writer() if memory_context.is_follow_up else "",
+        "conversation_focus_law": memory_context.focus_law if memory_context.is_follow_up else "",
+        "conversation_reference_law": memory_context.reference_law if memory_context.is_follow_up else "",
+        "conversation_is_follow_up": memory_context.is_follow_up,
+        "document_upload_only": document_upload_only,
+        "writer_instruction": (
+            "Yüklenen belgeyi Türkçe olarak kısa ve anlaşılır biçimde özetle. "
+            "Belgenin türünü, ana konusunu ve belgede açıkça yer alan önemli bilgileri belirt. "
+            "Belgede olmayan bilgileri ekleme."
+            if document_upload_only
+            else ""
+        ),
     }
     _seed_stage_sections(workflow_request, payload)
+    if cached_ocr:
+        # Bu işaret yalnızca Orchestration içindir. Workflow OCR ajanını
+        # çağırmadan hazır sonucu uygular; dış sözleşmeye eklenmez.
+        workflow_request["ocr"] = cached_ocr
+        workflow_request["ocr_cache_hit"] = True
 
     logger.info(
-        "workflow_start document_id=%s path=%s has_text=%s envelope=%s",
+        "workflow_start document_id=%s path=%s has_text=%s envelope=%s ocr_cache=%s",
         document_id,
-        path.name,
+        path.name if path is not None else "question_only",
         bool(question),
         _is_layer_envelope(payload),
+        "hit" if cached_ocr else "miss",
     )
 
-    workflow = build_workflow(config=config, agent_overrides=agent_overrides)
+    active_config = (
+        _question_only_config(config)
+        if question_only
+        else _document_upload_config(config)
+        if document_upload_only
+        else config
+    )
+    workflow = build_workflow(
+        config=active_config,
+        agent_overrides=agent_overrides,
+    )
     result = workflow.run(workflow_request)
     state = result.state
 
@@ -190,9 +278,9 @@ def run_workflow(
         doc["document_id"] = document_id
     if question and not doc.get("question"):
         doc["question"] = question
-    if not doc.get("file_name"):
+    if path is not None and not doc.get("file_name"):
         doc["file_name"] = path.name
-    if not doc.get("file_type"):
+    if path is not None and not doc.get("file_type"):
         doc["file_type"] = path.suffix.lstrip(".")
 
     # Prefer unified short keys; fall back to Orchestration wire mirrors.
@@ -255,11 +343,36 @@ def run_workflow(
     elif is_contract_envelope(ocr_payload):
         doc["ocr"] = unified_ocr_from_wire(ocr_payload)
 
+    if path is not None and not cached_ocr:
+        try:
+            conversation_store.save_ocr_cache(document_hash, state.get("ocr"))
+        except Exception as exc:  # Cache yazılamasa da yanıt kullanıcıya döner.
+            logger.warning("ocr_cache_write_failed document_id=%s error=%s", document_id, type(exc).__name__)
+
     success = result.completed and not result.terminated
     # Treat a successful OCR envelope as overall success when later stages
     # were skipped (not failed).
     if not success and is_contract_envelope(ocr_payload) and ocr_payload.get("Success"):
         success = True
+
+    writing = doc.get("writing") if isinstance(doc.get("writing"), dict) else {}
+    answer = str(writing.get("answer") or "")
+    history_question = question or (f"Belge yüklendi: {path.name}" if document_upload_only and path else "")
+    try:
+        conversation_store.record_turn(
+            document_id,
+            history_question,
+            answer,
+            doc.get("rag"),
+            # Sidebar'da Detay/Kaynak açılması için yalnız gerekli UI verisini sakla.
+            # OCR metni burada tutulmaz; büyük belge metni hafızayı şişirmemelidir.
+            {
+                key: doc.get(key, {})
+                for key in ("classification", "extraction", "validation", "rag", "summary", "routing", "writing")
+            },
+        )
+    except Exception as exc:
+        logger.warning("conversation_turn_not_saved document_id=%s error=%s", document_id, type(exc).__name__)
 
     logger.info(
         "workflow_done workflow_id=%s document_id=%s success=%s stages_run=%s",

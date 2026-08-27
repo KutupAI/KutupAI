@@ -10,13 +10,15 @@
   font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.88rem;
-  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+  transition: background 0.2s var(--ease-out-soft), transform 0.2s var(--ease-out-soft),
+    box-shadow 0.2s var(--ease-out-soft);
 }
 
 .newChatBtn:hover,
 .newChatBtn:focus-visible {
   background: var(--kutup-red-hover);
   box-shadow: var(--shadow-glow-red);
+  transform: translateY(-1px);
 }
 
 .newChatBtn:active {

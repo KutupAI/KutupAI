@@ -18,6 +18,7 @@
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 18px;
+  animation: kutup-rise-in 0.35s var(--ease-out-soft) both;
 }
 
 .thinkingAvatar {
@@ -31,7 +32,17 @@
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
-  animation: kutup-glow-breathe 2.4s ease-in-out infinite;
+  animation: kutup-starlight-pulse-ring 2.4s ease-in-out infinite;
+}
+
+@keyframes kutup-starlight-pulse-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(207, 224, 255, 0);
+  }
+  50% {
+    box-shadow: var(--shadow-glow-starlight);
+  }
 }
 
 .thinkingBubble {

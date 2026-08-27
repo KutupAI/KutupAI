@@ -38,6 +38,12 @@ _DEGISIKLIK_SORUSU = re.compile(
     re.IGNORECASE,
 )
 
+# Sık kullanılan kısaltmalar soru içinde kanun numarası yazılmadan da geçer.
+# Bu eşleştirme yalnız retrieval sorgusunu daraltır; dış sözleşmeye alan eklemez.
+_KANUN_KISALTMALARI = {
+    "kvkk": "6698",
+}
+
 
 def _error(code: str, message: str, *, details: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Sözleşmenin her hata durumunda aynı üst seviye şekli korur."""
@@ -226,12 +232,22 @@ def _ocr_hedef_kanun(question: str, full_text: str) -> str | None:
     return next(iter(candidates)) if len(candidates) == 1 else None
 
 
+def _soru_kanun_kisaltmasi(question: str) -> str | None:
+    """Sorudaki bilinen kanun kısaltmasını kanun numarasına çevirir."""
+    normalized = question.casefold()
+    for abbreviation, law_number in _KANUN_KISALTMALARI.items():
+        if re.search(rf"\b{re.escape(abbreviation)}\b", normalized):
+            return law_number
+    return None
+
+
 def _state_query(state: Mapping[str, Any]) -> str:
     """State içindeki soru ve belge sinyallerinden LLM'siz retrieval sorgusu kurar."""
     request = state.get("request")
     question = _clean_text(request.get("question")) if isinstance(request, Mapping) else ""
     # Değişiklik sorusunda OCR'den yalnız açık hedef kanunu al.
-    is_legal_question = bool(question and _HUKUKI_ATIF.search(question))
+    abbreviated_law = _soru_kanun_kisaltmasi(question) if question else None
+    is_legal_question = bool(question and (_HUKUKI_ATIF.search(question) or abbreviated_law))
 
     classification = state.get("classification")
     document_type = ""
@@ -249,9 +265,24 @@ def _state_query(state: Mapping[str, Any]) -> str:
             ocr_full_text = _clean_text(ocr_data.get("full_text"))
             full_text = ocr_full_text[:1200]
     if is_legal_question:
-        target_law = _ocr_hedef_kanun(question, ocr_full_text)
-        return f"{question}\nHedef kanun: {target_law} sayılı Kanun" if target_law else question
+        target_law = _ocr_hedef_kanun(question, ocr_full_text) or abbreviated_law
+        parts = [question]
+        if target_law:
+            parts.append(f"Hedef kanun: {target_law} sayılı Kanun")
+        # Takip sorusundaki “bu düzenleme” için önceki değişikliği ekleriz.
+        # Açıkça sorulan kanun (ör. 7196) karşılaştırma tabanı olarak kalır.
+        reference_law = _clean_text(state.get("conversation_reference_law"))
+        if bool(state.get("conversation_is_follow_up")) and reference_law:
+            parts.append(f"Önceki düzenleme: {reference_law} sayılı Kanun")
+        return "\n".join(parts)
     parts = [question]
+    # Sadece hafıza katmanı güçlü bir takip ilişkisi kurduysa önceki kanun
+    # odağını retrieval sorgusuna ekleriz. Açık yeni kanun atfı her zaman
+    # önceliklidir; böylece eski konu yeni soruyu daraltmaz.
+    focus_law = _clean_text(state.get("conversation_focus_law"))
+    is_follow_up = bool(state.get("conversation_is_follow_up"))
+    if is_follow_up and focus_law and not _KANUN_ATFI.search(question):
+        parts.append(f"Önceki konuşma odağı: {focus_law} sayılı Kanun")
     if document_type:
         parts.append(f"Belge türü: {document_type}")
     if full_text:
@@ -298,6 +329,18 @@ def handle_layer_state(state: Mapping[str, Any]) -> Dict[str, Any]:
             # deterministik yazım düzeltmesi ve retrieval modelleri çalışır.
             use_query_transform_llm=False,
         )
+        # Reranker adayların tamamını eleyebilir. Bu durumda aynı sorguyu
+        # ilk retrieval sırasıyla tekrar denemek, mevcut kanıtı kaybetmez.
+        if not results and plan.use_reranker:
+            results = retrieve(
+                query,
+                top_k=5,
+                mode=plan.mode,
+                use_prf=plan.use_prf,
+                use_reranker=False,
+                use_graph=plan.use_graph,
+                use_query_transform_llm=False,
+            )
         output["rag"] = {
             "success": True,
             "rag_data": {

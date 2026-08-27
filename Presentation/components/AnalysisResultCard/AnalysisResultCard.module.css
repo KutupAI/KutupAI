@@ -1,12 +1,210 @@
-/* Structured Explanatory Style — dark gray surfaces, red accents */
+/* Structured Explanatory Style — v2: her bölüm ayrı, kendi kenarlıklı
+   dikdörtgen kutusunda (sectionCard) ve kendi renk vurgusuyla. */
 
 .root {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   width: 100%;
   font-family: var(--font-body);
   color: var(--kutup-white);
+}
+
+/* --- Her bölümün ortak kutu iskeleti --- */
+.sectionCard {
+  background: var(--kutup-bg-elevated);
+  border: 1px solid var(--kutup-border);
+  border-top: 3px solid var(--kutup-border-strong);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  animation: kutup-rise-in 0.3s var(--ease-out-soft) both;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--kutup-surface);
+  color: var(--kutup-gray);
+}
+
+.cardTitle {
+  margin: 0;
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--kutup-white);
+}
+
+.cardBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--kutup-starlight-dim);
+  color: var(--kutup-starlight);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Yanıt —*/
+.cardAnswer {
+  border-top-color: var(--kutup-red);
+}
+.cardAnswer .cardIcon {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
+}
+
+/* Özet —  */
+.cardSummary {
+  border-top-color: var(--kutup-amber);
+}
+.cardSummary .cardIcon {
+  background: var(--kutup-amber-dim);
+  color: var(--kutup-amber);
+}
+
+/* Kaynak — starlight: */
+.cardSources {
+  border-top-color: var(--kutup-starlight);
+}
+.cardSources .cardIcon {
+  background: var(--kutup-starlight-dim);
+  color: var(--kutup-starlight);
+}
+
+/* Belge Bilgileri / Çıkarılan Bilgiler*/
+.cardNeutral {
+  border-top-color: var(--kutup-border-strong);
+}
+
+@media (max-width: 480px) {
+  .sectionCard {
+    padding: 13px 14px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* --- Detaylı: cevabın en altında tek açılır-kapanır düğme --- */
+.expandBar {
+  display: flex;
+  gap: 8px;
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--kutup-surface);
+  border: 1px solid var(--kutup-border);
+  color: var(--kutup-gray);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  transition: border-color 0.2s var(--ease-out-soft), color 0.2s var(--ease-out-soft),
+    background 0.2s var(--ease-out-soft);
+}
+
+.expandBtn:hover:not(:disabled) {
+  color: var(--kutup-white);
+  border-color: var(--kutup-border-strong);
+  background: var(--kutup-surface-hover);
+}
+
+.expandBtn:focus-visible {
+  outline: 2px solid var(--kutup-starlight);
+  outline-offset: 2px;
+}
+
+.expandBtn:disabled {
+  color: var(--kutup-gray-dim);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.expandBtnActive {
+  color: var(--kutup-white);
+  border-color: var(--kutup-starlight-dim);
+  background: var(--kutup-starlight-dim);
+}
+
+.chev {
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
+
+.expandPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 2px;
+  animation: kutup-rise-in 0.24s var(--ease-out-soft) both;
+}
+
+.emptyState {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--kutup-gray-dim);
+  font-style: italic;
+}
+
+/* --- Detaylı görünüm blokları --- */
+.detailBlock {
+  background: var(--kutup-bg-elevated);
+  border: 1px solid var(--kutup-border);
+  border-left: 3px solid var(--kutup-starlight-dim);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.issueList {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.issueError {
+  color: #ffb4af;
+}
+
+.issueWarning {
+  color: #ffd08a;
 }
 
 .sectionHeading {
@@ -21,10 +219,6 @@
   color: var(--kutup-red-hover);
 }
 
-.answerSection {
-  padding: 0;
-}
-
 .answerBody {
   font-size: 0.98rem;
   line-height: 1.7;
@@ -37,15 +231,6 @@
 
 .answerParagraph:last-child {
   margin-bottom: 0;
-}
-
-.factsSection,
-.extractionSection {
-  background: var(--kutup-bg-elevated);
-  border: 1px solid var(--kutup-border);
-  border-left: 3px solid var(--kutup-red);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: 12px 14px;
 }
 
 .factList {

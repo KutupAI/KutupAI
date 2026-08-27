@@ -1,13 +1,40 @@
 .navbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
-  background: var(--kutup-bg);
+  gap: 14px;
+  padding: 14px 20px;
+  background: rgba(10, 10, 12, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--kutup-border);
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+.sidebarToggle {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--kutup-gray);
+  background: transparent;
+  border: none;
+  transition: background 0.16s var(--ease-out-soft), color 0.16s var(--ease-out-soft);
+}
+
+.sidebarToggle:hover,
+.sidebarToggle:focus-visible {
+  background: var(--kutup-surface-hover);
+  color: var(--kutup-white);
+}
+
+.sidebarToggle:focus-visible {
+  outline: 2px solid var(--kutup-red);
+  outline-offset: 2px;
 }
 
 .brand {
@@ -28,9 +55,13 @@
   letter-spacing: -0.01em;
 }
 
+.spacer {
+  flex: 1;
+}
+
 @media (max-width: 480px) {
   .navbar {
-    padding: 12px 16px;
+    padding: 12px 14px;
   }
 
   .brandName {

@@ -44,15 +44,17 @@ class SummaryConfig:
     max_tokens: int = 700
     temperature: float = 0.2
     no_context_marker: str = "no_relevant_context"
-    inference_url: str = "http://127.0.0.1:8080/v1/chat/completions"
+    inference_url: str = "http://127.0.0.1:8082/v1/chat/completions"
     timeout: int = 300
     model_name: str = "gemma3"
+    inference_backend: str = "evren"
+    evren_model: str = "llm-large"
 
     @classmethod
     def from_env(cls) -> SummaryConfig:
         registry = _load_model_registry()
         host = _str("INFERENCE_HOST", "127.0.0.1")
-        port = _int("INFERENCE_PORT", 8080)
+        port = _int("INFERENCE_PORT", 8082)
         default_url = f"http://{host}:{port}/v1/chat/completions"
 
         return cls(
@@ -62,4 +64,6 @@ class SummaryConfig:
             inference_url=_str("INFERENCE_URL", default_url) or default_url,
             timeout=_int("INFERENCE_TIMEOUT", 300),
             model_name=_str("SUMMARY_MODEL_NAME", registry.get("model_name", "gemma3")) or "gemma3",
+            inference_backend=(_str("SUMMARY_INFERENCE_BACKEND", "evren") or "evren").casefold(),
+            evren_model=_str("SUMMARY_EVREN_MODEL", "llm-large") or "llm-large",
         )

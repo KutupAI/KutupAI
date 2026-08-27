@@ -1,22 +1,49 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../Navbar/Navbar";
+import ChatSidebar from "../ChatSidebar/ChatSidebar";
 import ChatWindow from "../ChatWindow/ChatWindow";
 import MessageInput from "../MessageInput/MessageInput";
-import { useChat } from "../../hooks/useChat";
+import { useChatHistory } from "../../hooks/useChatHistory";
 import styles from "./KutupAIChat.module.css";
 
+const MOBILE_BREAKPOINT = 768;
+
 /**
- * KutupAIChat — نقطة الدخول الرئيسية لواجهة المحادثة.
- * يجمع بين: Navbar (+ زر Yeni Sohbet) / ChatWindow (رسائل + Welcome State)
- * / MessageInput (كتابة + رفع ملف + إرسال)، ويدير الحالة عبر useChat.
+ * KutupAIChat — nokta-i başlangıç: Navbar (menü aç/kapa) + ChatSidebar
+ * (sohbet geçmişi) + ChatWindow (mesajlar) + MessageInput.
  *
- * الاستخدام داخل المشروع الحالي، مثال ضمن صفحة موجودة:
- *   import KutupAIChat from "../../components/KutupAIChat/KutupAIChat";
- *   <KutupAIChat />
+ * Sidebar varsayılan açık/kapalı durumu ekran genişliğine göre belirlenir
+ * (masaüstünde açık, mobilde kapalı) -- sadece ilk yüklemede, sonrasında
+ * tamamen kullanıcı kontrolünde (Navbar'daki menü düğmesi).
  */
 const KutupAIChat: React.FC = () => {
-  const { currentChat, isLoading, error, startNewChat, sendMessage } = useChat();
+  const {
+    currentChat,
+    chats,
+    activeChatId,
+    isLoading,
+    error,
+    startNewChat,
+    selectChat,
+    deleteChat,
+    sendMessage,
+  } = useChatHistory();
+
   const [suggestionText, setSuggestionText] = useState<string | undefined>(undefined);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(
+    () => typeof window !== "undefined" && window.innerWidth > MOBILE_BREAKPOINT
+  );
+
+  // Masaüstü <-> mobil arası geçişte (pencere yeniden boyutlandırma)
+  // sidebar durumunu makul bir varsayılana getirir; kullanıcı sonradan
+  // yine istediği gibi açıp kapatabilir.
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > MOBILE_BREAKPOINT);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSuggestionClick = (text: string) => {
     setSuggestionText(text);
@@ -27,20 +54,45 @@ const KutupAIChat: React.FC = () => {
     sendMessage(text, file);
   };
 
-  return (
-    <div className={styles.appShell}>
-      <Navbar onNewChat={startNewChat} />
+  const handleSelectChat = (id: string) => {
+    selectChat(id);
+    if (window.innerWidth <= MOBILE_BREAKPOINT) setIsSidebarOpen(false);
+  };
 
-      <ChatWindow
-        messages={currentChat.messages}
-        isLoading={isLoading}
-        error={error}
-        onSuggestionClick={handleSuggestionClick}
+  const handleNewChat = () => {
+    startNewChat();
+    if (window.innerWidth <= MOBILE_BREAKPOINT) setIsSidebarOpen(false);
+  };
+
+  return (
+    <div className={styles.shell}>
+      <ChatSidebar
+        chats={chats}
+        activeChatId={activeChatId}
+        isOpen={isSidebarOpen}
+        onSelectChat={handleSelectChat}
+        onNewChat={handleNewChat}
+        onDeleteChat={deleteChat}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
-      <div className={styles.inputArea}>
-        <div className={styles.inputInner}>
-          <MessageInput onSend={handleSend} isLoading={isLoading} prefillText={suggestionText} />
+      <div className={styles.appShell}>
+        <Navbar
+          onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+          isSidebarOpen={isSidebarOpen}
+        />
+
+        <ChatWindow
+          messages={currentChat.messages}
+          isLoading={isLoading}
+          error={error}
+          onSuggestionClick={handleSuggestionClick}
+        />
+
+        <div className={styles.inputArea}>
+          <div className={styles.inputInner}>
+            <MessageInput onSend={handleSend} isLoading={isLoading} prefillText={suggestionText} />
+          </div>
         </div>
       </div>
     </div>

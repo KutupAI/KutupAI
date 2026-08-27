@@ -1,16 +1,25 @@
-.appShell {
+.shell {
   display: flex;
-  flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: var(--kutup-bg);
+  overflow: hidden;
+}
+
+.appShell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  background: transparent;
   color: var(--kutup-white);
   overflow: hidden;
 }
 
 .inputArea {
   border-top: 1px solid var(--kutup-border);
-  background: var(--kutup-bg);
+  background: linear-gradient(180deg, transparent, var(--kutup-bg) 40%);
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
 }
 

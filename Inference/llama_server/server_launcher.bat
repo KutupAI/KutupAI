@@ -1,14 +1,11 @@
 @echo off
-
 cd /d "%~dp0.."
 
-echo Starting Llama Server with YaRN...
-echo.
+echo Starting local Qwen server on port 8082...
 
-llama_server\llama-server.exe ^
-    -m "models\gemma3.gguf" ^
-    --port 8080 ^
-    --ctx-size 131072 ^
-    --rope-scaling yarn
+llama_server\cuda_bin\llama-server.exe ^
+    -m "models\qwen2.5-1.5b-instruct-q4_k_m\qwen2.5-1.5b-instruct-q4_k_m.gguf" ^
+    --port 8082 ^
+    --ctx-size 32768
 
 pause

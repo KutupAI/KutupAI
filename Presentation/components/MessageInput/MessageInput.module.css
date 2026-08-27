@@ -4,6 +4,12 @@
   border-radius: var(--radius-lg);
   padding: 10px 10px 10px 14px;
   box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s var(--ease-out-soft), box-shadow 0.2s var(--ease-out-soft);
+}
+
+.inputBar:focus-within {
+  border-color: var(--kutup-starlight-dim);
+  box-shadow: var(--shadow-soft), 0 0 0 3px var(--kutup-starlight-dim);
 }
 
 .row {
@@ -23,6 +29,7 @@
   font-size: 0.95rem;
   line-height: 1.4;
   max-height: 140px;
+  overflow-y: auto;
   padding: 8px 4px;
 }
 
@@ -42,21 +49,22 @@
   background: var(--kutup-red);
   color: var(--kutup-white);
   border: none;
-  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.16s ease, transform 0.12s ease, box-shadow 0.16s ease;
+  transition: background 0.18s var(--ease-out-soft), transform 0.18s var(--ease-out-soft),
+    box-shadow 0.18s var(--ease-out-soft);
 }
 
 .sendBtn:hover:not(:disabled),
 .sendBtn:focus-visible:not(:disabled) {
   background: var(--kutup-red-hover);
   box-shadow: var(--shadow-glow-red);
+  transform: translateY(-1px) scale(1.04);
 }
 
 .sendBtn:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: scale(0.93);
 }
 
 .sendBtn:focus-visible {

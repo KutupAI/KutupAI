@@ -8,6 +8,13 @@ gemma3.gguf -- that configuration is owned entirely by the Inference
 layer (Inference/configuration/, Inference/models/model_registry.json).
 """
 
+import os
+
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 # Generation parameters forwarded into Inference.client.InferenceRequest.
 TEMPERATURE = 0.2
 TOP_P = 0.9
@@ -23,3 +30,8 @@ MAX_OCR_CHARS = 4000
 # Not used to load or select a model -- Writer Agent never touches
 # the model directly.
 MODEL_NAME = "gemma3"
+
+# Writer tek başına EVREN'e taşınabilir. Diğer Agent'lar mevcut yerel
+# inference ayarlarını kullanmaya devam eder.
+INFERENCE_BACKEND = os.getenv("WRITER_INFERENCE_BACKEND", "local").strip().casefold()
+EVREN_MODEL = os.getenv("WRITER_EVREN_MODEL", "llm-large").strip() or "llm-large"

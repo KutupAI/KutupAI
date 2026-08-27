@@ -6,7 +6,6 @@
   background: transparent;
   border: 1px solid var(--kutup-border);
   color: var(--kutup-gray);
-  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,8 +50,8 @@
 }
 
 .fileIcon {
-  font-size: 1.05rem;
   flex-shrink: 0;
+  color: var(--kutup-gray);
 }
 
 .fileMeta {
@@ -83,8 +82,6 @@
   background: transparent;
   border: none;
   color: var(--kutup-gray);
-  font-size: 1.1rem;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;

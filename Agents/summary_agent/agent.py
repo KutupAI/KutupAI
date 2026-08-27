@@ -98,6 +98,11 @@ class SummaryAgent(BaseAgent):
             return updated
 
         result = self.summarize(question, rag_result)
+        # RAG'in kanıt bulamaması özetleme hatası değildir. Writer, bu durumda
+        # belge metniyle çalışabilir; workflow'un tamamı başarısız sayılmaz.
+        if not result.success and (result.error or {}).get("code") == "empty_context":
+            updated["summary"] = {"success": True, "rag_summary_text": ""}
+            return updated
         updated["summary"] = self._to_state_summary(result)
         return updated
 

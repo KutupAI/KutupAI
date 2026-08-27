@@ -85,12 +85,34 @@ export interface ValidationSection {
   warnings: string[];
 }
 
+/**
+ * Bir hukuki kaynak alıntısı (RAG retriever'ın bulduğu kanun maddesi).
+ * Şu alanlar gerçek RAG veri setinden doğrulandı (indexed_chunks.json /
+ * facts_registry.json / amendment_ledger.json şeması): law_number,
+ * article_no, source_file, page_start/page_end. `snippet` ve `score`
+ * opsiyonel -- retriever her zaman dönmeyebilir, arayüz ikisi de
+ * olmadan da düzgün çalışır.
+ */
+export interface RagResultItem {
+  chunk_id: string | null;
+  law_number: string | null;
+  law_name: string | null;
+  article_no: string | null;
+  /** Ham dosya adı, örn. "1076_Yedek Subaylar Kanunu.pdf" -- görüntüleme
+   *  için utils/formatters.ts::formatLawTitle ile temizlenir. */
+  source_file: string | null;
+  page_start: number | null;
+  page_end: number | null;
+  snippet: string | null;
+  score: number | null;
+}
+
 export interface RagSection {
   success: boolean;
   rag_data: {
     operation: string;
     query: string;
-    results: unknown[];
+    results: RagResultItem[];
   } | null;
 }
 
@@ -136,6 +158,29 @@ const asStrOrNull = (v: unknown): string | null =>
 
 const asNumOrNull = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
+
+/** Bir tek RAG sonucunu (kanun maddesi kanıtı) esnek şekilde parse eder --
+ *  retriever farklı sürümlerde farklı alan adları kullanmış olabilir
+ *  (örn. "text" / "snippet" / "full_text"), bu yüzden birkaç olası ad
+ *  denenir; hiçbiri yoksa alan sessizce null kalır (arayüz çökmez). */
+const asRagResultItem = (v: unknown): RagResultItem | null => {
+  if (!isRecord(v)) return null;
+  const pick = (...keys: string[]): unknown => {
+    for (const k of keys) if (v[k] !== undefined) return v[k];
+    return undefined;
+  };
+  return {
+    chunk_id: asStrOrNull(pick("chunk_id")),
+    law_number: asStrOrNull(pick("law_number", "kanun_no")),
+    law_name: asStrOrNull(pick("law_name", "kanun_adi")),
+    article_no: asStrOrNull(pick("article_no", "madde_no")),
+    source_file: asStrOrNull(pick("source_file", "kaynak_dosya")),
+    page_start: asNumOrNull(pick("page_start", "kaynak_sayfa")),
+    page_end: asNumOrNull(pick("page_end")),
+    snippet: asStrOrNull(pick("snippet", "text", "full_text", "evidence_text")),
+    score: asNumOrNull(pick("score", "confidence", "relevance")),
+  };
+};
 
 /**
  * Normalize a raw API / demo payload into the canonical 9-key PipelineState.
@@ -266,7 +311,9 @@ export const normalizePipelineState = (raw: unknown): PipelineState => {
         ? {
             operation: asStr(ragDataRaw.operation, "retrieve"),
             query: asStr(ragDataRaw.query),
-            results: Array.isArray(ragDataRaw.results) ? ragDataRaw.results : [],
+            results: Array.isArray(ragDataRaw.results)
+              ? ragDataRaw.results.map(asRagResultItem).filter((r): r is RagResultItem => r !== null)
+              : [],
           }
         : null,
     },
