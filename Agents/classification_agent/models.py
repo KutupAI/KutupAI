@@ -54,6 +54,14 @@ class ClassificationResult:
     error: str | None = None
     schema_version: str = "1.0"
 
+    # True when the top-2 candidates' confidences are within
+    # config.ambiguity_margin of each other (e.g. %100 vs %99) -- signals
+    # that document_type is a best guess between two near-equally-likely
+    # classes, not a confident single answer. Also True when document_type
+    # fell back to diger_belirsiz with 2+ low-confidence candidates
+    # reported (see agent.py::_build_result).
+    is_ambiguous: bool = False
+
     def to_dict(self) -> dict[str, Any]:
         """Export exactly the schema shape from the task document, plus
         provenance fields needed downstream (evaluation, needs_review queue).
@@ -71,6 +79,7 @@ class ClassificationResult:
             "status": raw.get("status"),
             "success": bool(raw.get("success")),
             "source": raw.get("source"),
+            "is_ambiguous": bool(raw.get("is_ambiguous")),
             "ocr_confidence": raw.get("ocr_confidence"),
             "processing_ms": raw.get("processing_ms"),
             "schema_version": raw.get("schema_version", "1.0"),

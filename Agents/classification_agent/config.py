@@ -84,6 +84,26 @@ class ClassificationConfig:
 
     top_k_alternatives: int = 2
 
+    # --- Minimum-confidence gate (feature: "en az %50 eşleşme" gereksinimi) ---
+    # En yüksek adayın confidence'ı bu değerin altındaysa, belge KESIN bir
+    # sınıfa atanmaz -- bkz. agent.py::_build_result. document_type
+    # diger_belirsiz olur ama alternatives, modelin gördüğü en olası
+    # `low_confidence_max_candidates` adayı (confidence'larıyla birlikte)
+    # taşır; körü körüne diger_belirsiz'e düşürüp adayları atmaz.
+    min_confidence_threshold: float = 0.50
+
+    # Bu eşiğin altına düşüldüğünde (yukarıdaki durum) en fazla kaç aday
+    # döndürülsün. "En yüksek 5 aday, incelemeye tabi" gereksinimi.
+    low_confidence_max_candidates: int = 5
+
+    # --- Ambiguity margin (feature: "iki yakın tahmin" gereksinimi) ---
+    # En iyi iki adayın confidence farkı bu değerin altında/eşitse (ör.
+    # %100 vs %99 -> fark 0.01), belge tek bir sınıfa kesin atanmış olsa
+    # bile durum belirsiz sayılır (`is_ambiguous=True`) ve ikinci aday
+    # -- top_k_alternatives kaç olursa olsun -- alternatives listesinden
+    # asla düşürülmez.
+    ambiguity_margin: float = 0.05
+
     # EVREN seçildiğinde her belge llm-fast ile sınıflandırılır. Yerel ONNX
     # ön sınıflandırıcısı yalnızca açıkça etkinleştirildiğinde kullanılır.
     use_fast_classifier: bool = False
@@ -142,6 +162,13 @@ class ClassificationConfig:
         return cls(
             needs_review_threshold=float(os.getenv("CLASSIFICATION_NEEDS_REVIEW_THRESHOLD", "0.60")),
             top_k_alternatives=int(os.getenv("CLASSIFICATION_TOP_K_ALTERNATIVES", "2")),
+            min_confidence_threshold=float(
+                os.getenv("CLASSIFICATION_MIN_CONFIDENCE_THRESHOLD", "0.50")
+            ),
+            low_confidence_max_candidates=int(
+                os.getenv("CLASSIFICATION_LOW_CONFIDENCE_MAX_CANDIDATES", "5")
+            ),
+            ambiguity_margin=float(os.getenv("CLASSIFICATION_AMBIGUITY_MARGIN", "0.05")),
             use_fast_classifier=_boolean("CLASSIFICATION_USE_FAST_CLASSIFIER", False),
             fast_classifier_escalation_threshold=float(
                 os.getenv("CLASSIFICATION_FAST_ESCALATION_THRESHOLD", "0.75")
@@ -172,6 +199,12 @@ class ClassificationConfig:
             raise ValueError("needs_review_threshold must be between 0 and 1.")
         if not 0 <= self.fast_classifier_escalation_threshold <= 1:
             raise ValueError("fast_classifier_escalation_threshold must be between 0 and 1.")
+        if not 0 <= self.min_confidence_threshold <= 1:
+            raise ValueError("min_confidence_threshold must be between 0 and 1.")
+        if not 0 <= self.ambiguity_margin <= 1:
+            raise ValueError("ambiguity_margin must be between 0 and 1.")
+        if self.low_confidence_max_candidates < 1:
+            raise ValueError("low_confidence_max_candidates must be >= 1.")
         if self.top_k_alternatives < 0:
             raise ValueError("top_k_alternatives must be >= 0.")
         if self.vlm_timeout_s <= 0:

@@ -172,21 +172,64 @@ class ClassificationAgent(BaseAgent):
         ocr_confidence: float | None,
         source: str,
     ) -> ClassificationResult:
+        # Tüm adayları (en iyi tahmin + alternatives) birleştirip confidence'a
+        # göre sırala. Aynı sınıf birden fazla kez geçerse (ör. hem
+        # document_type hem alternatives içinde), en yüksek confidence'ı
+        # tutulur -- yinelenen giriş olmasın diye.
+        candidates: dict[str, float] = {(document_type or UNCERTAIN_CODE): float(confidence)}
+        for alt in alternatives:
+            alt_type = alt.get("type")
+            alt_conf = alt.get("confidence")
+            if isinstance(alt_type, str) and isinstance(alt_conf, (int, float)):
+                candidates[alt_type] = max(candidates.get(alt_type, 0.0), float(alt_conf))
+        ranked = sorted(candidates.items(), key=lambda kv: kv[1], reverse=True)
+        top_type, top_confidence = ranked[0]
+
+        # --- Özellik: minimum eşleşme eşiği (§ "en az %50 eşleşmeli") ---
+        # En iyi adayın confidence'ı eşiğin altındaysa hiçbir sınıfa KESIN
+        # atama yapılmaz. document_type diger_belirsiz olur, ama -- körü
+        # körüne tek bu kodu döndürüp adayları çöpe atmak yerine -- en
+        # olası `low_confidence_max_candidates` aday, kendi confidence'larıyla
+        # birlikte alternatives'e yazılır (ör. %45 Fatura, %35 Dilekçe, ...).
+        # Bu sayede downstream (needs_review kuyruğu / insan operatör) neden
+        # belirsiz kaldığını ve en olası adayları görebilir.
+        if top_confidence < self.config.min_confidence_threshold:
+            low_conf_candidates = ranked[: self.config.low_confidence_max_candidates]
+            return ClassificationResult(
+                success=True,
+                document_id=document_id,
+                document_type=UNCERTAIN_CODE,
+                confidence=top_confidence,
+                alternatives=[ClassificationAlternative(type=t, confidence=c) for t, c in low_conf_candidates],
+                status="needs_review",
+                source=source,
+                ocr_confidence=ocr_confidence,
+                is_ambiguous=len(low_conf_candidates) > 1,
+            )
+
+        # --- Özellik: yakın-confidence belirsizliği (§ "%100 vs %99") ---
+        # En iyi iki adayın farkı ambiguity_margin'in altında/eşitse, ikinci
+        # aday top_k_alternatives kaç olursa olsun ASLA listeden düşürülmez
+        # -- belirsizlik downstream'e her zaman görünür kalır.
+        is_ambiguous = len(ranked) > 1 and (top_confidence - ranked[1][1]) <= self.config.ambiguity_margin
+        keep_n = max(self.config.top_k_alternatives, 2) if is_ambiguous else self.config.top_k_alternatives
+
         # Section 7: low confidence -> needs_review, but still report the
         # best-guess document_type (never force-assign a class the model
         # was NOT confident about, and never silently discard the guess).
-        status = "success" if confidence >= self.config.needs_review_threshold else "needs_review"
-        alts = alternatives[: self.config.top_k_alternatives]
+        status = "success" if top_confidence >= self.config.needs_review_threshold else "needs_review"
+        alt_objs = [ClassificationAlternative(type=t, confidence=c) for t, c in ranked[1 : 1 + keep_n]]
 
         return ClassificationResult(
             success=True,
             document_id=document_id,
-            document_type=document_type or UNCERTAIN_CODE,
-            confidence=confidence,
-            alternatives=[ClassificationAlternative(**a) for a in alts],
+            document_type=top_type,
+            confidence=top_confidence,
+            alternatives=alt_objs,
             status=status,
             source=source,
             ocr_confidence=ocr_confidence,
+            is_ambiguous=is_ambiguous,
         )
 
 
@@ -324,6 +367,7 @@ def _classification_contract(result: ClassificationResult) -> Dict[str, Any]:
         "success": bool(result.success),
         "document_type": result.document_type,
         "classification_confidence": round(float(result.confidence or 0.0), 4),
+        "is_ambiguous": bool(result.is_ambiguous),
     }
 
 

@@ -66,12 +66,19 @@ def run_vlm_classification(
     layout_summary = build_layout_summary(layout) if config.use_layout_when_available else None
     vision_summary = build_vision_signal_summary(ocr_pages) if config.use_layout_when_available else None
 
+    # Modelden HER ZAMAN en az `low_confidence_max_candidates - 1` alternatif
+    # iste (top_k_alternatives'in üstünde bile olsa) -- confidence eşiğin
+    # altında çıkarsa (agent.py::_build_result) elimizde "en olası 5 aday"
+    # listesini kurmaya yetecek veri olsun diye. top_k_alternatives daha
+    # büyükse (ör. 2'den fazla) onu esas al.
+    requested_alternatives = max(config.top_k_alternatives, config.low_confidence_max_candidates - 1)
+
     user_prompt = build_user_prompt(
         normalized_text=normalized_text,
         ocr_confidence=ocr_confidence,
         layout_summary=layout_summary,
         vision_summary=vision_summary,
-        top_k_alternatives=config.top_k_alternatives,
+        top_k_alternatives=requested_alternatives,
     )
 
     started = time.monotonic()
