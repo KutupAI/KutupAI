@@ -150,7 +150,7 @@ class UnifiedOCRResult:
     errors: list[OCRProcessingError] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     processing_ms: float = 0.0
-    engine: str = "PaddleOCR + PP-StructureV3"
+    engine: str = "PaddleOCR"
     schema_version: str = "1.1"
 
     # Structured insights

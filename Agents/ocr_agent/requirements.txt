@@ -1,8 +1,8 @@
-# Core OCR (PP-StructureV3 / PaddleOCR)
+# Core OCR (PaddleOCR primary; PP-StructureV3 tables only)
 paddleocr>=3.1,<4
 paddlex[ocr]>=3.1,<4
-# CPU: paddlepaddle>=3.1,<3.3 (avoid 3.3.x PIR/oneDNN crash). Prefer ==3.2.2.
-# GPU (e.g. RTX 4090): install paddlepaddle-gpu matching your CUDA instead.
+# GPU (recommended): install paddlepaddle-gpu matching your CUDA instead of the CPU wheel.
+# CPU fallback: paddlepaddle>=3.1,<3.3 (avoid 3.3.x PIR/oneDNN crash). Prefer ==3.2.2.
 paddlepaddle>=3.1,<3.3
 
 opencv-python-headless>=4.10,<5
@@ -10,9 +10,10 @@ PyMuPDF>=1.24,<2
 numpy>=1.26,<3
 Pillow>=10,<12
 
-# Runtime fallback when Paddle init/predict fails (ONNX, light)
+# Runtime fallback when Paddle result is Bad (ONNX; use onnxruntime-gpu for CUDA)
 rapidocr-onnxruntime>=1.3,<2
 onnxruntime>=1.16,<2
+# Optional GPU RapidOCR: pip install onnxruntime-gpu
 
 # Office text layers (DOCX / PPTX / XLSX)
 python-docx>=1.1,<2

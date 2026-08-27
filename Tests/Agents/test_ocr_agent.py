@@ -1,6 +1,6 @@
 """Tests for Agents/ocr_agent.
 
-Run:
+Run from repo root:
     python Tests/Agents/test_ocr_agent.py
     # or
     pytest Tests/Agents/test_ocr_agent.py -q
@@ -82,8 +82,13 @@ class AgentContractTests(unittest.TestCase):
     def test_missing_document_path_fails_gracefully(self):
         agent = OCRAgent()
         out = agent.run({"document_id": "doc-x"})
+
         self.assertEqual(out["ocr_status"], "failed")
-        self.assertEqual(out["ocr_result"]["error"]["code"], "FILE_CORRUPTED")
+        self.assertFalse(out["ocr"]["success"])
+        self.assertEqual(out["ocr"]["error"]["code"], "FILE_CORRUPTED")
+        # Orchestration wire: { Success, Data } — no nested error key.
+        self.assertFalse(out["ocr_result"]["Success"])
+        self.assertIsInstance(out["ocr_result"]["Data"], list)
         self.assertIn("errors", out)
 
     def test_unsupported_extension(self):
@@ -123,26 +128,67 @@ class AgentContractTests(unittest.TestCase):
             data = out["data"]
             self.assertEqual(data["page_count"], 1)
             self.assertIn("İstanbul", data["full_text"])
+
             page = data["pages"][0]
             self.assertEqual(page["page_number"], 1)
-            self.assertIn("blocks", page)
-            self.assertEqual(page["blocks"][0]["type"], "title")
-            self.assertIn("tables", page)
+            self.assertIn("İstanbul", page["text"])
             self.assertIn("vision", page)
             self.assertIn("signature", page["vision"])
             self.assertIn("stamp", page["vision"])
-            self.assertIn("quality", page)
-            self.assertIn("warnings", page)
+            # Public page contract stays lean (text + vision only).
+            for forbidden_page_key in ("blocks", "tables", "quality", "warnings"):
+                self.assertNotIn(forbidden_page_key, page)
             # Contract must NOT leak semantic/downstream fields.
             for forbidden in ("classification", "extracted_data", "summary", "answer"):
                 self.assertNotIn(forbidden, data)
+
+    def test_agent_wire_keys_on_success(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = _write_png(d)
+            from Agents.ocr_agent.client import OCRClient
+
+            config = self._config()
+            client = OCRClient(
+                config,
+                processor=OCRProcessor(
+                    config,
+                    engine=FakeEngine(texts=["Resmi yazı örneği"], scores=[0.93]),
+                ),
+            )
+            agent = OCRAgent(client=client, config=config)
+
+            out = agent.run({
+                "document_id": "doc-wire",
+                "document_path": path,
+                "request": {
+                    "success": True,
+                    "question": "bu belge nedir?",
+                    "document": {
+                        "document_id": "doc-wire",
+                        "file_name": os.path.basename(path),
+                        "file_type": "png",
+                    },
+                },
+                "ocr": {},
+                "classification": {},
+                "extraction": {},
+            })
+
+            self.assertEqual(out["ocr_status"], "completed")
+            self.assertTrue(out["ocr"]["success"])
+            self.assertIn("örneği", out["ocr"]["ocr_data"]["full_text"].casefold())
+            self.assertTrue(out["ocr_result"]["Success"])
+            self.assertEqual(len(out["ocr_result"]["Data"]), 1)
+            self.assertIn("document_text", out)
+            # Downstream sections must remain untouched.
+            self.assertEqual(out["classification"], {})
+            self.assertEqual(out["extraction"], {})
 
     def test_low_confidence_triggers_retry_then_recovers(self):
         with tempfile.TemporaryDirectory() as d:
             path = _write_png(d)
             engine = FakeEngine(texts=["belirsiz"], scores=[0.1])
 
-            # Force recovery on the 2nd attempt by mutating scores after first call.
             original_predict = engine.predict
 
             def predict(image):
@@ -155,7 +201,8 @@ class AgentContractTests(unittest.TestCase):
             processor = OCRProcessor(self._config(), engine=engine)
             out = processor.process(path, "doc-retry")
             self.assertGreaterEqual(engine.calls, 2)
-            self.assertIn(1, out["data"]["processing"]["pages_reprocessed"])
+            self.assertTrue(out["success"])
+            self.assertIn("belirsiz", out["data"]["full_text"])
 
     def test_turkish_characters_preserved(self):
         with tempfile.TemporaryDirectory() as d:
@@ -167,13 +214,7 @@ class AgentContractTests(unittest.TestCase):
             self.assertIn("İ", out["data"]["full_text"])
             self.assertEqual(out["data"]["language"]["detected"], "tr")
 
-    def test_partial_status_when_some_pages_fail(self):
-        # Two-page scenario simulated directly against the processor's page
-        # assembly by using a PDF-like two-image flow is heavier to set up
-        # here; instead we validate the same contract via a single blank
-        # page (0 successful pages -> failed) versus a working page
-        # (successful -> complete), which exercises the same status logic
-        # used for multi-page partial cases in processor._assemble().
+    def test_blank_page_fails(self):
         with tempfile.TemporaryDirectory() as d:
             path = _write_png(d)
             processor = OCRProcessor(

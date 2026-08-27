@@ -32,7 +32,6 @@ from Agents.ocr_agent.interfaces.vision_fallback import (
 )
 from Agents.ocr_agent.models import LayoutElement, OCRTextItem, TableResult, VisualElement
 from Agents.ocr_agent.pipeline import confidence_analyzer, quality_analyzer
-from Agents.ocr_agent.pipeline.confidence_analyzer import NextAction
 from Agents.ocr_agent.preprocessing.image_preprocessor import ImagePreprocessor
 from Agents.ocr_agent.processing import office_renderer
 from Agents.ocr_agent.processing.pdf_renderer import PDFRenderer
@@ -229,19 +228,23 @@ class OCRProcessor:
             return [work]
 
     # ------------------------------------------------------------------
-    # Adaptive single-page OCR with controlled retries + vision fallback
+    # Per-page cascade (fast path):
+    #   PaddleOCR → Good / usable → accept
+    #   empty/failed only → RapidOCR (once, not on every retry)
+    #   still empty → PaddleOCR-VL
+    #   table detected → PP-StructureV3 Table Pipeline
     # ------------------------------------------------------------------
     def _ocr_page(self, page_index: int, original_image: np.ndarray) -> _PageWork:
         work = _PageWork(page_number=page_index + 1, image=original_image)
         quality = quality_analyzer.assess(original_image, self.config.quality_threshold)
         work.quality_score = quality.score
 
-        # Adaptive: a page that already looks clean skips the heavier
-        # preprocessing steps; a poor-quality page gets the full pipeline.
         image = original_image
         force_full_preprocessing = not quality.readable or quality.poor
         processed = original_image
         fallback_called = False
+        accepted = False
+        rapid_tried = False
 
         for attempt in range(1, self.config.max_ocr_attempts + 1):
             work.attempts = attempt
@@ -253,77 +256,112 @@ class OCRProcessor:
                         processed = self.preprocessor.process(image, strength="light")
                 else:
                     processed = image
-                outputs = self.engine.predict(processed)
-                raw = self._merge_outputs(outputs)
             except Exception as exc:
-                work.warnings.append(f"Attempt {attempt} failed: {exc}")
+                work.warnings.append(f"Attempt {attempt} preprocess failed: {exc}")
                 if attempt >= self.config.max_ocr_attempts:
                     break
                 force_full_preprocessing = True
                 continue
 
             work.width, work.height = int(processed.shape[1]), int(processed.shape[0])
-            work.engine_name = getattr(
-                self.engine, "last_engine_name", getattr(self.engine, "engine_name", work.engine_name)
-            )
 
-            text_items = self.ocr_parser.parse(raw, page_index)
-            for item in text_items:
-                decision_text = self.corrector.correct(item.text)
-                item.corrected_text = decision_text.text
-                item.correction_applied = decision_text.applied
-
-            layout, visuals = (
-                self.layout_analyzer.analyze(raw, page_index)
-                if self.config.enable_layout else ([], [])
+            # --- 1) PaddleOCR (normal text, GPU) ---
+            paddle_ok = self._run_engine_pass(
+                work, processed, page_index, quality, engine="paddle",
             )
-            tables = (
-                self.table_extractor.extract(raw, page_index)
-                if self.config.enable_tables else []
-            )
-
-            incomplete = confidence_analyzer.page_looks_incomplete(
-                processed, text_items, quality
-            )
-            corrupted = confidence_analyzer.page_looks_corrupted(text_items)
-            needs_vision, reason = confidence_analyzer.page_needs_vision(
-                processed, text_items, quality
-            )
-            decision = confidence_analyzer.decide(
-                text_items,
-                attempt=attempt,
-                max_attempts=self.config.max_ocr_attempts,
-                low_confidence_threshold=self.config.low_confidence_threshold,
-                fallback_enabled=self.config.vision_fallback.enabled,
-                fallback_threshold=self.config.vision_fallback.confidence_threshold,
-                incomplete=incomplete or (needs_vision and reason == "incomplete"),
-                quality_poor=quality.poor,
-                corrupted=corrupted or reason in {"corrupted", "reading_order"},
-            )
-            work.text_items, work.layout, work.visuals, work.tables = (
-                text_items, layout, visuals, tables
-            )
-
-            if decision.action == NextAction.ACCEPT:
+            if paddle_ok:
+                accepted = True
+                logger.info("[OCR] page=%s engine=PaddleOCR verdict=Good", page_index + 1)
                 break
-            if decision.action == NextAction.RETRY:
+
+            usable = confidence_analyzer.is_result_usable(
+                work.text_items,
+                confidence_threshold=self.config.confidence_threshold,
+            )
+            if usable:
+                # Skip RapidCPU cascade when Paddle already returned usable text.
+                accepted = True
+                work.warnings.append("paddle_usable_skip_rapid")
+                logger.info(
+                    "[OCR] page=%s engine=PaddleOCR verdict=Usable (skip Rapid)",
+                    page_index + 1,
+                )
+                break
+
+            logger.info("[OCR] page=%s engine=PaddleOCR verdict=Bad", page_index + 1)
+
+            # --- 2) RapidOCR only when Paddle empty/unusable (once) ---
+            if (
+                self.config.enable_rapid_fallback
+                and not rapid_tried
+                and not work.text_items
+            ):
+                rapid_tried = True
+                rapid_ok = self._run_engine_pass(
+                    work, processed, page_index, quality, engine="rapid",
+                )
+                if rapid_ok or confidence_analyzer.is_result_usable(
+                    work.text_items,
+                    confidence_threshold=self.config.confidence_threshold,
+                ):
+                    accepted = True
+                    logger.info(
+                        "[OCR] page=%s engine=RapidOCR verdict=%s",
+                        page_index + 1,
+                        "Good" if rapid_ok else "Usable",
+                    )
+                    break
+                logger.info("[OCR] page=%s engine=RapidOCR verdict=Bad", page_index + 1)
+
+            if attempt < self.config.max_ocr_attempts:
                 force_full_preprocessing = True
                 continue
-            if decision.action == NextAction.FALLBACK:
+
+            # --- 3) Still empty/bad → PaddleOCR-VL (last resort) ---
+            if self.config.vision_fallback.enabled and (
+                not work.text_items
+                or confidence_analyzer.page_looks_incomplete(
+                    processed, work.text_items, quality
+                )
+            ):
                 try:
+                    incomplete = confidence_analyzer.page_looks_incomplete(
+                        processed, work.text_items, quality
+                    )
+                    corrupted = confidence_analyzer.page_looks_corrupted(work.text_items)
                     self._try_vision_fallback(
                         work, processed, page_index,
-                        incomplete=decision.incomplete, corrupted=decision.corrupted,
+                        incomplete=incomplete or not work.text_items,
+                        corrupted=corrupted,
                     )
+                    fallback_called = True
+                    if work.text_items:
+                        accepted = True
+                        logger.info(
+                            "[OCR] page=%s engine=PaddleOCR-VL verdict=done",
+                            page_index + 1,
+                        )
                 except Exception as exc:
                     work.warnings.append(f"vision_fallback_failed: {exc}")
-                fallback_called = True
-                break
-            work.warnings.append(
-                f"Low OCR confidence after {attempt} attempt(s) "
-                f"(mean={decision.mean_confidence:.2f}); accepting best-effort result."
-            )
             break
+
+        # --- 4) Table detected/required → PP-StructureV3 Table Pipeline ---
+        table_needed = (
+            self.config.enable_tables
+            and confidence_analyzer.page_looks_like_table(processed, work.text_items)
+        )
+        if table_needed:
+            logger.info(
+                "[OCR] page=%s table detected/required → PP-StructureV3 Table Pipeline",
+                page_index + 1,
+            )
+            try:
+                self._run_table_pipeline(work, processed, page_index)
+            except Exception as exc:
+                work.warnings.append(f"table_pipeline_failed: {exc}")
+                logger.warning(
+                    "[OCR] page=%s table pipeline Bad: %s", page_index + 1, exc
+                )
 
         if (
             not fallback_called
@@ -338,9 +376,125 @@ class OCRProcessor:
             except Exception as exc:
                 work.warnings.append(f"vision_fallback_failed: {exc}")
 
-        # Visual signature/stamp detection runs independently during assembly.
-        # PaddleOCR-VL is reserved for the quality-driven text fallback above.
+        if not accepted and not work.text_items:
+            work.warnings.append(
+                f"Low OCR confidence after {work.attempts} attempt(s); "
+                "accepting best-effort result."
+            )
+
         return work
+
+    def _engine_predict(self, image: np.ndarray, engine: str):
+        """Call real multi-engine API; FakeEngine tests only accept image."""
+        predict = self.engine.predict
+        try:
+            import inspect
+
+            if "engine" in inspect.signature(predict).parameters:
+                return predict(image, engine=engine)
+        except (TypeError, ValueError):
+            pass
+        return predict(image)
+
+    def _run_engine_pass(
+        self,
+        work: _PageWork,
+        processed: np.ndarray,
+        page_index: int,
+        quality: quality_analyzer.QualityScore,
+        *,
+        engine: str,
+    ) -> bool:
+        """Run one OCR engine and apply Good/Bad gate. Returns True if Good."""
+        try:
+            outputs = self._engine_predict(processed, engine)
+            raw = self._merge_outputs(outputs)
+        except Exception as exc:
+            work.warnings.append(f"{engine} failed: {exc}")
+            return False
+
+        work.engine_name = getattr(
+            self.engine, "last_engine_name", getattr(self.engine, "engine_name", engine)
+        )
+
+        text_items = self.ocr_parser.parse(raw, page_index)
+        for item in text_items:
+            decision_text = self.corrector.correct(item.text)
+            item.corrected_text = decision_text.text
+            item.correction_applied = decision_text.applied
+
+        layout, visuals = (
+            self.layout_analyzer.analyze(raw, page_index)
+            if self.config.enable_layout else ([], [])
+        )
+        tables = (
+            self.table_extractor.extract(raw, page_index)
+            if self.config.enable_tables else []
+        )
+
+        incomplete = confidence_analyzer.page_looks_incomplete(
+            processed, text_items, quality
+        )
+        corrupted = confidence_analyzer.page_looks_corrupted(text_items)
+        good = confidence_analyzer.is_result_good(
+            text_items,
+            low_confidence_threshold=self.config.low_confidence_threshold,
+            incomplete=incomplete,
+            corrupted=corrupted,
+        )
+
+        # Keep best-so-far even on Bad so later engines / VL can merge.
+        if text_items and (
+            not work.text_items
+            or confidence_analyzer.page_confidence(text_items)
+            >= confidence_analyzer.page_confidence(work.text_items)
+        ):
+            work.text_items = text_items
+            work.layout = layout
+            work.visuals = visuals
+            if tables:
+                work.tables = tables
+
+        return good
+
+    def _run_table_pipeline(
+        self, work: _PageWork, processed: np.ndarray, page_index: int,
+    ) -> None:
+        outputs = self._engine_predict(processed, "structure_table")
+        raw = self._merge_outputs(outputs)
+        tables = self.table_extractor.extract(raw, page_index)
+        if tables:
+            work.tables = tables
+            work.warnings.append("structure_table_pipeline_used")
+            logger.info(
+                "[OCR] page=%s engine=PP-StructureV3-Table verdict=Good tables=%s",
+                page_index + 1, len(tables),
+            )
+        else:
+            work.warnings.append("structure_table_pipeline_no_tables")
+            logger.info(
+                "[OCR] page=%s engine=PP-StructureV3-Table verdict=Bad", page_index + 1
+            )
+
+        # If page text is still empty, harvest any OCR nested in structure output.
+        if not work.text_items:
+            text_items = self.ocr_parser.parse(raw, page_index)
+            for item in text_items:
+                decision_text = self.corrector.correct(item.text)
+                item.corrected_text = decision_text.text
+                item.correction_applied = decision_text.applied
+            if text_items:
+                work.text_items = text_items
+                work.engine_name = getattr(
+                    self.engine, "last_engine_name", "PP-StructureV3 Table Pipeline"
+                )
+
+        if self.config.enable_layout:
+            layout, visuals = self.layout_analyzer.analyze(raw, page_index)
+            if layout:
+                work.layout = layout
+            if visuals:
+                work.visuals = visuals
 
     def _vision_page_budget_exhausted(self) -> bool:
         cap = self.config.vision_fallback.max_pages_per_document

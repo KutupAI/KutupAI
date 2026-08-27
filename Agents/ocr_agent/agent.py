@@ -1,7 +1,9 @@
 """OCR Agent — document → structured OCR for Orchestration.
 
-Pipeline: validate → normalize → quality → preprocess → Structure/Paddle/Rapid
-→ confidence (accept/retry/VL fallback) → output contract.
+Pipeline per page:
+  quality → preprocess → PaddleOCR (Good/Usable?)
+  → RapidOCR only if empty → PaddleOCR-VL if still bad
+  → PP-StructureV3 tables only if table detected.
 
 Writes state["ocr"] (+ wire keys ocr_result / ocr_status / document_text).
 """
@@ -31,7 +33,7 @@ class OCRAgent(BaseAgent):
     name = "ocr_agent"
     description = (
         "Convert PDF/image/DOCX/PPTX/XLSX to structured OCR text "
-        "(PP-StructureV3 / PaddleOCR, RapidOCR fallback, optional PaddleOCR-VL)."
+        "(PaddleOCR primary; RapidOCR / PaddleOCR-VL / StructureV3 on demand)."
     )
 
     def __init__(self, client: OCRClient | None = None, config: OCRConfig | None = None) -> None:

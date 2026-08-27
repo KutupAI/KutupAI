@@ -20,7 +20,7 @@ agents:
     module: Agents.ocr_agent
     class_name: OCRAgent
     retries: 1
-    timeout_seconds: 240
+    timeout_seconds: 420
     fallback: terminate    # OCR is required input for every later stage
 
   classification:

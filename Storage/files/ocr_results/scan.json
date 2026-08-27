@@ -1,0 +1,28 @@
+{
+  "Success": false,
+  "Data": [
+    {
+      "document_id": "scan",
+      "file_name": "scan.pdf",
+      "file_type": "pdf",
+      "full_text": "",
+      "pages": [
+        {
+          "page_number": 1,
+          "text": "",
+          "vision": {
+            "signature": {
+              "detected": false,
+              "handwritten": false
+            },
+            "stamp": {
+              "detected": false
+            }
+          }
+        }
+      ],
+      "question": "",
+      "answer": ""
+    }
+  ]
+}

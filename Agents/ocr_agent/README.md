@@ -2,7 +2,10 @@
 
 Converts **image / PDF / DOCX / PPTX / XLSX** into a structured OCR result for Orchestration.
 Does **not** classify, extract business entities, call RAG, or write to Storage.
-Vision (PaddleOCR-VL) is used only as a last-resort page fallback.
+
+Engines are **on-demand**: RapidOCR / PaddleOCR-VL / PP-StructureV3 run only when
+PaddleOCR is not enough (or a table is detected). Skipping them means the page did
+**not need them** — not that those engines are broken.
 
 ---
 
@@ -26,23 +29,16 @@ Vision (PaddleOCR-VL) is used only as a last-resort page fallback.
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ Per page                                                        │
-│   quality_analyzer                                              │
-│        │                                                        │
-│        ▼                                                        │
-│   preprocessing (light / full)                                  │
-│        │                                                        │
-│        ▼                                                        │
-│   OCR engine                                                    │
-│     1) PP-StructureV3                                           │
-│     2) PaddleOCR          (إذا فشل init)                        │
-│     3) RapidOCR ONNX      (إذا فشل init أو predict)             │
-│        │                                                        │
-│        ▼                                                        │
-│   confidence_analyzer                                           │
-│     ACCEPT  → انتهى                                             │
-│     RETRY   → preprocessing أقوى (حتى OCR_MAX_ATTEMPTS)         │
-│     FALLBACK→ PaddleOCR-VL (صفحة واحدة، إن كان مفعّلاً)           │
-│     GIVE_UP → أفضل نتيجة متاحة                                  │
+│   quality_analyzer → preprocessing (light / full)               │
+│                                                                 │
+│   Cascade (stop early when result is Good or Usable):           │
+│                                                                 │
+│     1) PaddleOCR          → Good/Usable?  ACCEPT (done)         │
+│     2) RapidOCR           → فقط إذا Paddle رجّع فارغ              │
+│     3) PaddleOCR-VL       → فقط إذا النص ما زال فاضي/ناقص         │
+│     4) PP-StructureV3     → فقط إذا كُشف جدول في الصفحة           │
+│                                                                 │
+│   OCR_MAX_ATTEMPTS يعيد preprocess أقوى قبل VL عند الحاجة         │
 └────────────────────────────┬────────────────────────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -55,6 +51,9 @@ Vision (PaddleOCR-VL) is used only as a last-resort page fallback.
 ```
 
 **ملاحظة:** صفحات PDF ذات طبقة نص أصلية قابلة للاستخدام تتخطى raster OCR.
+
+PaddleOCR يحمّل فقط نماذج خفيفة: `PP-OCRv5_mobile_det` + `PP-OCRv5_mobile_rec`  
+(لا `server_det` / `latin_rec` / `PP-LCNet` / `DocLayout_plus-L` على مسار النص العادي).
 
 ---
 
@@ -198,30 +197,42 @@ print(result_state["ocr"])
 
 **Error codes:** `UNSUPPORTED_FILE_TYPE`, `FILE_CORRUPTED`, `PAGE_EXTRACTION_FAILED`, `OCR_FAILED`, `LOW_IMAGE_QUALITY`, `LOW_OCR_CONFIDENCE`, `VISION_FALLBACK_FAILED`, `SIGNATURE_DETECTION_FAILED`, `SEAL_DETECTION_FAILED`.
 
+### متى يُستدعى كل محرك؟
+
+| المحرك | يشتغل متى؟ | تخطّيه يعني |
+|--------|------------|-------------|
+| **PaddleOCR** | دائماً للنص (أساسي، GPU) | — |
+| **RapidOCR** | فقط إذا Paddle رجّع **فارغ** | الصفحة صارت Usable/Good من Paddle |
+| **PaddleOCR-VL** | فقط إذا بعد Paddle(+Rapid) النص ما زال فاضي/ناقص جداً | الصفحة واضحة وكافية |
+| **PP-StructureV3** | فقط إذا `enable_tables` وكُشف شكل جدول | الصفحة مش جدول |
+
+مثال `scan.pdf` الأخير: Paddle رجّع نص قوي → Rapid/VL/Structure = **0 ث** عمداً (المسار الصحيح)، مو عطل.
+
 ### متى يُستدعى PaddleOCR-VL؟
 
-فقط إذا كان مفعّلاً وبعد استنفاد محاولات OCR وبقيت الصفحة ضعيفة الثقة / ناقصة / تالفة (تحت `OCR_VISION_FALLBACK_THRESHOLD`). الصفحات الواضحة لا تستدعيه.
+فقط إذا كان مفعّلاً وبعد أن يبقى النص فاضي أو ناقص بعد Paddle (وRapid إن لزم). الصفحات الواضحة لا تستدعيه.
 
 ---
 
 ## Engines & device
 
-| الترتيب | المحرك | الدور |
-|---------|--------|--------|
-| 1 | PP-StructureV3 | أساسي |
-| 2 | PaddleOCR | fallback عند فشل init |
-| 3 | RapidOCR (ONNX) | fallback عند فشل init أو predict (`OCR_RAPID_FALLBACK`) |
+| الترتيب | المحرك | الدور | Good / Bad |
+|---------|--------|--------|------------|
+| 1 | PaddleOCR (`mobile_det` + `mobile_rec`) | نص عادي (أساسي) | نعم (+ Usable) |
+| 2 | RapidOCR (ONNX) | فقط عند فراغ نتيجة Paddle | نعم |
+| 3 | PaddleOCR-VL | آخر ملاذ للنص الناقص | نعم |
+| 4 | PP-StructureV3 Table Pipeline | جداول فقط عند الكشف | نعم |
 
-- `OCR_DEVICE=auto`: GPU إن وُجد (مثل RTX 4090)، وإلا CPU
-- المحرك **singleton** على مستوى العملية (`get_shared_engine`)
-- MKLDNN/oneDNN معطّل في الكود لاستقرار CPU
+- `OCR_DEVICE=gpu` (افتراضي): GPU إن وُجد، وإلا CPU
+- المحركات **lazy + singleton** داخل عملية Orchestration (warm-up عند الإقلاع)
+- Structure لا يُحمَّل إلا عند الحاجة للجداول
 
 ```bash
 pip install -r Agents/ocr_agent/requirements.txt
 ```
 
+- **GPU (موصى به):** ثبّت `paddlepaddle-gpu` المطابق لـ CUDA
 - **CPU:** `paddlepaddle>=3.1,<3.3` (يفضّل `3.2.2`)
-- **GPU:** ثبّت `paddlepaddle-gpu` المطابق لـ CUDA بدل عجلة CPU
 - ادمج `config.example.env` في `.env` المشروع
 
 ---

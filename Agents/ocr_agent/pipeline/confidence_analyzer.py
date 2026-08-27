@@ -162,6 +162,48 @@ def page_needs_vision(
     return False, ""
 
 
+def is_result_usable(
+    items: Sequence[OCRTextItem],
+    *,
+    confidence_threshold: float,
+    min_words: int = 5,
+) -> bool:
+    """Softer than Good: enough text to skip expensive Rapid/CPU fallback."""
+    if not items:
+        return False
+    text = join_page_text(items)
+    words = re.findall(r"\w+", text, flags=re.UNICODE)
+    if len(words) < min_words:
+        return False
+    return page_confidence(items) >= confidence_threshold
+
+
+def is_result_good(
+    items: Sequence[OCRTextItem],
+    *,
+    low_confidence_threshold: float,
+    incomplete: bool = False,
+    corrupted: bool = False,
+) -> bool:
+    """Per-engine Good/Bad gate: True = Good (accept this engine's output)."""
+    if not items:
+        return False
+    if incomplete or corrupted:
+        return False
+    mean_conf = page_confidence(items)
+    low_ratio = sum(1 for i in items if i.confidence < low_confidence_threshold) / len(items)
+    return mean_conf >= low_confidence_threshold and low_ratio < 0.3
+
+
+def page_looks_like_table(image: np.ndarray | None, items: Sequence[OCRTextItem] | None = None) -> bool:
+    """Cheap heuristic: ruled grid and/or tabular OCR layout."""
+    if image is not None and _image_has_table_grid(image):
+        return True
+    if items and _text_looks_tabular(items):
+        return True
+    return False
+
+
 def decide(
     items: Sequence[OCRTextItem],
     *,
@@ -186,11 +228,11 @@ def decide(
 
     # Good enough: accept immediately, no wasted retries/fallback.
     # Dark/blurry pages still accept if OCR itself is complete and confident.
-    if (
-        items
-        and mean_conf >= low_confidence_threshold
-        and low_ratio < 0.3
-        and not coverage_bad
+    if is_result_good(
+        items,
+        low_confidence_threshold=low_confidence_threshold,
+        incomplete=incomplete,
+        corrupted=corrupted,
     ):
         return ConfidenceDecision(
             NextAction.ACCEPT, mean_conf, low_ratio, incomplete, quality_poor, corrupted
@@ -230,6 +272,44 @@ def _edge_density(image: np.ndarray) -> float:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
     edges = cv2.Canny(gray, 40, 120)
     return float(np.mean(edges > 0))
+
+
+def _image_has_table_grid(image: np.ndarray) -> bool:
+    """Detect ruled tables via morphological line extraction."""
+    h, w = image.shape[:2]
+    if h < 80 or w < 80:
+        return False
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
+    binary = cv2.adaptiveThreshold(
+        gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 15, 8
+    )
+    h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (max(w // 30, 12), 1))
+    v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, max(h // 30, 12)))
+    horizontal = cv2.morphologyEx(binary, cv2.MORPH_OPEN, h_kernel, iterations=1)
+    vertical = cv2.morphologyEx(binary, cv2.MORPH_OPEN, v_kernel, iterations=1)
+    h_ratio = float(np.mean(horizontal > 0))
+    v_ratio = float(np.mean(vertical > 0))
+    return h_ratio >= 0.012 and v_ratio >= 0.008
+
+
+def _text_looks_tabular(items: Sequence[OCRTextItem]) -> bool:
+    """Multiple left-aligned columns with repeated numeric/cell-like tokens."""
+    if len(items) < 6:
+        return False
+    xs = sorted(item.bounding_box.as_xyxy()[0] for item in items)
+    if len(xs) < 6:
+        return False
+    # Cluster x positions roughly into columns.
+    clusters: list[float] = []
+    for x in xs:
+        if not clusters or abs(x - clusters[-1]) > 28:
+            clusters.append(float(x))
+    if len(clusters) < 3:
+        return False
+    text = join_page_text(items)
+    cellish = len(re.findall(r"(?m)^\s*[\d.,%]+(?:\s+[\d.,%]+){2,}\s*$", text))
+    pipes = text.count("|")
+    return cellish >= 2 or pipes >= 3
 
 
 def _missing_text_band(image: np.ndarray, items: Sequence[OCRTextItem]) -> bool:

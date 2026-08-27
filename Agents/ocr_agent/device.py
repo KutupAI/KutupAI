@@ -31,8 +31,11 @@ def detect_gpu() -> bool:
 
 
 def resolve_device(requested: str) -> str:
-    """Map auto/cpu/gpu/cuda[:N] to a PaddleOCR device string."""
-    value = (requested or "auto").strip().lower()
+    """Map auto/cpu/gpu/cuda[:N] to a PaddleOCR device string.
+
+    Default preference is GPU (ocr_agent runs on GPU when CUDA is present).
+    """
+    value = (requested or "gpu").strip().lower()
 
     if value in {"cpu"}:
         return "cpu"
@@ -52,7 +55,9 @@ def resolve_device(requested: str) -> str:
                 requested,
             )
             return "cpu"
-        return value
+        resolved = "gpu:0" if value == "gpu" else value
+        logger.info("OCR device resolved to %s", resolved)
+        return resolved
 
     logger.warning("Unrecognized OCR device '%s'; defaulting to CPU.", requested)
     return "cpu"

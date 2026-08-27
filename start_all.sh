@@ -230,6 +230,10 @@ start_orchestration() {
     export INFERENCE_HOST="${INFERENCE_HOST:-127.0.0.1}"
     export INFERENCE_PORT="${INFERENCE_PORT:-${PORT_GEMMA}}"
     export INFERENCE_URL="${INFERENCE_URL:-http://127.0.0.1:${PORT_GEMMA}/v1/chat/completions}"
+    # Keep OCR weights in this process (see Orchestration.main lifespan).
+    export OCR_WARMUP_ON_STARTUP="${OCR_WARMUP_ON_STARTUP:-1}"
+    export OCR_DEVICE="${OCR_DEVICE:-gpu:0}"
+    export PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK="${PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK:-True}"
     nohup "${VENV}/bin/python" -m Orchestration.main >>"${log}" 2>&1 &
     echo $! >"${RUN_DIR}/${name}.pid"
   )
@@ -237,32 +241,19 @@ start_orchestration() {
 }
 
 # ---------------------------------------------------------------------------
-# OCR pre-warm — load Paddle GPU models once (avoids multi-minute first request).
-# Set KUTUPAI_SKIP_OCR_WARMUP=1 to skip.
+# OCR pre-warm — done IN-PROCESS by Orchestration lifespan (see Orchestration/main.py).
+# A separate python process here used to load models then exit — that did NOT help
+# the live Orchestration worker (first /process still paid ~2min _ensure_paddle).
+# Set KUTUPAI_SKIP_OCR_WARMUP=1 or OCR_WARMUP_ON_STARTUP=0 to skip in-process warm.
 # ---------------------------------------------------------------------------
 warmup_ocr() {
   if [[ "${KUTUPAI_SKIP_OCR_WARMUP:-}" == "1" ]]; then
-    echo "[SKIP] OCR warm-up disabled (KUTUPAI_SKIP_OCR_WARMUP=1)"
+    echo "[SKIP] OCR warm-up disabled (KUTUPAI_SKIP_OCR_WARMUP=1 → export OCR_WARMUP_ON_STARTUP=0)"
+    export OCR_WARMUP_ON_STARTUP=0
     return 0
   fi
-  if [[ ! -x "${VENV}/bin/python" ]]; then
-    return 0
-  fi
-  echo "[WARM] Pre-loading OCR engine on ${OCR_DEVICE} (cached models = fast)..."
-  ( cd "${ROOT}" && "${VENV}/bin/python" - <<'PY' ) >>"${LOG_DIR}/ocr_warmup.log" 2>&1 || {
-    echo "[WARN] OCR warm-up failed — see ${LOG_DIR}/ocr_warmup.log"
-    return 0
-  }
-import os
-os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
-from Agents.ocr_agent.engines.paddle_engine import get_shared_engine
-from Agents.ocr_agent.config import OCRConfig
-cfg = OCRConfig.from_env()
-engine = get_shared_engine(cfg)
-engine._ensure_pipeline()
-print("OCR warm-up OK:", engine.last_engine_name, "device=", cfg.device)
-PY
-  echo "[WARM] OCR engine ready ($(tail -1 "${LOG_DIR}/ocr_warmup.log" 2>/dev/null || echo 'see log'))"
+  export OCR_WARMUP_ON_STARTUP="${OCR_WARMUP_ON_STARTUP:-1}"
+  echo "[WARM] OCR models will load inside Orchestration process on startup (not a throwaway subprocess)"
 }
 
 # ---------------------------------------------------------------------------
@@ -380,7 +371,8 @@ wait_for "PaddleOCR-VL :${PORT_PADDLEOCR}/health" check_paddle 600 || ISSUES+=("
 warmup_ocr || true
 
 start_orchestration || ISSUES+=("Orchestration launch failed")
-wait_for "Orchestration :${PORT_ORCHESTRATION}/health" check_orch 60 || ISSUES+=("Orchestration health timeout")
+# In-process OCR warm-up runs before /health answers — allow up to ~5 min.
+wait_for "Orchestration :${PORT_ORCHESTRATION}/health (+ OCR warm-up)" check_orch 300 || ISSUES+=("Orchestration health timeout")
 
 start_application || ISSUES+=("Application launch failed")
 wait_for "Application :${PORT_APPLICATION}" check_app 30 || ISSUES+=("Application health timeout")

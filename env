@@ -1,0 +1,13 @@
+# Gerçek anahtarları yalnız yerel .env dosyasına yazın.
+EVREN_LLM_BASE_URL=https://evren-llmapi.ssyz.org.tr/v1
+EVREN_LLM_API_KEY=sk-evren-team08-e27a7cd4d603bea34c9f87c11c3bb32e
+EVREN_QDRANT_URL=https://evren-vektor.ssyz.org.tr/team08/
+EVREN_QDRANT_API_KEY=qdr-team08-88552529124dba199a4d174e6b8731aa
+EVREN_EMBED_MODEL=bge-m3-embed
+WRITER_INFERENCE_BACKEND=evren
+WRITER_EVREN_MODEL=llm-large
+CLASSIFICATION_INFERENCE_BACKEND=evren
+CLASSIFICATION_EVREN_MODEL=llm-fast
+CLASSIFICATION_USE_FAST_CLASSIFIER=false
+SUMMARY_INFERENCE_BACKEND=evren
+SUMMARY_EVREN_MODEL=llm-large
