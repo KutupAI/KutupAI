@@ -3,6 +3,7 @@ import { ChatMessageModel } from "../models/ChatMessage";
 import { ChatModel, createEmptyChat, deriveChatTitle } from "../models/Chat";
 import { sendChatMessage } from "../services/chatService";
 import { chatHistoryStorage } from "../services/chatHistoryStorage";
+import { conversationHistoryApi } from "../services/conversationHistoryApi";
 import { CHAT_CONFIG } from "../config/chatConfig";
 
 interface PendingFile {
@@ -33,6 +34,23 @@ export const useChatHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Sunucudaki SQLite geçmişini başlangıçta yerel önbellekle birleştirir.
+  // Sunucu erişilemezse localStorage ile çalışmaya devam eder.
+  useEffect(() => {
+    let cancelled = false;
+    void conversationHistoryApi.list().then((serverChats) => {
+      if (cancelled) return;
+      setChats((localChats) => {
+        const localById = new Map(localChats.filter((chat) => chat.id).map((chat) => [chat.id!, chat]));
+        for (const chat of serverChats) {
+          if (chat.id && !localById.has(chat.id)) localById.set(chat.id, chat);
+        }
+        return [...localById.values()].sort((left, right) => right.updatedAt - left.updatedAt);
+      });
+    }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
+
   // İlk yüklemeden sonraki her `chats` değişiminde kalıcı depoya yaz.
   const hydratedRef = useRef(false);
   useEffect(() => {
@@ -60,6 +78,11 @@ export const useChatHistory = () => {
       if (isLoading) return; // Yanıt beklerken sohbet değiştirmeyi engelle (yarım kalmış istek karışmasın).
       setActiveChatId(id);
       setError(null);
+
+      // Başka tarayıcıda veya önceki oturumda oluşturulan sohbeti açar.
+      void conversationHistoryApi.get(id).then((serverChat) => {
+        setChats((prev) => [serverChat, ...prev.filter((chat) => chat.id !== id)]);
+      }).catch(() => undefined);
     },
     [isLoading]
   );
@@ -67,6 +90,7 @@ export const useChatHistory = () => {
   const deleteChat = useCallback(
     (id: string) => {
       setChats((prev) => prev.filter((c) => c.id !== id));
+      void conversationHistoryApi.remove(id).catch(() => undefined);
       if (activeChatId === id) {
         setDraftChat(createEmptyChat());
         setActiveChatId(null);
@@ -78,14 +102,14 @@ export const useChatHistory = () => {
   const sendMessage = useCallback(
     (text: string, pendingFile: PendingFile | null) => {
       const trimmed = text.trim();
-      if (!trimmed || isLoading) return;
+      if ((!trimmed && !pendingFile) || isLoading) return;
 
       setError(null);
 
       const userMessage: ChatMessageModel = {
         id: generateId(),
         role: "user",
-        content: trimmed,
+        content: trimmed || "Belge yüklendi.",
         createdAt: Date.now(),
         status: "sent",
         file: pendingFile
@@ -99,7 +123,7 @@ export const useChatHistory = () => {
       const chatAfterUserMsg: ChatModel = {
         ...currentChat,
         id: localId,
-        title: isFirstMessage ? deriveChatTitle(trimmed) : currentChat.title,
+        title: isFirstMessage ? deriveChatTitle(trimmed || pendingFile?.name || "Yeni sohbet") : currentChat.title,
         messages: [...currentChat.messages, userMessage],
         updatedAt: Date.now(),
       };
@@ -115,14 +139,16 @@ export const useChatHistory = () => {
       setIsLoading(true);
 
       sendChatMessage(
-        currentChat.id,
+        localId,
         trimmed,
         pendingFile
           ? { name: pendingFile.name, type: pendingFile.type, base64: pendingFile.base64 }
           : null,
         (data) => {
           const answer =
-            data.State.writing.answer?.trim() || data.State.summary.rag_summary_text?.trim() || "";
+            data.State.writing.answer?.trim() ||
+            data.State.summary.rag_summary_text?.trim() ||
+            (pendingFile && !trimmed ? "Belge kaydedildi. Bu belge hakkında ne öğrenmek istersiniz?" : "");
           const assistantMessage: ChatMessageModel = {
             id: generateId(),
             role: "assistant",

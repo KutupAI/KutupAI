@@ -362,6 +362,19 @@ class Workflow:
                 self.state_manager.terminate(state, "max_total_retries exceeded")
                 break
 
+            # OCR sonucu aynı dosya için Orchestration cache'inden geldiyse
+            # agent'i tekrar çalıştırma; normal başarı geçişini uygula.
+            if stage == Stage.OCR and state.get("ocr_cache_hit") and state.get("ocr"):
+                logger.info("ocr_cache_hit workflow_id=%s", state.get("workflow_id"))
+                cached_result = AgentResult.ok(stage.value, state["ocr"])
+                self.state_manager.apply_result(state, stage, cached_result, attempt=0)
+                after_decision = self.supervisor.decide_after(stage, cached_result.status, state)
+                if after_decision.action == Action.COMPLETE:
+                    stage = None
+                    break
+                stage = after_decision.next_stage
+                continue
+
             adapter = self.registry.get(stage)
             is_available = adapter is not None and not getattr(adapter, "not_integrated", False)
 

@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 
+from Orchestration.conversation_store import ConversationStore
 from Orchestration.graph.graph_definition import Stage
 from Orchestration.process_service import run_workflow
 
@@ -16,10 +17,61 @@ from Orchestration.tests.mock_agents import (
 )
 
 
-def test_run_workflow_missing_document_path_returns_failure_envelope():
-    envelope = run_workflow(document_id="doc-1", document_path=None)
+def test_run_workflow_missing_document_path_returns_failure_envelope(tmp_path: Path):
+    envelope = run_workflow(
+        document_id="doc-1",
+        document_path=None,
+        conversation_store=ConversationStore(root=tmp_path / "memory", embedder=lambda _: []),
+    )
     assert envelope["Success"] is False
     assert envelope["Data"][0]["document_id"] == "doc-1"
+
+
+def test_first_question_without_file_runs_rag_directly(tmp_path: Path):
+    store = ConversationStore(root=tmp_path / "memory", embedder=lambda _: [])
+    envelope = run_workflow(
+        document_id="chat-question-only",
+        document_path=None,
+        accompanying_text="6698 sayılı Kanunun 13. maddesi neyi düzenler?",
+        agent_overrides={
+            Stage.RAG: MockRagAgent(),
+            Stage.SUMMARY: MockSummaryAgent(),
+            Stage.WRITING: MockWriterAgent(),
+        },
+        conversation_store=store,
+    )
+
+    assert envelope["Success"] is True
+    doc = envelope["Data"][0]
+    assert doc["rag"]["success"] is True
+    assert doc["writing"] == {"success": True, "answer": "Dear Sir, ..."}
+    assert "ocr" not in doc
+    assert store.get_conversation("chat-question-only") is not None
+
+
+def test_file_without_question_skips_rag_and_returns_a_document_summary(tmp_path: Path):
+    source = tmp_path / "upload.pdf"
+    source.write_bytes(b"%PDF-1.4 fake")
+    store = ConversationStore(root=tmp_path / "memory", embedder=lambda _: [])
+    envelope = run_workflow(
+        document_id="chat-upload-only",
+        document_path=str(source),
+        agent_overrides={
+            Stage.OCR: MockOCRAgent(),
+            Stage.CLASSIFICATION: MockClassificationAgent(),
+            Stage.EXTRACTION: MockExtractionAgent(),
+            Stage.VALIDATION: MockValidationAgent(),
+            Stage.ROUTING: MockRoutingAgent(),
+            Stage.WRITING: MockWriterAgent(),
+        },
+        conversation_store=store,
+    )
+
+    assert envelope["Success"] is True
+    doc = envelope["Data"][0]
+    assert doc["writing"] == {"success": True, "answer": "Dear Sir, ..."}
+    assert doc["rag"]["success"] is False
+    assert store.get_conversation("chat-upload-only") is not None
 
 
 def test_run_workflow_missing_file_returns_failure_envelope():

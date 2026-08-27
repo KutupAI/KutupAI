@@ -26,6 +26,7 @@ def build_user_prompt(
     summary: str,
     extracted_data: Dict[str, Any],
     document_text: str = "",
+    conversation_memory: str = "",
 ) -> str:
     """Builds the dynamic (per-request) half of the prompt.
 
@@ -50,5 +51,11 @@ def build_user_prompt(
         )
         if extra:
             parts.append(f"Additional Information:\n{extra}")
+
+    if conversation_memory:
+        parts.append(
+            "Conversation Reference (use only to resolve references such as 'this law'; "
+            "it is not legal evidence):\n" + conversation_memory
+        )
 
     return "\n\n".join(parts)

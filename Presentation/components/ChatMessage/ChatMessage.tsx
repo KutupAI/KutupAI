@@ -10,6 +10,7 @@ interface ChatMessageProps {
   message: ChatMessageModel;
 }
 
+type DetailRow = { label: string; value: string };
 
 const renderContent = (content: string) => {
   const blocks = content.split(/\n{2,}/);
@@ -39,16 +40,35 @@ const renderContent = (content: string) => {
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isUser = message.role === "user";
 
-  // Yalnızca yerel UI durumu — yeni bir istek/mesaj YOK. Aynı pipelineState
-  // içindeki veri (özet metni + kaynaklar) burada, mesajın altında açılır
-  // bir dikdörtgen olarak gösterilir.
+  // Yalnızca yerel UI durumu — yeni bir istek/mesaj yok.
   const [detayOpen, setDetayOpen] = useState(false);
   const [kaynakOpen, setKaynakOpen] = useState(false);
 
-  const summaryText = message.pipelineState?.summary.rag_summary_text?.trim() ?? "";
+  const state = message.pipelineState;
   const sources = message.pipelineState?.rag.rag_data?.results ?? [];
-  const hasDetay = summaryText.length > 0;
   const hasKaynak = sources.length > 0;
+
+  const documentRows: DetailRow[] = [
+    state?.classification.document_type
+      ? { label: "Belge türü", value: state.classification.document_type }
+      : null,
+    state?.ocr.ocr_data
+      ? {
+          label: "İmza",
+          value: state.ocr.ocr_data.vision.signature.detected ? "Tespit edildi" : "Tespit edilmedi",
+        }
+      : null,
+    state?.routing.department ? { label: "Yönlendirme", value: state.routing.department } : null,
+  ].filter((row): row is DetailRow => row !== null);
+
+  const extractionRows: DetailRow[] = [
+    state?.extraction.sender ? { label: "Gönderen", value: state.extraction.sender } : null,
+    state?.extraction.date ? { label: "Tarih", value: state.extraction.date } : null,
+    state?.extraction.address ? { label: "Adres", value: state.extraction.address } : null,
+    state?.extraction.phone ? { label: "Telefon", value: state.extraction.phone } : null,
+    state?.extraction.email ? { label: "E-posta", value: state.extraction.email } : null,
+  ].filter((row): row is DetailRow => row !== null);
+  const hasDetay = documentRows.length > 0 || extractionRows.length > 0 || hasKaynak;
 
   return (
     <div
@@ -92,8 +112,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           )}
         </div>
 
-        {/* --- Detay: Yanıt'ın hemen altında bir düğme; tıklanınca YERİNDE
-            açılan bir dikdörtgen (yeni mesaj/istek yok). --- */}
+        {/* Detay, agent'lerin çıkardığı yapılandırılmış belge bilgisini gösterir. */}
         {!isUser && hasDetay && (
           <>
             {!detayOpen && (
@@ -114,7 +133,33 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   <SummaryIcon size={14} />
                   <span>Detay</span>
                 </div>
-                <div className={styles.expandBoxBody}>{renderContent(summaryText)}</div>
+                {documentRows.length > 0 && (
+                  <section className={styles.detailSection}>
+                    <h4 className={styles.detailTitle}>Belge Özeti</h4>
+                    <dl className={styles.detailRows}>
+                      {documentRows.map((row) => (
+                        <React.Fragment key={row.label}>
+                          <dt>{row.label}</dt>
+                          <dd>{row.value}</dd>
+                        </React.Fragment>
+                      ))}
+                    </dl>
+                  </section>
+                )}
+
+                {extractionRows.length > 0 && (
+                  <section className={styles.detailSection}>
+                    <h4 className={styles.detailTitle}>Çıkarılan Bilgiler</h4>
+                    <dl className={styles.detailRows}>
+                      {extractionRows.map((row) => (
+                        <React.Fragment key={row.label}>
+                          <dt>{row.label}</dt>
+                          <dd>{row.value}</dd>
+                        </React.Fragment>
+                      ))}
+                    </dl>
+                  </section>
+                )}
 
                 {/* --- Kaynak: sadece Detay açıldıktan SONRA, ve sadece
                     istenirse (varsayılan gizli) görünür. --- */}

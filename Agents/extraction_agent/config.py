@@ -47,7 +47,7 @@ def _load_inference_server() -> dict:
     config_path = _project_root() / "Inference" / "configuration" / "inference_config.yaml"
     if not config_path.is_file():
         return {}
-    host, port = "127.0.0.1", 8080
+    host, port = "127.0.0.1", 8082
     try:
         for line in config_path.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
@@ -93,7 +93,7 @@ def _default_openai_base_url() -> str:
     """OpenAI-compatible base (…/v1), not the full chat/completions URL."""
     server = _load_inference_server()
     host = os.getenv("INFERENCE_HOST") or server.get("host") or "127.0.0.1"
-    port = int(os.getenv("INFERENCE_PORT") or server.get("port") or 8080)
+    port = int(os.getenv("INFERENCE_PORT") or server.get("port") or 8082)
     return f"http://{host}:{port}/v1"
 
 

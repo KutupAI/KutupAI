@@ -96,6 +96,7 @@ export interface ValidationSection {
 export interface RagResultItem {
   chunk_id: string | null;
   law_number: string | null;
+  law_name: string | null;
   article_no: string | null;
   /** Ham dosya adı, örn. "1076_Yedek Subaylar Kanunu.pdf" -- görüntüleme
    *  için utils/formatters.ts::formatLawTitle ile temizlenir. */
@@ -171,6 +172,7 @@ const asRagResultItem = (v: unknown): RagResultItem | null => {
   return {
     chunk_id: asStrOrNull(pick("chunk_id")),
     law_number: asStrOrNull(pick("law_number", "kanun_no")),
+    law_name: asStrOrNull(pick("law_name", "kanun_adi")),
     article_no: asStrOrNull(pick("article_no", "madde_no")),
     source_file: asStrOrNull(pick("source_file", "kaynak_dosya")),
     page_start: asNumOrNull(pick("page_start", "kaynak_sayfa")),

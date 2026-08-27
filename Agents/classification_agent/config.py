@@ -44,7 +44,7 @@ def _load_inference_server() -> dict:
     config_path = _project_root() / "Inference" / "configuration" / "inference_config.yaml"
     if not config_path.is_file():
         return {}
-    host, port = "127.0.0.1", 8080
+    host, port = "127.0.0.1", 8082
     try:
         for line in config_path.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
@@ -73,7 +73,7 @@ def _env_str(*names: str, default: str) -> str:
 def _default_inference_url() -> str:
     server = _load_inference_server()
     host = os.getenv("INFERENCE_HOST") or server.get("host") or "127.0.0.1"
-    port = int(os.getenv("INFERENCE_PORT") or server.get("port") or 8080)
+    port = int(os.getenv("INFERENCE_PORT") or server.get("port") or 8082)
     return f"http://{host}:{port}/v1/chat/completions"
 
 
@@ -84,17 +84,24 @@ class ClassificationConfig:
 
     top_k_alternatives: int = 2
 
-    use_fast_classifier: bool = True
+    # EVREN seçildiğinde her belge llm-fast ile sınıflandırılır. Yerel ONNX
+    # ön sınıflandırıcısı yalnızca açıkça etkinleştirildiğinde kullanılır.
+    use_fast_classifier: bool = False
     fast_classifier_escalation_threshold: float = 0.75
 
-    # --- Inference (shared Gemma3 via Inference/llama_server on :8080) ---
+    # --- Inference (shared Gemma3 via Inference/llama_server on :8082) ---
     # Defaults match Inference/models/model_registry.json + inference_config.yaml.
     # Override with INFERENCE_URL / INFERENCE_HOST / INFERENCE_PORT / VLM_*.
-    vlm_base_url: str = "http://127.0.0.1:8080/v1/chat/completions"
+    vlm_base_url: str = "http://127.0.0.1:8082/v1/chat/completions"
     vlm_model_name: str = "gemma3"
     vlm_timeout_s: int = 300
     vlm_temperature: float = 0.0
     vlm_max_tokens: int = 512
+
+    # ``evren`` seçeneği, metin tabanlı sınıflandırmayı bulut API'sine taşır.
+    # Görsel gönderimi kapalı olduğundan mevcut OCR + layout sözleşmesi aynen korunur.
+    inference_backend: str = "evren"
+    evren_model: str = "llm-fast"
 
     # Shared Inference launcher loads gemma3.gguf without --mmproj, so images
     # are ignored unless a multimodal projector is added. Default off.
@@ -135,7 +142,7 @@ class ClassificationConfig:
         return cls(
             needs_review_threshold=float(os.getenv("CLASSIFICATION_NEEDS_REVIEW_THRESHOLD", "0.60")),
             top_k_alternatives=int(os.getenv("CLASSIFICATION_TOP_K_ALTERNATIVES", "2")),
-            use_fast_classifier=_boolean("CLASSIFICATION_USE_FAST_CLASSIFIER", True),
+            use_fast_classifier=_boolean("CLASSIFICATION_USE_FAST_CLASSIFIER", False),
             fast_classifier_escalation_threshold=float(
                 os.getenv("CLASSIFICATION_FAST_ESCALATION_THRESHOLD", "0.75")
             ),
@@ -153,6 +160,8 @@ class ClassificationConfig:
             vlm_max_tokens=int(
                 _env_str("VLM_MAX_TOKENS", "QWEN_VLM_MAX_TOKENS", default="512")
             ),
+            inference_backend=_env_str("CLASSIFICATION_INFERENCE_BACKEND", default="evren").casefold(),
+            evren_model=_env_str("CLASSIFICATION_EVREN_MODEL", default="llm-fast"),
             send_image=_boolean("CLASSIFICATION_SEND_IMAGE", False),
             max_image_dimension=int(os.getenv("CLASSIFICATION_MAX_IMAGE_DIMENSION", "1600")),
             use_layout_when_available=_boolean("CLASSIFICATION_USE_LAYOUT", True),
@@ -167,3 +176,5 @@ class ClassificationConfig:
             raise ValueError("top_k_alternatives must be >= 0.")
         if self.vlm_timeout_s <= 0:
             raise ValueError("vlm_timeout_s must be positive.")
+        if self.inference_backend not in {"local", "evren"}:
+            raise ValueError("inference_backend must be 'local' or 'evren'.")

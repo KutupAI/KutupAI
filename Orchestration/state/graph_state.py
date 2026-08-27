@@ -54,6 +54,11 @@ class GraphState(TypedDict, total=False):
     question: str
     text: str
 
+    # --- Internal conversation memory ------------------------------------------
+    conversation_memory: str
+    conversation_focus_law: str
+    conversation_is_follow_up: bool
+
     # --- Per-stage results (Agents only ever write their own section) ------------
     ocr: Dict[str, Any]
     ocr_result: Dict[str, Any]  # unified { Success, Data } contract (legacy name)

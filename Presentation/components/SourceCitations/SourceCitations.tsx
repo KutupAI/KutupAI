@@ -29,7 +29,9 @@ const SourceCitations: React.FC<SourceCitationsProps> = ({ results, bare = false
   const list = (
     <ol className={styles.list}>
         {results.map((r, i) => {
-          const title = formatLawTitle(r.source_file);
+          const title = formatLawTitle(
+            r.source_file ?? r.law_name ?? (r.law_number ? `${r.law_number} sayılı Kanun` : null)
+          );
           const article = formatArticleLabel(r.article_no);
           const pages = formatPageRange(r.page_start, r.page_end);
           const key = r.chunk_id ?? `${title}-${i}`;

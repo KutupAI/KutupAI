@@ -27,6 +27,7 @@ class WriterContext:
     document_text: str = ""
     extracted_data: Dict[str, Any] = field(default_factory=dict)
     validation: Dict[str, Any] = field(default_factory=dict)
+    conversation_memory: str = ""
 
 
 @dataclass(slots=True)

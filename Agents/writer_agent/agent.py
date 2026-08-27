@@ -2,16 +2,42 @@
 
 from __future__ import annotations
 
+import calendar
+from datetime import date
+import re
 from typing import Any, Dict, Optional
 
 from Agents.base.agent_registry import register
 from Agents.base.base_agent import BaseAgent
+from Inference.client.evren_client import EvrenClient
 from Inference.client.inference_request import InferenceRequest, Message
 from Inference.client.llama_client import LlamaClient
 
-from .config import MAX_OCR_CHARS, MAX_SUMMARY_CHARS, MAX_TOKENS, TEMPERATURE, TOP_P
+from .config import (
+    EVREN_MODEL,
+    INFERENCE_BACKEND,
+    MAX_OCR_CHARS,
+    MAX_SUMMARY_CHARS,
+    MAX_TOKENS,
+    TEMPERATURE,
+    TOP_P,
+)
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 from .schemas import WriterContext, WritingResult
+
+
+_CONTEXT_REJECTION_MARKERS = (
+    "not enough information",
+    "does not include the specific",
+    "cannot provide",
+    "bilgi bulunmamaktadır",
+    "yeterli bilgi bulunmamaktadır",
+)
+_DATE_PATTERN = re.compile(r"\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b")
+_CALENDAR_DIFFERENCE_PATTERN = re.compile(
+    r"\b(?:kaç|kac)\s+yıl[,\s]+ay\s+ve\s+gün.*\b(?:yürürlüğe|yururluge)\b",
+    re.IGNORECASE,
+)
 
 
 @register
@@ -21,8 +47,13 @@ class WriterAgent(BaseAgent):
     name = "writer_agent"
     description = "Generate the final, source-grounded response for the document question."
 
-    def __init__(self, client: Optional[LlamaClient] = None) -> None:
-        self.client = client or LlamaClient()
+    def __init__(self, client: Optional[Any] = None) -> None:
+        if client is not None:
+            self.client = client
+        elif INFERENCE_BACKEND == "evren":
+            self.client = EvrenClient(model=EVREN_MODEL)
+        else:
+            self.client = LlamaClient()
 
     def _extract_ocr_text(self, state: Dict[str, Any]) -> str:
         ocr = state.get("ocr") or {}
@@ -74,12 +105,18 @@ class WriterAgent(BaseAgent):
         extracted_data.update(validation_info)
 
         return WriterContext(
-            question=request.get("question") or state.get("question") or "",
+            question=(
+                request.get("question")
+                or state.get("question")
+                or state.get("writer_instruction")
+                or ""
+            ),
             document_type=classification.get("document_type") or classification.get("doc_type") or "",
             summary=summary_text,
             document_text=self._extract_ocr_text(state),
             extracted_data=extracted_data,
             validation=validation_info,
+            conversation_memory=str(state.get("conversation_memory") or "")[:1800],
         )
 
     def _build_messages(self, context: WriterContext) -> list[Message]:
@@ -93,6 +130,7 @@ class WriterAgent(BaseAgent):
                     summary=context.summary,
                     extracted_data=context.extracted_data,
                     document_text=context.document_text,
+                    conversation_memory=context.conversation_memory,
                 ),
             ),
         ]
@@ -111,6 +149,44 @@ class WriterAgent(BaseAgent):
             return WritingResult(success=False, answer="")
         return WritingResult(success=True, answer=response.text.strip())
 
+    @staticmethod
+    def _rejects_available_context(answer: str) -> bool:
+        normalized = answer.casefold()
+        return any(marker in normalized for marker in _CONTEXT_REJECTION_MARKERS)
+
+    @staticmethod
+    def _calendar_difference(start: date, end: date) -> tuple[int, int, int]:
+        years, months, days = end.year - start.year, end.month - start.month, end.day - start.day
+        if days < 0:
+            months -= 1
+            previous_month = end.month - 1 or 12
+            previous_year = end.year if end.month > 1 else end.year - 1
+            days += calendar.monthrange(previous_year, previous_month)[1]
+        if months < 0:
+            years -= 1
+            months += 12
+        return years, months, days
+
+    @classmethod
+    def _date_difference_answer(cls, context: WriterContext) -> str:
+        """Açık takvim farkı sorularında model yerine doğrulanabilir hesap yapar."""
+        if not _CALENDAR_DIFFERENCE_PATTERN.search(context.question):
+            return ""
+        dates: set[date] = set()
+        for day, month, year in _DATE_PATTERN.findall(f"{context.summary}\n{context.conversation_memory}"):
+            try:
+                dates.add(date(int(year), int(month), int(day)))
+            except ValueError:
+                continue
+        if len(dates) < 2:
+            return ""
+        start, end = min(dates), max(dates)
+        years, months, days = cls._calendar_difference(start, end)
+        return (
+            f"Yürürlük tarihleri {start.strftime('%d/%m/%Y')} ve {end.strftime('%d/%m/%Y')}'dir. "
+            f"Takvim hesabıyla fark {years} yıl {months} ay {days} gündür."
+        )
+
     def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(state, dict):
             raise TypeError("WriterAgent.run expects the Unified State as a dict")
@@ -121,7 +197,16 @@ class WriterAgent(BaseAgent):
             if not context.question:
                 updated["writing"] = {"success": False, "answer": ""}
                 return updated
-            result = self._call_inference(self._build_messages(context))
+            calculated_answer = self._date_difference_answer(context)
+            result = (
+                WritingResult(success=True, answer=calculated_answer)
+                if calculated_answer
+                else self._call_inference(self._build_messages(context))
+            )
+            # Küçük yerel model bazen açık RAG özetini görmezden gelip bağlamın
+            # yetersiz olduğunu söylüyor. Böyle bir durumda kanıtlı özeti koru.
+            if result.success and context.summary and self._rejects_available_context(result.answer):
+                result = WritingResult(success=True, answer=context.summary)
             updated["writing"] = {"success": result.success, "answer": result.answer}
         except Exception:
             updated["writing"] = {"success": False, "answer": ""}

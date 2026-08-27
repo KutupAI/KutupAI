@@ -103,6 +103,7 @@ export const http = {
                     {
                       chunk_id: "demo-chunk-1",
                       law_number: "6098",
+                      law_name: "Türk Borçlar Kanunu",
                       article_no: "1",
                       source_file: "6098_Turk Borclar Kanunu.pdf",
                       page_start: 12,
@@ -114,6 +115,7 @@ export const http = {
                     {
                       chunk_id: "demo-chunk-2",
                       law_number: "6098",
+                      law_name: "Türk Borçlar Kanunu",
                       article_no: "27",
                       source_file: "6098_Turk Borclar Kanunu.pdf",
                       page_start: 15,

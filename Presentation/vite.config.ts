@@ -12,6 +12,12 @@ export default defineConfig({
         target: "http://127.0.0.1:8080",
         changeOrigin: true,
       },
+      // Sidebar kalıcı geçmişini Orchestration'daki SQLite hafızasından okur.
+      "/memory": {
+        target: "http://127.0.0.1:8000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/memory/, ""),
+      },
     },
   },
 });

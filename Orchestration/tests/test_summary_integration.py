@@ -93,3 +93,19 @@ def test_summary_reads_rag_result_section_from_graph_state():
     assert updated["summary"]["success"] is True
     assert "rag_summary_text" in updated["summary"]
     assert "Madde 31" in client.request.messages[0].content
+
+
+def test_empty_rag_results_skip_summary_without_failing_workflow():
+    agent = SummaryAgent()
+    updated = agent.run(
+        {
+            "request": {"question": "test question"},
+            "rag": {
+                "success": True,
+                "rag_data": {"operation": "retrieve", "query": "test question", "results": []},
+            },
+            "summary": {},
+        }
+    )
+
+    assert updated["summary"] == {"success": True, "rag_summary_text": ""}

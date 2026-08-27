@@ -126,6 +126,7 @@ Storage/files/uploads/*
 Storage/files/processed/*
 !Storage/files/uploads/.gitkeep
 !Storage/files/processed/.gitkeep
+Orchestration/runtime/
 
 # ---------------------------------------------------------------------
 # Test / coverage artifacts

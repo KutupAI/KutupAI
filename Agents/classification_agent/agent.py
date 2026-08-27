@@ -159,7 +159,7 @@ class ClassificationAgent(BaseAgent):
             confidence=vlm_output["confidence"],
             alternatives=vlm_output.get("alternatives", []),
             ocr_confidence=ocr_confidence,
-            source="vlm",
+            source="evren" if self.config.inference_backend == "evren" else "vlm",
         )
 
     def _build_result(
