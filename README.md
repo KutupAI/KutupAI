@@ -1,265 +1,211 @@
-# SmartGovernmentAI
+gh
+<div align="center">
 
-> **Güncel çalışma profili:** OCR yerelde çalışır. Classification ve Extraction EVREN `llm-fast`; Summary ve Writer EVREN `llm-large` kullanır. Hukukî RAG ise BGE-M3 + ChromaDB ile yerelde kalır. Ayrıntılı güncel başlatma adımları aşağıdadır.
+<img src="https://capsule-render.vercel.app/api?type=soft&color=0:000000,45:e31e24,100:000000&height=260&section=header&text=KUTUP%20AI&fontSize=78&fontColor=e0e0e0&fontAlignY=38&animation=twinkling&desc=Yapay%20Zeka%20ile%20Gelece%C4%9Fi%20%C5%9Fekillendiriyoruz&descAlignY=58&descSize=20&descColor=e0e0e0" width="100%"/>
 
-منصة **Smart Government Document AI** لتحليل الوثائق والمراسلات الرسمية: رفع وثيقة، معالجتها عبر Multi-Agent workflow، الاستناد إلى المعرفة القانونية (RAG)، ثم إرجاع نتيجة التحليل والتوجيه.
+<br/>
 
-المشروع منظم كـ **Layered Architecture** (مجلد لكل طبقة داخل نفس المستودع)، وليس Microservices منفصلة.
+![Typing SVG](https://readme-typing-svg.demolab.com/?font=JetBrains+Mono&weight=700&size=24&duration=2600&pause=900&color=E31E24&center=true&vCenter=true&width=920&height=55&lines=%3E+ARA%C5%9ETIRIYORUZ.+%C3%9CRET%C4%B0YORUZ.+%C4%B0N%C5%9EA+ED%C4%B0YORUZ.;%3E+YAPAY+ZEKA+%C4%B0LE+SINIRSIZ+YARINLAR;%3E+VER%C4%B0DEN+ANLAMA%2C+MODELDEN+DE%C4%9EERE)
 
-للتفاصيل المعمارية راجع: [`Documentation/architecture.md`](Documentation/architecture.md)
+<br/>
 
----
+<img src="https://img.shields.io/badge/-YAPAY%20ZEKA-000000?style=for-the-badge&labelColor=000000&color=e31e24"/>
+<img src="https://img.shields.io/badge/-CHATBOT-000000?style=for-the-badge&labelColor=000000&color=e0e0e0"/>
+<img src="https://img.shields.io/badge/-VERİ%20BİLİMİ-000000?style=for-the-badge&labelColor=000000&color=ddc0bc"/>
 
-## Project Structure
+<br/><br/>
 
-```
-SmartGovernmentAI/
-├── Presentation/          # واجهة المستخدم (React / TypeScript)
-├── Application/           # واجهة API وخدمات الأعمال (C++)
-├── Orchestration/         # إدارة سير العمل / Supervisor (Python)
-├── Agents/                # وكلاء المعالجة المستقلون (Python)
-├── Inference/             # استدلال النموذج اللغوي (llama.cpp + Python client)
-├── RAG/                   # استرجاع المعرفة القانونية (Python · جاهزة للتشغيل)
-├── Optimization/          # تصنيف أولي سريع (ONNX)
-├── Storage/               # تخزين علائقي + ملفات (Python + SQL)
-│
-├── Config/                # إعدادات مشتركة
-├── Documentation/         # وثائق معمارية ومخططات
-├── Tests/                 # اختبارات حسب الطبقة
-├── Docker/                # Dockerfiles للطبقات
-│
-├── docker-compose.yml
-├── .env.example
-└── README.md
-```
+<p align="center">
+<strong style="color:#e0e0e0">KUTUP AI</strong>, yapay zeka, akıllı chatbot sistemleri ve veri odaklı çözümler geliştiren bir teknoloji ekibidir.<br/>
+Öğreniyor, araştırıyor, geliştiriyor ve üretiyoruz.
+</p>
 
----
+<br/>
 
-## الطبقات — الوظيفة
+<a href="#-ai-alanlarımız"><img src="https://img.shields.io/badge/AI%20ALANLARIMIZ-000000?style=for-the-badge&logo=sparkles&logoColor=e31e24"/></a>
+<a href="#-projelerimiz"><img src="https://img.shields.io/badge/PROJELERİMİZ-000000?style=for-the-badge&logo=rocket&logoColor=e31e24"/></a>
+<a href="#-iletişim"><img src="https://img.shields.io/badge/İLETİŞİM-000000?style=for-the-badge&logo=gmail&logoColor=e31e24"/></a>
 
-| الطبقة | التقنية | المسؤولية |
-|---|---|---|
-| **Presentation** | React / TypeScript | صفحات الرفع/النتائج/لوحة التحكم؛ تستدعي API عبر `services/` فقط |
-| **Application** | C++ (`Controllers` / `Services` / `Routes` / `DTOs`) | استقبال الطلبات، التحقق، التفويض إلى Orchestration، قراءة الحالة |
-| **Orchestration** | Python (`supervisor` / `workflow` / `graph` / `state`) | Supervisor يختار وينسّق الـ Agents ويحدّث حالة المعالجة |
-| **Agents** | Python (`base` + وكلاء مستقلة) | OCR، تصنيف، استخراج، تحقق، RAG، تلخيص، صياغة، توجيه |
-| **Inference** | llama-server + `client/llama_client.py` | توليد/استنتاج للنموذج؛ Agents تستدعي الـ client فقط |
-| **RAG** | LangChain · ChromaDB · BGE-M3 · BM25 | فهرسة واسترجاع النصوص القانونية (Hybrid + PRF + Rerank) |
-| **Optimization** | ONNX Runtime | تصنيف/فلترة سريعة قبل استدعاء LLM كامل |
-| **Storage** | Python repositories + SQL migrations | وثائق، مستخدمون، حالة المعالجة، نتائج الـ Agents، الملفات |
+</div>
 
-طبقات مساعدة:
+<br/>
 
-| المجلد | الوظيفة |
-|---|---|
-| `Config/` | إعدادات عامة وتسجيل وأمثلة أسرار |
-| `Documentation/` | Architecture، API، كتالوج Agents، ADRs |
-| `Tests/` | اختبارات مرآة للطبقات (الأكثر اكتمالاً حالياً: `Tests/RAG`) |
-| `Docker/` | `Dockerfile.*` لكل طبقة رئيسية |
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
 
----
+<br/>
 
-## العلاقة بين الطبقات وتدفق الطلب
+## 🧠 AI Alanlarımız
+<img src="./assets/ai_photo_1.PNG" width="150"/>
+<div align="center">
 
-التدفق المستهدف في المشروع:
+<table>
+<tr>
+<td width="33%" align="center">
+<br/>
+<h2>🤖</h2>
 
-```
-Presentation  --REST-->  Application
-                              │
-                              ├── يكتب/يقرأ عبر Storage (Repositories)
-                              └── يطلق معالجة ──► Orchestration
-                                                      │
-                                                      ▼
-                                                   Agents
-                                                      │
-                              ┌───────────────────────┼───────────────────────┐
-                              ▼                       ▼                       ▼
-                         Inference                  RAG                 Optimization
-                              │
-                              └── النتائج تعود عبر Orchestration state
-                                  ثم تُحفظ في Storage وتُعرض من Presentation
-```
+### YAPAY ZEKA
+<img src="https://capsule-render.vercel.app/api?type=rect&color=e31e24&height=2&width=180"/>
 
-ملاحظات مهمة عن الواقع الحالي:
+**LLM · RAG · Makine Öğrenmesi**
 
-- **Presentation → Application:** عبر REST (`Presentation/services` → Application Controllers).
-- **Application → Storage / Orchestration:** Application تحتوي Controllers/Services؛ Storage منفصل بمستودعات Python وملفات SQL.
-- **Orchestration ↔ Agents:** استدعاء داخل نفس العملية (In-Process)، وليس شبكة.
-- **Agents → Inference / RAG / Optimization:** عبر واجهات client/خدمة مشتركة؛ الـ Agents لا تكتب إلى Storage مباشرة.
-- طبقة **RAG** هي الأكثر اكتمالاً وتشغيلاً حالياً؛ باقي الطبقات موجودة هيكلياً بدرجات نضج متفاوتة.
+Büyük dil modelleri ve akıllı ajan mimarileri üzerine araştırma ve geliştirme yürütüyoruz.
+<br/><br/>
+</td>
+<td width="33%" align="center">
+<br/>
+<h2>💬</h2>
 
----
+### CHATBOT
+<img src="https://capsule-render.vercel.app/api?type=rect&color=e31e24&height=2&width=180"/>
 
-## التقنيات المستخدمة فعلياً
+**Akıllı Konuşma Ajanları**
 
-| المجال | الموجود في المستودع |
-|---|---|
-| Frontend | React، TypeScript (`Presentation/`) |
-| API | C++ Controllers/Services/Routes (`Application/`) |
-| Orchestration | Python · هيكل LangGraph/Supervisor (`Orchestration/`) |
-| Agents | Python · `BaseAgent` + registry |
-| LLM Inference | llama.cpp server launchers + Python HTTP client |
-| RAG | LangChain، ChromaDB، HuggingFace Embeddings (`BAAI/bge-m3`)، BM25، CrossEncoder |
-| Optimization | ONNX Runtime wrappers |
-| Storage | SQL migrations + Python repositories/models |
-| Ops | Dockerfiles، `.env.example`، `Config/*.yaml` |
+Doğal dil anlayan, bağlamı koruyan ve gerçek zamanlı yanıt üreten chatbot sistemleri geliştiriyoruz.
+<br/><br/>
+</td>
+<td width="33%" align="center">
+<br/>
+<h2>📊</h2>
 
----
+### VERİ BİLİMİ
+<img src="https://capsule-render.vercel.app/api?type=rect&color=e31e24&height=2&width=180"/>
 
-## طريقة التشغيل (حسب ما هو واضح حالياً)
+**Veriden Anlamlı Çözümler**
 
-### المتطلبات العامة
-- Python 3.11+ (لـ RAG / Orchestration / Agents / Storage)
-- Node.js (عند تشغيل Presentation بعد إعداد اعتماديات الواجهة)
-- أداة بناء C++ / CMake (لـ Application)
-- اختياري: Docker حسب ملفات `Docker/`
+Ham veriyi işlenebilir, anlamlı ve karar destekleyici içgörülere dönüştürüyoruz.
+<br/><br/>
+</td>
+</tr>
+</table>
 
-### 1) إعداد البيئة
-```bash
-cp .env.example .env
-# راجع أيضاً: Config/secrets.env.example و Config/global_config.yaml
-```
+</div>
 
-> ملاحظة: `docker-compose.yml` الحالي تعليقات فقط؛ لا تعتمد عليه لتشغيل كامل المنظومة بعد.
+<br/>
 
-### 2) RAG (الطبقة الجاهزة للتشغيل محلياً)
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
 
-ضع ملفاتك في:
-- `RAG/documents/laws/`
-- `RAG/documents/regulations/`
-- `RAG/documents/internal_docs/`
-- `RAG/documents/uploads/`
+<br/>
 
-ثم:
-```bash
-pip install -r RAG/requirements.txt
-python -m RAG.ingestion.pipeline --reset
-python Tests/RAG/test_pipeline.py
-python RAG/scripts/smoke_check.py --fast
-```
+## ⚙️ Kullandığımız Teknolojiler
 
-تفاصيل إضافية: [`RAG/README.md`](RAG/README.md)
+<div align="center">
 
-### 3) Inference (اختبار العميل)
-```bash
-# شغّل llama-server أولاً عبر Inference/llama_server/
-python Tests/Inference/test_llama_client.py
-```
+<img src="https://img.shields.io/badge/Gemma-000000?style=for-the-badge&color=e31e24"/>
+<img src="https://img.shields.io/badge/FAISS-000000?style=for-the-badge&color=e0e0e0"/>
+<img src="https://img.shields.io/badge/OCR-000000?style=for-the-badge&color=ddc0bc"/>
+<img src="https://img.shields.io/badge/LangChain-000000?style=for-the-badge&color=e31e24"/>
+<img src="https://img.shields.io/badge/e5--large-000000?style=for-the-badge&color=e0e0e0"/>
+<br/>
+<img src="https://img.shields.io/badge/Python-000000?style=for-the-badge&logo=python&logoColor=e31e24"/>
+<img src="https://img.shields.io/badge/Git%20%26%20GitHub-000000?style=for-the-badge&logo=github&logoColor=e0e0e0"/>
+<img src="https://img.shields.io/badge/Docker-000000?style=for-the-badge&logo=docker&logoColor=e31e24"/>
+<img src="https://img.shields.io/badge/Ollama-000000?style=for-the-badge&color=e0e0e0"/>
+<br/>
+<img src="https://img.shields.io/badge/Hybrid%20RAG-000000?style=for-the-badge&color=e31e24"/>
+<img src="https://img.shields.io/badge/Self--RAG-000000?style=for-the-badge&color=ddc0bc"/>
+<img src="https://img.shields.io/badge/Contextual%20Retrieval%20RAG-000000?style=for-the-badge&color=e31e24"/>
+<img src="https://img.shields.io/badge/NumPy-000000?style=for-the-badge&logo=numpy&logoColor=e0e0e0"/>
 
-### 4) Presentation / Application / Orchestration
-الهيكل والـ entry points موجودة (`Presentation/main.tsx`، `Application/main.cpp`، `Orchestration/main.py`)، لكن التشغيل الكامل end-to-end يعتمد على إكمال الإعداد والربط بين الطبقات. ابدأ من README داخل كل مجلد ومن `Documentation/`.
+</div>
 
----
+<br/>
 
-## للمستجد في المشروع — من أين تبدأ؟
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
 
-1. اقرأ هذا الملف ثم [`Documentation/architecture.md`](Documentation/architecture.md)
-2. افهم التدفق: Presentation → Application → Orchestration → Agents → (Inference / RAG / Optimization) + Storage
-3. جرّب طبقة **RAG** أولاً لأنها الطبقة الأكثر قابلية للتشغيل والاختبار الآن
-4. راجع وكلاء المعالجة تحت `Agents/` وواجهات الاستدعاء في `Inference/client/` و `RAG/client/`
+<br/>
 
----
+## 💻 Terminalden Bir Kesit
 
-## الإعداد الحالي وتشغيل النسخة المتكاملة
+<div align="center">
 
-أنشئ `.env` من `.env.example` وأدخل مفاتيح EVREN محلياً. لا ترفع المفاتيح إلى Git.
+![Terminal](https://readme-typing-svg.demolab.com/?font=JetBrains+Mono&weight=500&size=17&duration=2000&pause=650&color=E0E0E0&background=000000&center=true&vCenter=true&multiline=true&width=820&height=170&lines=%24+kutup-ai+run+--pipeline%3Dhybrid-rag;%E2%9C%93+Gemma+modeli+y%C3%BCkleniyor...;%E2%9C%93+FAISS+indeksi+olu%C5%9Fturuluyor...;%E2%9C%93+LangChain+zinciri+ba%C5%9Flat%C4%B1l%C4%B1yor...;%24+status%3A+ONLINE+%E2%9C%93)
 
-| المكوّن | التنفيذ الحالي |
-|---|---|
-| OCR | PaddleOCR محلي، مع fallback بصري اختياري عند انخفاض الثقة |
-| Classification | EVREN `llm-fast` |
-| Extraction | EVREN `llm-fast` |
-| Validation / Routing | Python وقواعد محلية |
-| RAG | BGE-M3 + ChromaDB + BM25 محلياً |
-| Summary / Writer | EVREN `llm-large` |
+</div>
 
-افتح ثلاث طرفيات من جذر المشروع:
+<br/>
 
-```powershell
-# 1) Orchestration
-python -m Orchestration.main
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
 
-# 2) Application
-cd Application
-$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
-$env:APP_SERVER_PORT="8080"
-.\build-vcpkg\Release\SmartGovernmentAI_Application.exe
+<br/>
 
-# 3) Presentation
-cd ..\Presentation
-npm install
-npm run dev
-```
+## 🚀 Projelerimiz
 
-الواجهة تعمل على `http://localhost:5173`، وApplication على `:8080`، وOrchestration على `:8000`. لا يلزم تشغيل `llama-server` في هذا الإعداد ما دامت متغيرات EVREN مفعّلة.
+<div align="center">
 
----
+<table>
+<tr>
+<td width="33%" align="center">
 
-## روابط سريعة
+### 🔴 Chatbot
+<sub>Yapay zeka destekli akıllı sohbet sistemi</sub>
+<br/><br/>
+<img src="https://img.shields.io/badge/LLM-000000?style=flat-square&color=e31e24"/>
+<img src="https://img.shields.io/badge/RAG-000000?style=flat-square&color=ddc0bc"/>
 
-| الموضوع | المسار |
-|---|---|
-| Architecture | `Documentation/architecture.md` |
-| مخطط الربط | `Documentation/layer_connections_diagram.svg` |
-| كتالوج Agents | `Documentation/agent_catalog.md` |
-| مرجع API | `Documentation/api_reference.md` |
-| دليل RAG | `RAG/README.md` |
+</td>
+<td width="33%" align="center">
 
+### 🔴 AI Research
+<sub>Yerel yapay zeka modelleri ve RAG araştırmaları</sub>
+<br/><br/>
+<img src="https://img.shields.io/badge/Gemma-000000?style=flat-square&color=e31e24"/>
+<img src="https://img.shields.io/badge/Research-000000?style=flat-square&color=ddc0bc"/>
 
-## مسار محلي بديل/تاريخي
+</td>
+<td width="33%" align="center">
 
-> الأوامر التالية محفوظة لتشغيل Gemma وPaddleOCR-VL محلياً عند تعطيل EVREN. ليست مطلوبة في الإعداد الحالي أعلاه، وقد تستخدم منافذ مختلفة بحسب جهاز المطوّر.
+### 🔴 Yapay Zeka Ajanı
+<sub>Karar veren ve görev yürüten otonom AI ajanı</sub>
+<br/><br/>
+<img src="https://img.shields.io/badge/Agent-000000?style=flat-square&color=e31e24"/>
+<img src="https://img.shields.io/badge/LangChain-000000?style=flat-square&color=ddc0bc"/>
 
-PaddleOCR-VL — المنفذ 8111
-cd D:\AI\KutupAI\Inference
-.\start_paddleocr_vl.bat
-انتظر حتى يظهر أن السيرفر جاهز على http://127.0.0.1:8111
+</td>
+</tr>
+</table>
 
-2) Gemma (Inference) — المنفذ 8080
-للتصنيف / الاستخراج / الملخص / الكتابة:
+</div>
 
-cd D:\AI\KutupAI\Inference\llama_server
-.\server_launcher.bat
-انتظر حتى يصبح جاهزاً على :8080
+<br/>
 
-3) Orchestration — المنفذ 8000
-cd D:\AI\KutupAI
-$env:ORCHESTRATION_PORT="8000"
-python -m Orchestration.main
-تحقق: http://127.0.0.1:8000/health
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
 
-4) Application — المنفذ 8082
-(لا تستخدم 8080 — محجوز لـ Gemma)
+<br/>
 
-أولاً إن لزم أعد البناء (أوقف أي SmartGovernmentAI_Application.exe شغّال):
+## 🌌 Vizyonumuz
 
-cd D:\AI\KutupAI\Application
-cmake --build build --config Release --target SmartGovernmentAI_Application
-ثم التشغيل:
+<div align="center">
 
-cd D:\AI\KutupAI\Application
-$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
-$env:APP_TEMP_UPLOAD_ROOT_DIR="D:\AI\KutupAI\Storage\files\temp_processing"
-$env:APP_SERVER_PORT="8082"
-.\build\Release\SmartGovernmentAI_Application.exe
-5) الواجهة — المنفذ 5173
-cd D:\AI\KutupAI\Tests\Presentation
-npm run dev
-افتح: http://localhost:5173
+![Vision](https://readme-typing-svg.demolab.com/?font=JetBrains+Mono&weight=700&size=21&duration=3400&pause=1200&color=E0E0E0&center=true&vCenter=true&width=980&height=50&lines=%22Ara%C5%9Ft%C4%B1r%C4%B1yoruz%2C+%C3%B6%C4%9Freniyoruz%2C+geli%C5%9Ftiriyoruz+ve+yapay+zekan%C4%B1n+s%C4%B1n%C4%B1rlar%C4%B1n%C4%B1+geni%C5%9Fletiyoruz.%22)
 
-ملخص المنافذ
-الخدمة	المنفذ
-PaddleOCR-VL
-8111
-Gemma (llama)
-8080
-Orchestration
-8000
-Application
-8082
-Presentation
-5173
-بعد ما الخمسة يشتغلوا: ارفع الملف من الواجهة + اكتب سؤال → أرسل.
+</div>
 
-cd D:\AI\KutupAI
-python -m RAG.ingestion.pipeline --reset
+<br/>
+
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:000000,50:e31e24,100:000000&height=4&width=100%"/>
+
+<br/>
+
+## 📡 İletişim
+
+<div align="center">
+
+<a href="https://www.linkedin.com/in/kutup-ai-499959419/">
+<img src="https://img.shields.io/badge/LinkedIn-000000?style=for-the-badge&logo=linkedin&logoColor=e31e24"/>
+</a>
+<a href="mailto:kutup.ai.44@gmail.com">
+<img src="https://img.shields.io/badge/Mail-000000?style=for-the-badge&logo=gmail&logoColor=e31e24"/>
+</a>
+
+</div>
+
+<br/>
+
+<div align="center">
+
+![Quote](https://readme-typing-svg.demolab.com/?font=JetBrains+Mono&weight=700&size=23&duration=3000&pause=1000&color=E31E24&center=true&vCenter=true&width=820&height=50&lines=%22HAYAL+ET%2C+PLANLA%2C+KODLA%2C+GER%C3%87EKLE%C5%9ETIR%21%22)
+
+</div>
+
+<img src="https://capsule-render.vercel.app/api?type=soft&color=0:000000,45:e31e24,100:000000&height=150&section=footer" width="100%"/>
