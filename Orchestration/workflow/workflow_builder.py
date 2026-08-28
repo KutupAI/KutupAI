@@ -412,6 +412,15 @@ class Workflow:
                 started = time.monotonic()
                 result = adapter(stage, state, self.config.stage(stage))
                 elapsed = time.monotonic() - started
+                timings = state.setdefault("stage_timings_ms", {})  # type: ignore[literal-required]
+                timings[stage.value] = round(timings.get(stage.value, 0.0) + elapsed * 1000, 1)
+                logger.info(
+                    "stage_done stage=%s attempt=%s status=%s elapsed=%.2fs",
+                    stage.value,
+                    attempt,
+                    getattr(result.status, "value", result.status),
+                    elapsed,
+                )
                 timeout = self.config.stage(stage).timeout_seconds
                 if elapsed > timeout:
                     logger.warning(

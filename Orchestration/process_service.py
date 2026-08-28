@@ -19,6 +19,7 @@ Kept free of FastAPI so unit/integration tests can import without the HTTP stack
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -414,13 +415,20 @@ def run_workflow_from_application(payload: Dict[str, Any], **kwargs: Any) -> Dic
     if not document_id:
         document_id = "unknown"
 
-    return run_workflow(
+    started = time.monotonic()
+    response = run_workflow(
         document_id=document_id,
         document_path=str(document_path) if document_path else None,
         accompanying_text=question or None,
         layer_state=layer_state,
         **kwargs,
     )
+    logger.info(
+        "request_done document_id=%s total=%.2fs",
+        document_id,
+        time.monotonic() - started,
+    )
+    return response
 
 
 # Backward-compatible name used by older imports/docs.

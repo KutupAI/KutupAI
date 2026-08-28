@@ -11,6 +11,11 @@ APP_BIN="${ROOT}/Application/build/SmartGovernmentAI_Application"
 
 # --- Ports (match live stack + LlamaClient / Vite proxy) ---
 PORT_GEMMA=8082
+
+# Agents run on the remote EVREN API (*_INFERENCE_BACKEND=evren in .env), so the
+# local 12B llama-server is dead weight. Set ENABLE_LOCAL_GEMMA=1 to bring it
+# back when switching any agent to the "local" backend.
+ENABLE_LOCAL_GEMMA="${ENABLE_LOCAL_GEMMA:-0}"
 PORT_PADDLEOCR=8111
 PORT_ORCHESTRATION=8000
 PORT_APPLICATION=8080
@@ -157,6 +162,10 @@ start_inference_gemma() {
   local log="${LOG_DIR}/inference_gemma.log"
   local launcher="${ROOT}/Inference/llama_server/server_launcher.sh"
 
+  if [[ "${ENABLE_LOCAL_GEMMA}" != "1" ]]; then
+    echo "[SKIP] Local Gemma disabled (agents use EVREN) — set ENABLE_LOCAL_GEMMA=1 to start it"
+    return 0
+  fi
   if managed_running "${name}"; then
     echo "[OK] Gemma inference already managed (pid $(read_pidfile "${RUN_DIR}/${name}.pid")) on port ${PORT_GEMMA}"
     return 0
@@ -376,7 +385,9 @@ start_inference_gemma || ISSUES+=("Gemma launch failed")
 start_inference_paddleocr || ISSUES+=("PaddleOCR-VL launch failed")
 
 # Inference must be healthy before Orchestration (agents call LLM endpoints).
-wait_for "Gemma :${PORT_GEMMA}/health" check_gemma 600 || ISSUES+=("Gemma health timeout")
+if [[ "${ENABLE_LOCAL_GEMMA}" == "1" ]]; then
+  wait_for "Gemma :${PORT_GEMMA}/health" check_gemma 600 || ISSUES+=("Gemma health timeout")
+fi
 wait_for "PaddleOCR-VL :${PORT_PADDLEOCR}/health" check_paddle 600 || ISSUES+=("PaddleOCR-VL health timeout")
 
 warmup_ocr || true
@@ -399,7 +410,11 @@ echo
 printf "Application:    %s\n" "$(status_label check_app)"
 printf "Orchestration:  %s\n" "$(status_label check_orch)"
 printf "Presentation:   %s\n" "$(status_label check_pres)"
-printf "Inference Gemma:%s (port %s)\n" "$(status_label check_gemma)" "${PORT_GEMMA}"
+if [[ "${ENABLE_LOCAL_GEMMA}" == "1" ]]; then
+  printf "Inference Gemma:%s (port %s)\n" "$(status_label check_gemma)" "${PORT_GEMMA}"
+else
+  printf "Inference Gemma:DISABLED (agents use EVREN)\n"
+fi
 printf "Inference OCR:  %s (port %s)\n" "$(status_label check_paddle)" "${PORT_PADDLEOCR}"
 echo "======================="
 echo
@@ -407,7 +422,9 @@ echo "Accessible URLs:"
 echo "  Presentation:  http://0.0.0.0:${PORT_PRESENTATION}/  (also http://127.0.0.1:${PORT_PRESENTATION}/)"
 echo "  Application:   http://127.0.0.1:${PORT_APPLICATION}/  (API via Presentation /api → this)"
 echo "  Orchestration: http://127.0.0.1:${PORT_ORCHESTRATION}/health"
-echo "  Gemma LLM:     http://127.0.0.1:${PORT_GEMMA}/health   (internal)"
+if [[ "${ENABLE_LOCAL_GEMMA}" == "1" ]]; then
+  echo "  Gemma LLM:     http://127.0.0.1:${PORT_GEMMA}/health   (internal)"
+fi
 echo "  PaddleOCR-VL:  http://127.0.0.1:${PORT_PADDLEOCR}/health  (internal)"
 echo
 echo "Logs: ${LOG_DIR}/"

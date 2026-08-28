@@ -11,6 +11,9 @@ PORT_ORCHESTRATION=8000
 PORT_APPLICATION=8080
 PORT_PRESENTATION=5173
 
+# Mirrors start_all.sh: local Gemma is off unless an agent needs the "local" backend.
+ENABLE_LOCAL_GEMMA="${ENABLE_LOCAL_GEMMA:-0}"
+
 port_listening() {
   local port="$1"
   if command -v ss >/dev/null 2>&1; then
@@ -80,7 +83,9 @@ print_row "-------" "-----" "---" "----" "------"
 # --- Gemma ---
 code="$(http_code "http://127.0.0.1:${PORT_GEMMA}/health")"
 pid_d="$(resolve_pid_display "$(read_pidfile "${RUN_DIR}/inference_gemma.pid")" "${PORT_GEMMA}")"
-if port_listening "${PORT_GEMMA}" && [[ "${code}" =~ ^[123] ]]; then
+if [[ "${ENABLE_LOCAL_GEMMA}" != "1" ]] && ! port_listening "${PORT_GEMMA}"; then
+  print_row "Gemma" "DISABLED" "-" "${PORT_GEMMA}" "n/a (agents use EVREN)"
+elif port_listening "${PORT_GEMMA}" && [[ "${code}" =~ ^[123] ]]; then
   print_row "Gemma" "RUNNING" "${pid_d}" "${PORT_GEMMA}" "UP (HTTP ${code})"
 elif port_listening "${PORT_GEMMA}"; then
   print_row "Gemma" "LISTEN" "${pid_d}" "${PORT_GEMMA}" "DOWN (HTTP ${code})"

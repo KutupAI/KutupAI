@@ -42,6 +42,29 @@ logging.basicConfig(
     level=os.getenv("ORCHESTRATION_LOG_LEVEL", "INFO"),
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
+
+
+def _configure_orchestration_logging() -> None:
+    """Own the "Orchestration" logger instead of relying on the root config.
+
+    PaddleX reconfigures the root logger while loading OCR weights, which
+    silences every Orchestration.* record from that point on. A dedicated
+    non-propagating handler survives that. Idempotent — safe to call again.
+    """
+    level = os.getenv("ORCHESTRATION_LOG_LEVEL", "INFO").upper()
+    orchestration_logger = logging.getLogger("Orchestration")
+    orchestration_logger.setLevel(level)
+    orchestration_logger.propagate = False
+    if not any(getattr(h, "_kutupai", False) for h in orchestration_logger.handlers):
+        handler = logging.StreamHandler()
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s")
+        )
+        handler._kutupai = True  # type: ignore[attr-defined]
+        orchestration_logger.addHandler(handler)
+
+
+_configure_orchestration_logging()
 logger = logging.getLogger("Orchestration")
 
 _OCR_READY = False
@@ -75,6 +98,7 @@ def _warmup_ocr_in_process() -> None:
         cfg = OCRConfig.from_env()
         engine = get_shared_engine(cfg)
         engine._ensure_paddle()
+        _configure_orchestration_logging()  # PaddleX just reset the root logger.
         elapsed = time.perf_counter() - started
         _OCR_READY = True
         logger.info(
@@ -91,9 +115,47 @@ def _warmup_ocr_in_process() -> None:
         )
 
 
+def _warmup_rag_in_process() -> None:
+    """Load the RAG embedding + reranker weights before serving traffic.
+
+    Both are lru_cache singletons instantiated on first use, so without this
+    the first /process request pays ~50s of model loading inside the RAG stage.
+    """
+    if not _env_flag("RAG_WARMUP_ON_STARTUP", True):
+        logger.info("RAG warm-up skipped (RAG_WARMUP_ON_STARTUP=0)")
+        return
+
+    started = time.perf_counter()
+    logger.info("RAG warm-up starting in-process…")
+    try:
+        from RAG.embeddings.embedding_model import embed_text
+
+        embed_text("ısınma sorgusu")
+        logger.info("RAG warm-up: embedding model ready (%.1fs)", time.perf_counter() - started)
+    except Exception:
+        logger.exception("RAG warm-up: embedding model failed — will load lazily")
+
+    try:
+        from RAG.configuration.rag_config_loader import reranker_config
+        from RAG.retriever.reranker import _model
+
+        if reranker_config.enabled:
+            _model().predict([("ısınma sorgusu", "ısınma metni")])
+        else:
+            logger.info("RAG warm-up: reranker disabled in config")
+    except Exception:
+        logger.exception("RAG warm-up: reranker failed — will load lazily")
+
+    logger.info(
+        "RAG warm-up done in %.1fs — first request skips model loading",
+        time.perf_counter() - started,
+    )
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _warmup_ocr_in_process()
+    _warmup_rag_in_process()
     yield
 
 
@@ -145,11 +207,14 @@ def main() -> None:
 
     host = os.getenv("ORCHESTRATION_HOST", "127.0.0.1")
     port = int(os.getenv("ORCHESTRATION_PORT", "8000"))
+    # log_config=None keeps the basicConfig above; uvicorn's default dictConfig
+    # sets disable_existing_loggers and silences every Orchestration.* logger.
     uvicorn.run(
         "Orchestration.main:app",
         host=host,
         port=port,
         reload=False,
+        log_config=None,
     )
 
 

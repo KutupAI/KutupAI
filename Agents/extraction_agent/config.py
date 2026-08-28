@@ -149,7 +149,7 @@ class LLMConfig:
     """
 
     enabled: bool = _env_bool("EXTRACTION_LLM_ENABLED", True)
-    inference_backend: str = os.getenv("EXTRACTION_INFERENCE_BACKEND", "local")
+    inference_backend: str = os.getenv("EXTRACTION_INFERENCE_BACKEND", "evren")
     base_url: str = field(default_factory=_default_openai_base_url)
     api_key_env: str = "EXTRACTION_LLM_API_KEY"
     model: str = field(default_factory=_default_model_name)
@@ -189,7 +189,7 @@ class ExtractionAgentConfig:
         """Build config with Inference defaults, then EXTRACTION_* overrides."""
         inference_backend = _env_str(
             "EXTRACTION_INFERENCE_BACKEND",
-            default="local",
+            default="evren",
         ).lower()
         evren_base_url = os.getenv("EVREN_LLM_BASE_URL", "").strip().rstrip("/")
         using_evren = inference_backend == "evren"
@@ -213,7 +213,11 @@ class ExtractionAgentConfig:
         )
         if vision_url.rstrip("/").endswith("/chat/completions"):
             vision_url = vision_url.rstrip("/").removesuffix("/chat/completions")
-        vision_model = _env_str("EXTRACTION_VLM_MODEL", default=default_model)
+        # EVREN serves vision under a dedicated "vlm" model; llm-fast is text-only.
+        vision_model = _env_str(
+            "EXTRACTION_VLM_MODEL",
+            default="vlm" if using_evren else default_model,
+        )
 
         return cls(
             confidence_threshold=_env_float("EXTRACTION_CONF_THRESHOLD", 0.55),
@@ -240,6 +244,10 @@ class ExtractionAgentConfig:
             vision=VisionConfig(
                 enabled=_env_bool("EXTRACTION_VLM_ENABLED", True),
                 base_url=vision_url or default_url,
+                api_key_env=_env_str(
+                    "EXTRACTION_VLM_API_KEY_ENV",
+                    default="EVREN_LLM_API_KEY" if using_evren else "EXTRACTION_VLM_API_KEY",
+                ),
                 model=vision_model,
                 timeout_s=_env_int("EXTRACTION_VLM_TIMEOUT", default_timeout),
             ),

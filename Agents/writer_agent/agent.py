@@ -38,6 +38,11 @@ _CALENDAR_DIFFERENCE_PATTERN = re.compile(
     r"\b(?:kaç|kac)\s+yıl[,\s]+ay\s+ve\s+gün.*\b(?:yürürlüğe|yururluge)\b",
     re.IGNORECASE,
 )
+_BOLD_PATTERN = re.compile(r"\*{2,3}(.+?)\*{2,3}", re.DOTALL)
+_HEADING_PATTERN = re.compile(r"^\s{0,3}#{1,6}\s*", re.MULTILINE)
+_LINE_BULLET_PATTERN = re.compile(r"^[ \t]*[*•]+[ \t]+", re.MULTILINE)
+_INLINE_BULLET_PATTERN = re.compile(r"[ \t]*[*•]+[ \t]+")
+_BLANK_LINES_PATTERN = re.compile(r"\n{3,}")
 
 
 @register
@@ -150,6 +155,33 @@ class WriterAgent(BaseAgent):
         return WritingResult(success=True, answer=response.text.strip())
 
     @staticmethod
+    def _normalize_answer(answer: str) -> str:
+        """Markdown artıklarını temizler ve satır içi maddeleri listeye çevirir."""
+        text = answer.replace("\r\n", "\n").replace("`", "")
+        text = _BOLD_PATTERN.sub(r"\1", text)
+        text = _HEADING_PATTERN.sub("", text)
+        text = _LINE_BULLET_PATTERN.sub("- ", text)
+        text = _INLINE_BULLET_PATTERN.sub("\n- ", text)
+        cleaned: list[str] = []
+        for line in text.split("\n"):
+            stripped = line.strip()
+            if stripped in ("-", "*"):
+                continue
+            if stripped.startswith("- "):
+                item = stripped[2:].strip().rstrip(",;")
+                if not item:
+                    continue
+                # Maddeler arasında boş satır bırakılmaz.
+                if cleaned and not cleaned[-1]:
+                    cleaned.pop()
+                cleaned.append(f"- {item}")
+            else:
+                cleaned.append(stripped)
+        text = "\n".join(cleaned)
+        text = _BLANK_LINES_PATTERN.sub("\n\n", text)
+        return text.strip()
+
+    @staticmethod
     def _rejects_available_context(answer: str) -> bool:
         normalized = answer.casefold()
         return any(marker in normalized for marker in _CONTEXT_REJECTION_MARKERS)
@@ -207,7 +239,10 @@ class WriterAgent(BaseAgent):
             # yetersiz olduğunu söylüyor. Böyle bir durumda kanıtlı özeti koru.
             if result.success and context.summary and self._rejects_available_context(result.answer):
                 result = WritingResult(success=True, answer=context.summary)
-            updated["writing"] = {"success": result.success, "answer": result.answer}
+            updated["writing"] = {
+                "success": result.success,
+                "answer": self._normalize_answer(result.answer),
+            }
         except Exception:
             updated["writing"] = {"success": False, "answer": ""}
         return updated

@@ -34,6 +34,12 @@ export const useChatHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // `isLoading` bir sonraki render'a kadar false kalır, bu yüzden aynı render
+  // turunda gelen iki gönderim de geçebiliyor: her biri kendi `local-<id>`
+  // sohbetini açıyor ve backend aynı belgeyi iki kez OCR'dan geçiriyor.
+  // Bu ref senkron kapanır, o pencereyi kapatır.
+  const inFlightRef = useRef(false);
+
   // Sunucudaki SQLite geçmişini başlangıçta yerel önbellekle birleştirir.
   // Sunucu erişilemezse localStorage ile çalışmaya devam eder.
   useEffect(() => {
@@ -102,7 +108,8 @@ export const useChatHistory = () => {
   const sendMessage = useCallback(
     (text: string, pendingFile: PendingFile | null) => {
       const trimmed = text.trim();
-      if ((!trimmed && !pendingFile) || isLoading) return;
+      if ((!trimmed && !pendingFile) || isLoading || inFlightRef.current) return;
+      inFlightRef.current = true;
 
       setError(null);
 
@@ -138,45 +145,55 @@ export const useChatHistory = () => {
       setActiveChatId(localId);
       setIsLoading(true);
 
-      sendChatMessage(
-        localId,
-        trimmed,
-        pendingFile
-          ? { name: pendingFile.name, type: pendingFile.type, base64: pendingFile.base64 }
-          : null,
-        (data) => {
-          const answer =
-            data.State.writing.answer?.trim() ||
-            data.State.summary.rag_summary_text?.trim() ||
-            (pendingFile && !trimmed ? "Belge kaydedildi. Bu belge hakkında ne öğrenmek istersiniz?" : "");
-          const assistantMessage: ChatMessageModel = {
-            id: generateId(),
-            role: "assistant",
-            content: answer,
-            createdAt: Date.now(),
-            status: "sent",
-            pipelineState: data.State,
-          };
-          const finalId = data.ChatId ?? localId;
-
-          setChats((prev) => {
-            const withoutOld = prev.filter((c) => c.id !== localId && c.id !== finalId);
-            const updated: ChatModel = {
-              ...chatAfterUserMsg,
-              id: finalId,
-              messages: [...chatAfterUserMsg.messages, assistantMessage],
-              updatedAt: Date.now(),
+      try {
+        sendChatMessage(
+          localId,
+          trimmed,
+          pendingFile
+            ? { name: pendingFile.name, type: pendingFile.type, base64: pendingFile.base64 }
+            : null,
+          (data) => {
+            const answer =
+              data.State.writing.answer?.trim() ||
+              data.State.summary.rag_summary_text?.trim() ||
+              (pendingFile && !trimmed ? "Belge kaydedildi. Bu belge hakkında ne öğrenmek istersiniz?" : "");
+            const assistantMessage: ChatMessageModel = {
+              id: generateId(),
+              role: "assistant",
+              content: answer,
+              createdAt: Date.now(),
+              status: "sent",
+              pipelineState: data.State,
             };
-            return [updated, ...withoutOld];
-          });
-          setActiveChatId(finalId);
-          setIsLoading(false);
-        },
-        (res) => {
-          setError(res.Message || CHAT_CONFIG.ui.genericErrorLabel);
-          setIsLoading(false);
-        }
-      );
+            const finalId = data.ChatId ?? localId;
+
+            setChats((prev) => {
+              const withoutOld = prev.filter((c) => c.id !== localId && c.id !== finalId);
+              const updated: ChatModel = {
+                ...chatAfterUserMsg,
+                id: finalId,
+                messages: [...chatAfterUserMsg.messages, assistantMessage],
+                updatedAt: Date.now(),
+              };
+              return [updated, ...withoutOld];
+            });
+            setActiveChatId(finalId);
+            inFlightRef.current = false;
+            setIsLoading(false);
+          },
+          (res) => {
+            setError(res.Message || CHAT_CONFIG.ui.genericErrorLabel);
+            inFlightRef.current = false;
+            setIsLoading(false);
+          }
+        );
+      } catch (err) {
+        // Senkron bir hata iki callback'i de atlar; latch açık kalırsa
+        // kullanıcı bir daha hiç mesaj gönderemez.
+        inFlightRef.current = false;
+        setIsLoading(false);
+        setError((err as Error)?.message || CHAT_CONFIG.ui.genericErrorLabel);
+      }
     },
     [currentChat, isLoading]
   );
