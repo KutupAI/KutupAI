@@ -139,6 +139,10 @@
 
 .history {
   flex: 1;
+  /* min-height: auto (varsayılan) esnek öğenin içeriğinden daha küçük
+     olmasını engeller; o durumda liste `overflow: hidden` olan sidebar'ın
+     dışına taşar ve kaydırma çubuğu yerine kırpılma oluşur. */
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -157,6 +161,7 @@
 }
 
 .group {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
