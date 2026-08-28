@@ -1,5 +1,9 @@
 # summary_agent
 
+## Güncel proje ayarı
+
+SummaryAgent, RAG kanıtlarını özetlemek için varsayılan olarak EVREN `llm-large` kullanır: `SUMMARY_INFERENCE_BACKEND=evren`, `SUMMARY_EVREN_MODEL=llm-large`. `SummaryClient` hem EVREN hem yerel istemciyi aynı özet sözleşmesiyle çağırdığından Orchestration ve Writer tarafında ek değişiklik gerekmez.
+
 ## Purpose
 
 Pipeline stage between RAG and writer: grounded summary notes for the final draft.
@@ -8,7 +12,7 @@ Pipeline stage between RAG and writer: grounded summary notes for the final draf
 … → RAG → SummaryAgent → Routing → WriterAgent → …
 ```
 
-No model loading — Inference only via `SummaryClient` → `LlamaClient`.
+No model loading — inference only via `SummaryClient` → selected provider client (`EvrenClient` or `LlamaClient`).
 
 ## Orchestration contract
 
@@ -47,7 +51,7 @@ Downstream: `writer_agent` / `routing_agent` read `summary.rag_summary_text`.
 | File | Role |
 |---|---|
 | `agent.py` | `SummaryAgent` — validate → prompt → Inference → `state["summary"]` |
-| `client.py` | `SummaryClient` over `LlamaClient` |
+| `client.py` | `SummaryClient` over the selected EVREN or local client |
 | `prompts.py` | Deterministic prompt |
 | `schemas.py` | RAG in / summary out models |
 | `config.py` | Env + model registry |
@@ -68,7 +72,7 @@ summary:
 
 ## Summary Agent
 ```bash
-# from repo root — live llama-server (Gemma)
+# from repo root — active backend (EVREN by default; local llama-server when configured)
 python Tests/Agents/manual_test.py
 
 # mocked Integration with Orchestration

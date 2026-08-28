@@ -1,5 +1,7 @@
 # SmartGovernmentAI
 
+> **Güncel çalışma profili:** OCR yerelde çalışır. Classification ve Extraction EVREN `llm-fast`; Summary ve Writer EVREN `llm-large` kullanır. Hukukî RAG ise BGE-M3 + ChromaDB ile yerelde kalır. Ayrıntılı güncel başlatma adımları aşağıdadır.
+
 منصة **Smart Government Document AI** لتحليل الوثائق والمراسلات الرسمية: رفع وثيقة، معالجتها عبر Multi-Agent workflow، الاستناد إلى المعرفة القانونية (RAG)، ثم إرجاع نتيجة التحليل والتوجيه.
 
 المشروع منظم كـ **Layered Architecture** (مجلد لكل طبقة داخل نفس المستودع)، وليس Microservices منفصلة.
@@ -158,6 +160,41 @@ python Tests/Inference/test_llama_client.py
 
 ---
 
+## الإعداد الحالي وتشغيل النسخة المتكاملة
+
+أنشئ `.env` من `.env.example` وأدخل مفاتيح EVREN محلياً. لا ترفع المفاتيح إلى Git.
+
+| المكوّن | التنفيذ الحالي |
+|---|---|
+| OCR | PaddleOCR محلي، مع fallback بصري اختياري عند انخفاض الثقة |
+| Classification | EVREN `llm-fast` |
+| Extraction | EVREN `llm-fast` |
+| Validation / Routing | Python وقواعد محلية |
+| RAG | BGE-M3 + ChromaDB + BM25 محلياً |
+| Summary / Writer | EVREN `llm-large` |
+
+افتح ثلاث طرفيات من جذر المشروع:
+
+```powershell
+# 1) Orchestration
+python -m Orchestration.main
+
+# 2) Application
+cd Application
+$env:ORCHESTRATION_BASE_URL="http://127.0.0.1:8000"
+$env:APP_SERVER_PORT="8080"
+.\build-vcpkg\Release\SmartGovernmentAI_Application.exe
+
+# 3) Presentation
+cd ..\Presentation
+npm install
+npm run dev
+```
+
+الواجهة تعمل على `http://localhost:5173`، وApplication على `:8080`، وOrchestration على `:8000`. لا يلزم تشغيل `llama-server` في هذا الإعداد ما دامت متغيرات EVREN مفعّلة.
+
+---
+
 ## روابط سريعة
 
 | الموضوع | المسار |
@@ -168,6 +205,10 @@ python Tests/Inference/test_llama_client.py
 | مرجع API | `Documentation/api_reference.md` |
 | دليل RAG | `RAG/README.md` |
 
+
+## مسار محلي بديل/تاريخي
+
+> الأوامر التالية محفوظة لتشغيل Gemma وPaddleOCR-VL محلياً عند تعطيل EVREN. ليست مطلوبة في الإعداد الحالي أعلاه، وقد تستخدم منافذ مختلفة بحسب جهاز المطوّر.
 
 PaddleOCR-VL — المنفذ 8111
 cd D:\AI\KutupAI\Inference

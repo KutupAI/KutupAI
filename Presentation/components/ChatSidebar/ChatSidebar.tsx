@@ -14,6 +14,9 @@ interface ChatSidebarProps {
   onNewChat: () => void;
   onDeleteChat: (id: string) => void;
   onClose: () => void;
+  isAdmin: boolean;
+  onAdminAccess: () => void;
+  onAdminLogout: () => void;
 }
 
 /**
@@ -30,6 +33,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onNewChat,
   onDeleteChat,
   onClose,
+  isAdmin,
+  onAdminAccess,
+  onAdminLogout,
 }) => {
   const [query, setQuery] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -136,6 +142,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             ))
           )}
         </nav>
+
+        <div className={styles.adminAccess}>
+          {isAdmin ? (
+            <button type="button" className={styles.adminButton} onClick={onAdminLogout}>
+              <span className={styles.adminBadge} aria-hidden="true">✓</span>
+              <span>
+                <strong>Yönetici modu</strong>
+                <small>Çıkış yap</small>
+              </span>
+            </button>
+          ) : (
+            <button type="button" className={styles.adminButton} onClick={onAdminAccess}>
+              <span className={styles.adminBadge} aria-hidden="true">⌑</span>
+              <span>
+                <strong>Yönetici Girişi</strong>
+                <small>Özet ve inceleme alanı</small>
+              </span>
+            </button>
+          )}
+        </div>
       </aside>
     </>
   );

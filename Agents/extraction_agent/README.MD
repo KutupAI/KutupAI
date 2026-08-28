@@ -1,5 +1,11 @@
 # Information Extraction Agent (Bilgi Cikarma Ajani)
 
+## Güncel proje ayarı
+
+Çalışan entegrasyonda metinden alan çıkarma EVREN `llm-fast` ile yapılır. Ayarlar `.env` içindeki `EXTRACTION_INFERENCE_BACKEND=evren` ve `EXTRACTION_LLM_MODEL=llm-fast` değişkenleridir. Agent yine aynı `state["extraction"]` sözleşmesini üretir; yalnızca çağrının gittiği model sağlayıcısı değişmiştir.
+
+Bu dosyadaki yerel Gemma/8092 adımları geçmiş veya alternatif yerel çalışma içindir ve silinmemiştir. Yerel moda dönmek için backend değeri `local` yapılır.
+
 Bir belgenin OCR metninden (ve varsa gorselinden) yapilandirilmis bilgi
 cikaran Agent -- tarih, evrak numarasi, telefon, email gibi kesin
 alanlari kural-tabanli (regex) yakalar; kisi adi, kurum, talep turu,

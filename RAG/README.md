@@ -236,6 +236,10 @@ result = handle_rag_request({
 
 Application/Orchestration katmanı bu kanıtları kendi LLM'ine göndererek nihai cevabı üretebilir. Böylece retrieval, model ve kullanıcı arayüzü birbirinden bağımsız kalır.
 
+### Güncel çalışma sınırı
+
+Bu proje profilinde RAG yereldir: BGE-M3 embedding, ChromaDB, BM25 ve reranker aynı çalışma alanındaki indeksi kullanır. EVREN yalnız diğer Agent'ların LLM çağrılarında kullanılır; RAG corpus'u veya vektörleri EVREN'e yazılmaz. RAG yalnız `rag` alanını doldurur; nihai yanıt Summary/Writer katmanlarının sorumluluğundadır.
+
 ## Yapılandırma ve klasör haritası
 
 Tüm ayarlar `configuration/rag_config.yaml` içindedir. `documents`, `chunking`, `embedding`, `retrieval`, `reranker`, `query_transform`, `graph_rag`, `agent` ve `observability` bölümleri kod değiştirmeden davranışı yönetir.

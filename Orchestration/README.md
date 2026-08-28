@@ -7,6 +7,8 @@
 
 > **حالة تكامل الـ Agents اليوم:** كل المراحل مفعّلة في `config.yaml`: OCR → Classification → Extraction → Validation → RAG → Summary → Routing → Writing.
 
+> **الإعداد الحالي للنماذج:** OCR محلي. Classification وExtraction تستخدمان EVREN `llm-fast`؛ Summary وWriting تستخدمان EVREN `llm-large`. RAG محلي. الاختيار يأتي من `.env` ولا يغير عقد `GraphState`.
+
 ---
 
 ## التدفق الكامل
@@ -37,6 +39,16 @@ OCR → Classification → Extraction → Validation → RAG → Summary → Rou
 | `run_workflow(...)` | المسار الوحيد: تشغيل Graph المراحل (OCR → … → Writing). كل المراحل مفعّلة افتراضيًا في `config.yaml`. |
 
 `POST /process` في `main.py` يستدعي `run_workflow` فقط (لا مسار OCR منفصل، ولا `/process/full`).
+
+كما يوفّر `main.py` واجهة ذاكرة المحادثة للـPresentation:
+
+| Endpoint | الوظيفة |
+|---|---|
+| `GET /conversations` | قائمة المحادثات المحفوظة |
+| `GET /conversations/{chat_id}` | رسائل وحالة محادثة واحدة |
+| `DELETE /conversations/{chat_id}` | حذف المحادثة وملفها المحفوظ |
+
+الذاكرة محفوظة محلياً في `Orchestration/runtime/conversations/conversation_memory.sqlite3`. تحفظ إجابات المحادثة للمتابعة الدلالية، وتحتفظ بكاش OCR بحسب بصمة الملف لتجنب قراءة الملف نفسه من جديد. لا تستبدل الذاكرة أدلة RAG.
 
 `run_full_workflow` يبقى اسماً مرادفاً للتوافق مع الاستيرادات القديمة.
 

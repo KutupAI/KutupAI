@@ -130,6 +130,19 @@
   border-top-color: var(--kutup-amber);
 }
 
+.adminTrigger {
+  color: var(--kutup-amber);
+  border-color: var(--kutup-amber-dim);
+}
+
+.summaryText {
+  margin: 0 0 10px;
+  color: var(--kutup-gray);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
 .expandBoxSources {
   border-top-color: var(--kutup-starlight);
 }
@@ -242,6 +255,57 @@
 
 .detailSection:last-of-type {
   margin-bottom: 0;
+}
+
+.processSection {
+  margin-top: 12px;
+  border: 1px solid var(--kutup-border);
+  border-left: 2px solid var(--kutup-starlight);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.processList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.processList li {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--kutup-white);
+  font-size: 0.8rem;
+}
+
+.processList small {
+  color: var(--kutup-gray);
+  font-size: 0.68rem;
+}
+
+.processMark {
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.processDone .processMark {
+  background: rgba(94, 190, 120, 0.17);
+  color: #8fe0a4;
+}
+
+.processFailed .processMark {
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
 }
 
 .detailTitle {

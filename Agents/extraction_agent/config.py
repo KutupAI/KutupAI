@@ -142,13 +142,14 @@ class NERConfig:
 
 @dataclass
 class LLMConfig:
-    """LLM semantic extraction via Inference llama-server (Gemma 3).
+    """LLM semantic extraction via local server or EVREN.
 
     Defaults match Inference/models/model_registry.json + inference_config.yaml.
     Override with EXTRACTION_LLM_* or shared INFERENCE_* env vars.
     """
 
     enabled: bool = _env_bool("EXTRACTION_LLM_ENABLED", True)
+    inference_backend: str = os.getenv("EXTRACTION_INFERENCE_BACKEND", "local")
     base_url: str = field(default_factory=_default_openai_base_url)
     api_key_env: str = "EXTRACTION_LLM_API_KEY"
     model: str = field(default_factory=_default_model_name)
@@ -186,10 +187,16 @@ class ExtractionAgentConfig:
     @classmethod
     def from_env(cls) -> "ExtractionAgentConfig":
         """Build config with Inference defaults, then EXTRACTION_* overrides."""
+        inference_backend = _env_str(
+            "EXTRACTION_INFERENCE_BACKEND",
+            default="local",
+        ).lower()
+        evren_base_url = os.getenv("EVREN_LLM_BASE_URL", "").strip().rstrip("/")
+        using_evren = inference_backend == "evren"
         default_url = _env_str(
             "EXTRACTION_LLM_BASE_URL",
             "INFERENCE_OPENAI_BASE_URL",
-            default=_default_openai_base_url(),
+            default=evren_base_url if using_evren and evren_base_url else _default_openai_base_url(),
         )
         # Allow full chat URL; OpenAI client wants …/v1
         if default_url.rstrip("/").endswith("/chat/completions"):
@@ -197,7 +204,7 @@ class ExtractionAgentConfig:
         default_model = _env_str(
             "EXTRACTION_LLM_MODEL",
             "INFERENCE_MODEL_NAME",
-            default=_default_model_name(),
+            default="llm-fast" if using_evren else _default_model_name(),
         )
         default_timeout = _env_int("EXTRACTION_LLM_TIMEOUT", _env_int("INFERENCE_TIMEOUT", 300))
         vision_url = _env_str(
@@ -214,7 +221,12 @@ class ExtractionAgentConfig:
             ner=NERConfig(),
             llm=LLMConfig(
                 enabled=_env_bool("EXTRACTION_LLM_ENABLED", True),
+                inference_backend=inference_backend,
                 base_url=default_url,
+                api_key_env=_env_str(
+                    "EXTRACTION_LLM_API_KEY_ENV",
+                    default="EVREN_LLM_API_KEY" if using_evren else "EXTRACTION_LLM_API_KEY",
+                ),
                 model=default_model,
                 temperature=_env_float("EXTRACTION_LLM_TEMPERATURE", 0.1),
                 max_tokens=_env_int("EXTRACTION_LLM_MAX_TOKENS", 800),

@@ -3,6 +3,8 @@
 **C++ · Drogon** — استقبال طلبات Presentation، التحقق، بناء عقد الحالة، استدعاء Orchestration، إرجاع النتيجة.  
 **لا تحتوي أي منطق AI.**
 
+> في الإعداد الحالي تعتمد Agents على EVREN عبر متغيرات البيئة المحلية؛ Application لا تمرر مفاتيح EVREN إلى الواجهة. RAG يبقى محلياً داخل عملية Orchestration.
+
 القناة الحية: `POST /api/Chat/SendMessage` → المنفذ **8080** (يحتاج Orchestration على **8000**).
 
 ---
@@ -129,7 +131,7 @@ $env:APP_SERVER_PORT="8080"
 
 ### 2) حالات تجريبية (PowerShell)
 
-**أ) سؤال فقط — يُرفض لاحقًا من Orchestration (لا مسار ملف):**
+**أ) سؤال فقط — يذهب إلى RAG → Summary → Writing:**
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8080/api/Chat/SendMessage -Method POST -ContentType "application/json" `
   -Body '{"ChatId":null,"Question":"bu ne sozlesmesi","File":null}'

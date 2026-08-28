@@ -1,5 +1,11 @@
 # Writer Agent
 
+## Güncel proje ayarı
+
+Writer, nihai Türkçe yanıt için varsayılan olarak EVREN `llm-large` kullanır: `WRITER_INFERENCE_BACKEND=evren`, `WRITER_EVREN_MODEL=llm-large`. Bu seçim yalnız `Inference` istemcisini değiştirir; Writer'ın `writing.answer` çıktısı ve katmanlar arası sözleşme değişmez.
+
+Bu dosyadaki yerel `llama-server` akışı alternatif geliştirme modudur; EVREN yapılandırması etkin olduğunda günlük çalıştırmada gerekli değildir.
+
 ## Purpose
 
 Generates the final natural-language answer to the user's question,
@@ -8,7 +14,7 @@ using only the relevant parts of the Unified State, and writes it to
 Presentation.
 
 ```text
-Presentation -> Application -> Orchestration -> Writer Agent -> Inference -> Gemma3
+Presentation -> Application -> Orchestration -> Writer Agent -> Inference -> EVREN llm-large (or local fallback)
 ```
 
 ## Responsibility and boundaries
@@ -30,10 +36,9 @@ Writer Agent never:
 - loads `gemma3.gguf` or any model file directly;
 - implements its own inference/runtime code.
 
-All model access goes exclusively through the project's existing
-Inference layer (`Inference/client/llama_client.py`, already used
-elsewhere in the project). This layer is not modified or duplicated
-here.
+All model access goes exclusively through the project's existing Inference
+layer (`Inference/client/evren_client.py` or `Inference/client/llama_client.py`).
+This layer is not modified or duplicated here.
 
 ## File structure
 
@@ -82,18 +87,17 @@ exception):
 
 No other section of the Unified State is added, removed, or modified.
 
-## Connection to Inference / Gemma3
+## Connection to Inference
 
 ```text
 WriterAgent._call_inference()
-    -> Inference.client.llama_client.LlamaClient.generate(InferenceRequest)
-    -> running llama-server (http://localhost:8080/v1/chat/completions)
-    -> gemma3.gguf
+    -> selected provider client
+    -> EVREN `llm-large` (default) or local llama-server (fallback)
 ```
 
-`LlamaClient` is constructed with its own defaults unless a client is
-injected (used in tests). Writer Agent never touches `llama_server/`,
-`model_registry.json`, or any model file.
+The selected client is constructed with its configuration defaults unless a
+client is injected (used in tests). Writer Agent never touches
+`llama_server/`, `model_registry.json`, or any model file.
 
 ## Usage from Orchestration
 
@@ -125,7 +129,7 @@ python -m unittest Tests.Agents.test_writer_agent -v
 
 ## Live standalone test
 
-After starting llama-server on port 8080, run:
+With the active backend configured (EVREN by default, or a local llama-server), run:
 
 ```bash
 python Tests/Agents/manual_writer_live.py
@@ -143,15 +147,14 @@ python Tests/Agents/manual_writer_live.py --input path/to/writer_state.json
   and a non-empty `writing.answer`;
 - the question and `summary.rag_summary_text` are correctly included in
   the prompt sent to Inference;
-- `LlamaClient.generate` (the existing Inference interface) is called,
-  not a new/duplicate inference path;
+- the selected Inference client is called, not a new/duplicate inference path;
 - an Inference failure results in `writing = {"success": False, "answer": ""}`;
 - a missing question short-circuits without calling Inference at all;
 - a non-dict state raises `TypeError` immediately.
 
-Only the network call inside `LlamaClient.generate` is mocked — no
-llama-server needs to be running to execute this test. Running it
-against a live server (no mocking) exercises the exact same code path
+Only the network call inside the selected provider client is mocked — no
+live provider needs to run to execute this test. Running it against the
+configured backend (no mocking) exercises the exact same code path
 Orchestration uses.
 
 ## Configuration / dependencies

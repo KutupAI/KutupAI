@@ -303,3 +303,59 @@
     display: none;
   }
 }
+
+.adminAccess {
+  flex-shrink: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--kutup-border);
+}
+
+.adminButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid var(--kutup-border);
+  border-radius: var(--radius-md);
+  background: var(--kutup-surface);
+  color: var(--kutup-gray);
+  text-align: start;
+  transition: border-color 0.18s var(--ease-out-soft), background 0.18s var(--ease-out-soft);
+}
+
+.adminButton:hover,
+.adminButton:focus-visible {
+  border-color: var(--kutup-red);
+  background: var(--kutup-red-dim);
+  color: var(--kutup-white);
+}
+
+.adminBadge {
+  flex-shrink: 0;
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--kutup-red-dim);
+  color: var(--kutup-red-hover);
+  font-size: 0.9rem;
+}
+
+.adminButton strong,
+.adminButton small {
+  display: block;
+}
+
+.adminButton strong {
+  color: var(--kutup-white);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.adminButton small {
+  margin-top: 2px;
+  color: var(--kutup-gray-dim);
+  font-size: 0.66rem;
+}

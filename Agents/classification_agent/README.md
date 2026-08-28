@@ -1,5 +1,11 @@
 # Classification Agent
 
+## Güncel proje ayarı
+
+Çalışan entegrasyonda sınıflandırma, OCR metni ve mevcut layout sinyallerini EVREN `llm-fast` modeline gönderir. `CLASSIFICATION_INFERENCE_BACKEND=evren` ve `CLASSIFICATION_EVREN_MODEL=llm-fast` varsayılandır. Bu seçim yalnız model istemcisini değiştirir; `ClassificationAgent.run(state)` sözleşmesi ve çıktısı aynıdır.
+
+Yerel Gemma / ONNX ile ilgili aşağıdaki bölümler, alternatif veya geçmiş geliştirme akışları için korunmuştur. Yerel moda dönmek için `CLASSIFICATION_INFERENCE_BACKEND=local` kullanılır.
+
 Belge görüntüsü + OCR metni + layout bilgisini birlikte kullanarak belgeyi
 18 sınıftan birine ayıran Agent. `BaseAgent`'tan türer, sadece
 `graph_state`'i günceller (`classification_result` + `classification`),

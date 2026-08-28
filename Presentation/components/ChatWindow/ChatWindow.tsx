@@ -11,6 +11,7 @@ interface ChatWindowProps {
   isLoading: boolean;
   error: string | null;
   onSuggestionClick: (text: string) => void;
+  isAdmin: boolean;
 }
 
 const STAGE_INTERVAL_MS = 4500;
@@ -75,6 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isLoading,
   error,
   onSuggestionClick,
+  isAdmin,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -91,7 +93,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       ) : (
         <div className={styles.messageList}>
           {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage key={message.id} message={message} isAdmin={isAdmin} />
           ))}
 
           {isLoading && <ThinkingIndicator />}
